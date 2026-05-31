@@ -45,15 +45,25 @@ TCOLS = [
 ]
 
 def ensure_header():
+    """
+    Garante que a aba 'transferencias' existe e que a linha 1
+    contém EXATAMENTE os cabeçalhos em TCOLS (na ordem correta).
+    Se existirem colunas extras após TCOLS, elas são mantidas no final.
+    """
     ws = get_sheet("transferencias")
-    if not ws.row_values(1):
+    hdr = ws.row_values(1)
+    if not hdr:
+        # Aba vazia: escreve cabeçalho do zero
         ws.update("A1", [TCOLS])
     else:
-        hdr = ws.row_values(1)
-        for col in TCOLS:
-            if col not in hdr:
-                ws.update_cell(1, len(hdr) + 1, col)
-                hdr = hdr + [col]
+        # Verifica se os primeiros N cabeçalhos batem com TCOLS
+        mismatch = (hdr[:len(TCOLS)] != TCOLS)
+        missing = [c for c in TCOLS if c not in hdr]
+        if mismatch or missing:
+            # Reescreve as colunas de TCOLS nas posições corretas (1-indexed)
+            for idx, col in enumerate(TCOLS, start=1):
+                if idx > len(hdr) or hdr[idx-1] != col:
+                    ws.update_cell(1, idx, col)
     return ws
 
 @st.cache_data(ttl=15, show_spinner=False)
@@ -168,53 +178,94 @@ def buscar_nota(numnota):
     df = load_road()
     if df.empty:
         return None
-    row = df[df["NOTA FISCAL"].astype(str) == numnota.strip()]
+
+    # Tenta encontrar a coluna "NOTA FISCAL" com variações de nome
+    col_nf = None
+    for c in df.columns:
+        if "NOTA" in c and "FISCAL" in c:
+            col_nf = c
+            break
+        if c in ("NF", "NOTAFISCAL", "NOTA_FISCAL"):
+            col_nf = c
+            break
+    if col_nf is None:
+        return None
+
+    row = df[df[col_nf].astype(str).str.strip() == numnota.strip()]
     if row.empty:
         return None
     r = row.iloc[0]
 
-    def safe(col):
-        v = r.get(col, "")
-        if str(v) in ("nan", "None", "", None):
-            return ""
-        v = str(v)
-        return v[:-2] if v.endswith(".0") else v
+    def safe(*cols):
+        """Tenta cada nome de coluna em ordem, retorna o primeiro valor não-vazio."""
+        for col in cols:
+            v = r.get(col, "")
+            sv = str(v).strip()
+            if sv not in ("nan", "None", "", "0.0"):
+                return sv[:-2] if sv.endswith(".0") else sv
+        return ""
 
+    # Praça: tenta várias grafias possíveis (encoding pode variar)
+    praca_cols = [c for c in df.columns if "PRA" in c]
+    praca = ""
+    for pc in praca_cols:
+        v = str(r.get(pc, "")).strip()
+        if v and v not in ("nan", "None", ""):
+            praca = v[:-2] if v.endswith(".0") else v
+            break
+
+    # Carregamento: pode ser "CARREGAMENTO" ou truncado "CARREGAMEN"
+    carr_cols = [c for c in df.columns if c.startswith("CARREG")]
+    carr_val = ""
+    for cc in carr_cols:
+        v = str(r.get(cc, "")).strip()
+        if v and v not in ("nan", "None", ""):
+            carr_val = v[:-2] if v.endswith(".0") else v
+            break
+
+    # Peso
+    peso_cols = [c for c in df.columns if c in ("PESO", "PESO BRUTO", "PESOBRUTO", "PESO TOTAL")]
+    if not peso_cols:
+        peso_cols = [c for c in df.columns if "PESO" in c]
     try:
-        peso = float(str(r.get("PESO", "0")).replace(",", ".").strip())
+        raw_p = str(r.get(peso_cols[0] if peso_cols else "PESO", "0")).replace(",", ".").strip()
+        peso = float(raw_p)
     except Exception:
         peso = 0.0
+
+    # Valor
+    valor_cols = [c for c in df.columns if c in ("VALOR", "VALOR TOTAL", "VL TOTAL")]
+    if not valor_cols:
+        valor_cols = [c for c in df.columns if "VALOR" in c]
     try:
-        vl_raw = (
-            str(r.get("VALOR", "0"))
-            .replace("R$", "")
-            .replace(".", "")
-            .replace(",", ".")
-            .strip()
-        )
-        vl = float(vl_raw)
+        raw_v = str(r.get(valor_cols[0] if valor_cols else "VALOR", "0"))
+        raw_v = raw_v.replace("R$", "").replace(".", "").replace(",", ".").strip()
+        vl = float(raw_v)
     except Exception:
         vl = 0.0
 
-    praca = ""
-    for col_name in ["PRAÇA", "PRACA", "PRAA", "PRAçA", "PRAÃ‡A"]:
-        praca = safe(col_name)
-        if praca:
-            break
+    # Coluna PEDIDO
+    ped_col = next((c for c in df.columns if c == "PEDIDO"), None)
+    # Coluna NOTA FISCAL
+    nf_col = col_nf
+    # Coluna DATA LIBERADO
+    dtlib_col = next((c for c in df.columns if "DATA" in c and ("LIBER" in c or "LIB" in c)), None)
+    if dtlib_col is None:
+        dtlib_col = next((c for c in df.columns if "LIBERADO" in c or "LIBERACAO" in c), None)
 
     return {
-        "numped": safe("PEDIDO"),
-        "numnota": safe("NOTA FISCAL"),
-        "nomecliente": safe("CLIENTE"),
-        "dt_liberado": safe("DATA LIBERADO"),
-        "nomevend": safe("VENDEDOR"),
-        "nomesup": safe("SUPERVISOR"),
-        "pesobrutotot": peso,
-        "vltotal": vl,
-        "praca": praca,
-        "numcarregamento": safe("CARREGAMENTO"),
-        "destino": safe("DESTINO"),
-        "placa_road": safe("PLACA ANTIGA"),
+        "numped":          safe(ped_col or "PEDIDO"),
+        "numnota":         safe(nf_col),
+        "nomecliente":     safe("CLIENTE"),
+        "dt_liberado":     safe(dtlib_col or "DATA LIBERADO", "DATA LIBERADO", "DT LIBERADO"),
+        "nomevend":        safe("VENDEDOR"),
+        "nomesup":         safe("SUPERVISOR"),
+        "pesobrutotot":    peso,
+        "vltotal":         vl,
+        "praca":           praca,
+        "numcarregamento": carr_val,
+        "destino":         safe("DESTINO"),
+        "placa_road":      safe("PLACA ANTIGA", "PLACA", "PLACA ANT"),
     }
 
 # ─── Formatação ───────────────────────────────────────────────────────────────
@@ -767,6 +818,7 @@ if pagina == "📝  Registro":
 
         if buscar_btn and nota_inp.strip():
             with st.spinner("Consultando base ROAD..."):
+                df_road_dbg = load_road()
                 r = buscar_nota(nota_inp.strip())
             if r:
                 st.session_state.cur = r
@@ -774,6 +826,14 @@ if pagina == "📝  Registro":
             else:
                 st.session_state.cur = None
                 st.markdown(f'<div class="al-e">❌ Nota "{nota_inp.strip()}" não encontrada na base ROAD.</div>', unsafe_allow_html=True)
+                if not df_road_dbg.empty:
+                    st.markdown(f'<div class="al-i">🔍 Colunas encontradas na aba ROAD: <code>{", ".join(df_road_dbg.columns.tolist())}</code></div>', unsafe_allow_html=True)
+                    nf_col_found = next((c for c in df_road_dbg.columns if "NOTA" in c), None)
+                    if nf_col_found:
+                        amostra = df_road_dbg[nf_col_found].astype(str).head(5).tolist()
+                        st.markdown(f'<div class="al-i">📋 Primeiras NFs na base: <code>{", ".join(amostra)}</code></div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="al-e">⚠️ Aba ROAD vazia ou não encontrada.</div>', unsafe_allow_html=True)
         elif buscar_btn:
             st.markdown('<div class="al-w">⚠️ Informe o número da nota fiscal.</div>', unsafe_allow_html=True)
 
@@ -962,7 +1022,7 @@ if pagina == "📝  Registro":
 # ROTEIRIZAÇÃO
 # ═══════════════════════════════════════════════════════════════════════════════
 elif pagina == "🗺️  Roteirização":
-    pend = df_all[df_all["status"] == "pendente"] if not df_all.empty else pd.DataFrame()
+    pend = df_all[df_all["status"].isin(["pendente", ""]) | df_all["status"].isna()] if not df_all.empty else pd.DataFrame()
     rote = df[df["status"] == "roteirizado"] if not df.empty else pd.DataFrame()
 
     st.markdown(f"""
