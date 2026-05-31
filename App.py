@@ -3,12 +3,8 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import date, datetime
-import json
 import io
 
-# ══════════════════════════════════════════════════════════════════════════════
-# CONFIG
-# ══════════════════════════════════════════════════════════════════════════════
 st.set_page_config(
     page_title="TRANSF — Sistema de Transferências",
     page_icon="🚛",
@@ -21,161 +17,135 @@ st.set_page_config(
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg:#0a0c10; --sur:#111318; --sur2:#1a1d24; --sur3:#22262f;
-  --bdr:#2a2f3a; --bdr2:#353b47;
-  --acc:#ff6b2b; --acc2:#ff8f5e;
-  --grn:#22c55e; --grn2:#4ade80;
+  --bg:#080a0e; --sur:#0e1117; --sur2:#161b25; --sur3:#1e2535;
+  --bdr:#1e2535; --bdr2:#2a3347;
+  --acc:#f97316; --acc2:#fb923c; --acc3:#fed7aa;
+  --grn:#10b981; --grn2:#34d399;
   --blu:#3b82f6; --blu2:#60a5fa;
-  --pur:#a855f7; --yel:#eab308; --red:#ef4444;
-  --txt:#e8ecf3; --txt2:#a0aab8; --mut:#6b7585;
+  --pur:#8b5cf6; --yel:#f59e0b;
+  --red:#ef4444; --red2:#fca5a5;
+  --txt:#f1f5f9; --txt2:#94a3b8; --mut:#475569;
 }
+*,*::before,*::after{box-sizing:border-box}
+html,body,[class*="css"],.stApp{
+  font-family:'Inter',sans-serif!important;
+  background-color:var(--bg)!important;
+  color:var(--txt)!important;
+}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--sur)}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:99px}
+section[data-testid="stSidebar"]{
+  background:linear-gradient(180deg,#0a0d14 0%,#0e1117 100%)!important;
+  border-right:1px solid var(--bdr)!important;
+}
+section[data-testid="stSidebar"]>div{padding-top:1.5rem!important}
+.main .block-container{padding:1.5rem 2rem!important;max-width:1600px!important}
+#MainMenu,footer,header{visibility:hidden}
+[data-testid="stDecoration"]{display:none}
 
-html, body, [class*="css"] {
-  font-family: 'DM Sans', sans-serif !important;
-  background-color: var(--bg) !important;
-  color: var(--txt) !important;
+/* HERO */
+.hero{
+  position:relative;border-radius:20px;padding:2.5rem 2.5rem 2rem;
+  margin-bottom:2rem;overflow:hidden;border:1px solid var(--bdr2);
 }
+.hero-bg{
+  position:absolute;inset:0;border-radius:20px;z-index:0;
+  display:flex;align-items:center;justify-content:flex-end;
+  padding-right:3rem;pointer-events:none;overflow:hidden;
+}
+.hero-bg-text{
+  font-size:18rem;opacity:0.025;line-height:1;
+  filter:blur(1px);user-select:none;
+}
+.hero-fat{background:linear-gradient(135deg,#0e1117 0%,#1a0d05 60%,#0e1117 100%)}
+.hero-dash{background:linear-gradient(135deg,#0e1117 0%,#05101a 60%,#0e1117 100%)}
+.hero-rot{background:linear-gradient(135deg,#0e1117 0%,#051a0e 60%,#0e1117 100%)}
+.hero-content{position:relative;z-index:1}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 14px;border-radius:99px;font-size:.62rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.12em;margin-bottom:.75rem;
+  font-family:'JetBrains Mono',monospace;
+}
+.tag-fat{background:rgba(249,115,22,.15);color:var(--acc2);border:1px solid rgba(249,115,22,.3)}
+.tag-rot{background:rgba(16,185,129,.15);color:var(--grn2);border:1px solid rgba(16,185,129,.3)}
+.tag-dash{background:rgba(59,130,246,.15);color:var(--blu2);border:1px solid rgba(59,130,246,.3)}
+.hero-h1{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;line-height:1.1;color:var(--txt);margin:0 0 .5rem}
+.hero-sub{font-size:.88rem;color:var(--txt2)}
 
-.stApp { background-color: var(--bg) !important; }
+/* KPI */
+.kpi{
+  background:var(--sur);border:1px solid var(--bdr);border-radius:16px;
+  padding:1.4rem 1.6rem;position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s;margin-bottom:.5rem;
+}
+.kpi:hover{border-color:var(--bdr2);transform:translateY(-2px)}
+.kpi-glow{position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;opacity:.07;filter:blur(20px)}
+.kpi-icon{font-size:1.4rem;margin-bottom:.5rem}
+.kpi-lbl{font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin-bottom:.35rem;font-family:'JetBrains Mono',monospace}
+.kpi-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;line-height:1;color:var(--txt)}
+.kpi-sub{font-size:.72rem;color:var(--txt2);margin-top:.3rem}
+.kpi-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 16px 16px}
 
-section[data-testid="stSidebar"] {
-  background-color: var(--sur) !important;
-  border-right: 1px solid var(--bdr) !important;
-}
+/* CHART CARD */
+.cc{background:var(--sur);border:1px solid var(--bdr);border-radius:16px;padding:1.4rem;margin-bottom:1rem}
+.cc-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem}
 
-.metric-card {
-  background: var(--sur);
-  border: 1px solid var(--bdr);
-  border-radius: 12px;
-  padding: 1.25rem 1.4rem;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-.metric-bar {
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  border-radius: 12px 12px 0 0;
-}
-.metric-lbl {
-  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.09em; color: var(--mut); margin-bottom: 0.4rem;
-}
-.metric-val {
-  font-size: 1.9rem; font-weight: 800; line-height: 1;
-  font-family: 'JetBrains Mono', monospace;
-}
-.metric-sub { font-size: 0.73rem; color: var(--txt2); margin-top: 0.3rem; }
+/* TABLE */
+.tbl-wrap{background:var(--sur);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;margin-bottom:1.5rem}
+.tbl-hd{padding:1rem 1.5rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,var(--sur) 0%,var(--sur2) 100%)}
+.tbl-title{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:700;color:var(--txt)}
+.tbl-badge{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--mut);background:var(--sur3);border-radius:99px;padding:3px 10px;border:1px solid var(--bdr2)}
 
-.page-header {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--bdr);
-}
-.page-tag {
-  display: inline-flex; align-items: center; gap: 0.3rem;
-  padding: 0.15rem 0.6rem; border-radius: 99px;
-  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.09em; margin-bottom: 0.5rem;
-}
-.tag-fat { background: rgba(255,107,43,0.15); color: var(--acc2); border: 1px solid rgba(255,107,43,0.25); }
-.tag-rot { background: rgba(34,197,94,0.15); color: var(--grn2); border: 1px solid rgba(34,197,94,0.25); }
-.tag-dash { background: rgba(59,130,246,0.15); color: var(--blu2); border: 1px solid rgba(59,130,246,0.25); }
-.page-h1 { font-size: 1.6rem; font-weight: 800; line-height: 1.2; color: var(--txt); }
-.page-sub { font-size: 0.82rem; color: var(--txt2); margin-top: 0.3rem; }
+/* SECTION DIV */
+.sdiv{display:flex;align-items:center;gap:.75rem;margin:1.5rem 0 1rem}
+.sdiv-line{flex:1;height:1px;background:var(--bdr)}
+.sdiv-txt{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);white-space:nowrap}
 
-.road-box {
-  background: var(--sur2);
-  border: 1px solid rgba(255,107,43,0.2);
-  border-radius: 12px;
-  padding: 1.25rem;
-  margin: 0.75rem 0;
-}
-.road-box-tit {
-  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.09em; color: var(--acc2); margin-bottom: 0.75rem;
-}
+/* ALERTS */
+.al-s{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:var(--grn2);border-radius:10px;padding:.7rem 1rem;font-size:.83rem;margin:.5rem 0}
+.al-e{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red2);border-radius:10px;padding:.7rem 1rem;font-size:.83rem;margin:.5rem 0}
+.al-i{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:var(--blu2);border-radius:10px;padding:.7rem 1rem;font-size:.83rem;margin:.5rem 0}
+.al-w{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#fcd34d;border-radius:10px;padding:.7rem 1rem;font-size:.83rem;margin:.5rem 0}
 
-.badge {
-  display: inline-flex; align-items: center;
-  padding: 0.15rem 0.55rem; border-radius: 99px;
-  font-size: 0.67rem; font-weight: 700; white-space: nowrap;
-}
-.badge-grn { background: rgba(34,197,94,0.15); color: var(--grn2); }
-.badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
-.badge-yel { background: rgba(234,179,8,0.15); color: #fbbf24; }
-.badge-acc { background: rgba(255,107,43,0.15); color: var(--acc2); }
-.badge-blu { background: rgba(59,130,246,0.15); color: var(--blu2); }
+/* ROAD BOX */
+.road-box{background:linear-gradient(135deg,var(--sur2) 0%,#1a1205 100%);border:1px solid rgba(249,115,22,.25);border-left:3px solid var(--acc);border-radius:12px;padding:1.25rem;margin:.75rem 0}
+.road-tit{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--acc2);margin-bottom:.9rem}
 
-.alert-success {
-  background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
-  color: var(--grn2); border-radius: 8px; padding: 0.65rem 0.95rem;
-  font-size: 0.85rem; margin: 0.5rem 0;
-}
-.alert-error {
-  background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
-  color: #f87171; border-radius: 8px; padding: 0.65rem 0.95rem;
-  font-size: 0.85rem; margin: 0.5rem 0;
-}
-.alert-info {
-  background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3);
-  color: var(--blu2); border-radius: 8px; padding: 0.65rem 0.95rem;
-  font-size: 0.85rem; margin: 0.5rem 0;
-}
+/* NOTA CARD */
+.nota-card{background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:.75rem 1rem;margin-bottom:.5rem;transition:border-color .15s}
+.nota-card:hover{border-color:var(--bdr2)}
+.placa-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:3px 9px;font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:700;color:#fcd34d;letter-spacing:.05em}
 
-div[data-testid="stDataFrameContainer"] {
-  background: var(--sur) !important;
-  border: 1px solid var(--bdr) !important;
-  border-radius: 12px !important;
+/* INPUTS */
+.stTextInput>div>div>input,.stDateInput>div>div>input{
+  background-color:var(--sur2)!important;color:var(--txt)!important;
+  border:1px solid var(--bdr2)!important;border-radius:10px!important;
+  font-family:'Inter',sans-serif!important;
 }
+.stTextInput>div>div>input:focus{border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(249,115,22,.1)!important}
+.stSelectbox>div>div{background-color:var(--sur2)!important;border:1px solid var(--bdr2)!important;border-radius:10px!important}
+.stTextArea textarea{background-color:var(--sur2)!important;color:var(--txt)!important;border:1px solid var(--bdr2)!important;border-radius:10px!important}
+.stTextInput label,.stDateInput label,.stSelectbox label,.stTextArea label{color:var(--txt2)!important;font-size:.75rem!important;font-weight:600!important;text-transform:uppercase!important;letter-spacing:.07em!important}
 
-.stButton > button {
-  background-color: var(--acc) !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-weight: 700 !important;
-  font-family: 'DM Sans', sans-serif !important;
+/* BUTTONS */
+.stButton>button{
+  background:linear-gradient(135deg,var(--acc),#ea580c)!important;
+  color:white!important;border:none!important;border-radius:10px!important;
+  font-weight:700!important;font-family:'Inter',sans-serif!important;
+  transition:all .2s!important;box-shadow:0 4px 15px rgba(249,115,22,.3)!important;
 }
-.stButton > button:hover {
-  background-color: var(--acc2) !important;
-}
-
-.stTextInput > div > input,
-.stDateInput > div > input,
-.stSelectbox > div > div {
-  background-color: var(--sur2) !important;
-  color: var(--txt) !important;
-  border: 1px solid var(--bdr) !important;
-  border-radius: 8px !important;
-}
-.stTextArea > div > textarea {
-  background-color: var(--sur2) !important;
-  color: var(--txt) !important;
-  border: 1px solid var(--bdr) !important;
-}
-
-div[data-testid="metric-container"] {
-  background: var(--sur);
-  border: 1px solid var(--bdr);
-  border-radius: 12px;
-  padding: 1rem;
-}
-
-.sidebar-logo {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.3rem; font-weight: 800;
-  color: var(--acc);
-  padding: 0.5rem 0 1.5rem 0;
-  display: flex; align-items: center; gap: 0.5rem;
-}
+.stButton>button:hover{transform:translateY(-1px)!important;box-shadow:0 6px 20px rgba(249,115,22,.4)!important}
+.stDownloadButton>button{background:var(--sur2)!important;color:var(--txt2)!important;border:1px solid var(--bdr2)!important;border-radius:10px!important;font-weight:600!important;box-shadow:none!important}
 </style>
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# GOOGLE SHEETS — CONEXÃO
+# GOOGLE SHEETS
 # ══════════════════════════════════════════════════════════════════════════════
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -183,184 +153,185 @@ SCOPES = [
 ]
 
 @st.cache_resource(show_spinner=False)
-def get_gspread_client():
-    """Conecta ao Google Sheets via service account dos secrets."""
-    creds_dict = st.secrets["gcp_service_account"]
-    creds = Credentials.from_service_account_info(dict(creds_dict), scopes=SCOPES)
+def get_client():
+    creds = Credentials.from_service_account_info(dict(st.secrets["gcp_service_account"]), scopes=SCOPES)
     return gspread.authorize(creds)
 
 @st.cache_resource(show_spinner=False)
 def get_spreadsheet():
-    client = get_gspread_client()
-    return client.open_by_key(st.secrets["spreadsheet_id"])
+    return get_client().open_by_key(st.secrets["spreadsheet_id"])
 
-def get_sheet(name: str):
-    """Retorna aba pelo nome, criando se não existir."""
+def get_sheet(name):
     ss = get_spreadsheet()
     try:
         return ss.worksheet(name)
     except gspread.WorksheetNotFound:
-        ws = ss.add_worksheet(title=name, rows=5000, cols=20)
-        return ws
+        return ss.add_worksheet(title=name, rows=5000, cols=20)
 
-# ── ABA TRANSFERENCIAS ────────────────────────────────────────────────────────
-TRANSF_COLS = [
-    "id", "dt_transferencia", "numped", "numnota", "nomecliente",
-    "nomesup", "praca", "pesobrutotot", "numcarregamento", "vltotal",
-    "destino", "obs", "placa", "dt_roteirizacao", "status", "criado_em"
-]
+TCOLS = ["id","dt_transferencia","numped","numnota","nomecliente","nomesup",
+         "praca","pesobrutotot","numcarregamento","vltotal","destino","obs",
+         "placa_veiculo","placa_road","dt_roteirizacao","status","criado_em"]
 
-def ensure_transf_header():
+def ensure_header():
     ws = get_sheet("transferencias")
-    header = ws.row_values(1)
-    if not header:
-        ws.update("A1", [TRANSF_COLS])
+    if not ws.row_values(1):
+        ws.update("A1", [TCOLS])
     return ws
 
 @st.cache_data(ttl=15, show_spinner=False)
-def load_transferencias() -> pd.DataFrame:
-    ws = ensure_transf_header()
-    data = ws.get_all_records(expected_headers=TRANSF_COLS)
+def load_transferencias():
+    ws = ensure_header()
+    data = ws.get_all_records()
     if not data:
-        return pd.DataFrame(columns=TRANSF_COLS)
+        return pd.DataFrame(columns=TCOLS)
     df = pd.DataFrame(data)
-    for col in ["pesobrutotot", "vltotal"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
+    for c in ["pesobrutotot","vltotal"]:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0.0)
+    for c in TCOLS:
+        if c not in df.columns:
+            df[c] = ""
     return df
 
-def next_id(df: pd.DataFrame) -> int:
-    if df.empty or "id" not in df.columns or df["id"].eq("").all():
-        return 1
-    return int(pd.to_numeric(df["id"], errors="coerce").max() + 1)
+def next_id(df):
+    if df.empty: return 1
+    v = pd.to_numeric(df["id"], errors="coerce").dropna()
+    return int(v.max()+1) if len(v) else 1
 
-def append_transferencia(row: dict):
-    ws = ensure_transf_header()
+def append_transf(row):
+    ws = ensure_header()
     df = load_transferencias()
     row["id"] = next_id(df)
     row["criado_em"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    row["status"] = "pendente"
-    row["placa"] = ""
-    row["dt_roteirizacao"] = ""
-    values = [str(row.get(c, "")) for c in TRANSF_COLS]
-    ws.append_row(values, value_input_option="USER_ENTERED")
+    row.setdefault("status","pendente")
+    row.setdefault("placa_veiculo","")
+    row.setdefault("placa_road","")
+    row.setdefault("dt_roteirizacao","")
+    ws.append_row([str(row.get(c,"")) for c in TCOLS], value_input_option="USER_ENTERED")
     load_transferencias.clear()
 
-def update_transferencia(tid: int, updates: dict):
-    ws = ensure_transf_header()
+def update_transf(tid, updates):
+    ws = ensure_header()
     data = ws.get_all_values()
-    header = data[0]
+    if not data: return
+    hdr = data[0]
     for i, row in enumerate(data[1:], start=2):
-        row_dict = dict(zip(header, row))
-        if str(row_dict.get("id", "")) == str(tid):
-            for col, val in updates.items():
-                if col in header:
-                    col_idx = header.index(col) + 1
-                    ws.update_cell(i, col_idx, str(val))
+        if dict(zip(hdr,row)).get("id","") == str(tid):
+            for col,val in updates.items():
+                if col in hdr:
+                    ws.update_cell(i, hdr.index(col)+1, str(val))
             break
     load_transferencias.clear()
 
-def delete_transferencia(tid: int):
-    ws = ensure_transf_header()
+def delete_transf(tid):
+    ws = ensure_header()
     data = ws.get_all_values()
-    header = data[0]
+    if not data: return
+    hdr = data[0]
     for i, row in enumerate(data[1:], start=2):
-        row_dict = dict(zip(header, row))
-        if str(row_dict.get("id", "")) == str(tid):
+        if dict(zip(hdr,row)).get("id","") == str(tid):
             ws.delete_rows(i)
             break
     load_transferencias.clear()
 
-def check_duplicate(numnota: str, dt: str) -> bool:
+def check_dup(numnota, dt):
     df = load_transferencias()
-    if df.empty:
-        return False
-    mask = (df["numnota"].astype(str) == str(numnota)) & (df["dt_transferencia"].astype(str) == str(dt))
-    return bool(mask.any())
+    if df.empty: return False
+    return bool(((df["numnota"].astype(str)==str(numnota))&(df["dt_transferencia"].astype(str)==str(dt))).any())
 
-# ── ABA ROAD ──────────────────────────────────────────────────────────────────
 @st.cache_data(ttl=60, show_spinner=False)
-def load_road() -> pd.DataFrame:
-    """Carrega a aba ROAD do Google Sheets (mesmo arquivo ou arquivo separado)."""
+def load_road():
     try:
-        # Tenta ler a aba "ROAD" no mesmo arquivo
         ws = get_sheet("ROAD")
         data = ws.get_all_records()
-        if not data:
-            return pd.DataFrame()
+        if not data: return pd.DataFrame()
         df = pd.DataFrame(data)
         df.columns = [str(c).upper().strip() for c in df.columns]
-        for col in ["NUMNOTA", "NUMPED"]:
-            if col in df.columns:
-                df[col] = df[col].astype(str).str.split(".").str[0].str.strip()
+        for c in ["NUMNOTA","NUMPED"]:
+            if c in df.columns:
+                df[c] = df[c].astype(str).str.split(".").str[0].str.strip()
         return df
     except Exception as e:
-        st.sidebar.error(f"Erro ao carregar ROAD: {e}")
         return pd.DataFrame()
 
-def buscar_nota(numnota: str) -> dict | None:
+def buscar_nota(numnota):
     df = load_road()
-    if df.empty:
-        return None
-    mask = df["NUMNOTA"].astype(str) == numnota.strip()
-    row = df[mask]
-    if row.empty:
-        return None
+    if df.empty: return None
+    row = df[df["NUMNOTA"].astype(str)==numnota.strip()]
+    if row.empty: return None
     r = row.iloc[0]
-
     def safe(col):
-        v = r.get(col, "")
-        if str(v) in ("nan", "None", "", None): return ""
+        v = r.get(col,"")
+        if str(v) in ("nan","None","",None): return ""
         v = str(v)
-        if v.endswith(".0"): return v[:-2]
-        return v
-
-    try: peso = float(str(r.get("PESOBRUTOTOT", "0")).replace(",", "."))
+        return v[:-2] if v.endswith(".0") else v
+    try: peso = float(str(r.get("PESOBRUTOTOT","0")).replace(",","."))
     except: peso = 0.0
-    try: vl = float(str(r.get("VLTOTAL", "0")).replace(",", "."))
+    try: vl = float(str(r.get("VLTOTAL","0")).replace(",","."))
     except: vl = 0.0
-
     praca = safe("PRAÇA") or safe("PRACA") or safe("PRAA") or safe("PRAÃ‡A")
-
+    placa_road = safe("PLACA") or safe("PLACA_ROAD") or ""
     return {
-        "numped":          safe("NUMPED"),
-        "numnota":         safe("NUMNOTA"),
-        "nomecliente":     safe("NOMECLIENTE"),
-        "nomesup":         safe("NOMESUP"),
-        "praca":           praca,
-        "pesobrutotot":    peso,
+        "numped": safe("NUMPED"), "numnota": safe("NUMNOTA"),
+        "nomecliente": safe("NOMECLIENTE"), "nomesup": safe("NOMESUP"),
+        "praca": praca, "pesobrutotot": peso,
         "numcarregamento": safe("NUMCARREGAMENTO"),
-        "vltotal":         vl,
-        "destino":         safe("DESTINO"),
+        "vltotal": vl, "destino": safe("DESTINO"),
+        "placa_road": placa_road,
     }
 
 # ══════════════════════════════════════════════════════════════════════════════
 # HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
 def br(v):
-    try:
-        return f"R$ {float(v):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    except:
-        return "R$ 0,00"
+    try: return f"R$ {float(v):,.2f}".replace(",","X").replace(".",",").replace("X",".")
+    except: return "R$ 0,00"
 
-def kg(v):
+def fmt_date(s):
+    if not s or str(s) in ("","nan","None"): return "—"
     try:
-        return f"{float(v):,.3f}".replace(",", "X").replace(".", ",").replace("X", ".") + " kg"
-    except:
-        return "0,000 kg"
+        p = str(s).split("-")
+        if len(p)==3: return f"{p[2]}/{p[1]}/{p[0]}"
+    except: pass
+    return str(s)
+
+def fmt_col(df, col="dt_transferencia"):
+    df = df.copy()
+    if col in df.columns:
+        df[col] = df[col].apply(fmt_date)
+    return df
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SIDEBAR
 # ══════════════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.markdown('<div class="sidebar-logo">🚛 TRANSF</div>', unsafe_allow_html=True)
-    st.markdown("---")
+    st.markdown("""
+    <div style="padding:0 .5rem 1.5rem">
+      <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;
+        background:linear-gradient(135deg,#f97316,#fb923c);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.02em">
+        🚛 TRANSF
+      </div>
+      <div style="font-size:.7rem;color:#475569;font-family:'JetBrains Mono',monospace;margin-top:2px">
+        Sistema de Transferências
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    pagina = st.radio(
-        "Navegação",
-        ["📊 Dashboard", "➕ Nova Transferência", "📋 Histórico", "🗺️ Roteirização"],
-        label_visibility="collapsed",
-    )
+    pagina = st.radio("Nav", [
+        "📊  Dashboard",
+        "➕  Nova Transferência",
+        "📋  Histórico",
+        "🗺️  Roteirização",
+    ], label_visibility="collapsed")
+
+    st.markdown("---")
+    st.markdown('<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#475569;margin-bottom:.5rem">📅 Filtrar por Data</div>', unsafe_allow_html=True)
+
+    data_filtro = st.date_input("Data", value=date.today(), label_visibility="collapsed", key="data_global")
+    data_str = data_filtro.isoformat()
+
+    ver_todas = st.checkbox("📋 Ver todas as datas", key="ver_todas")
 
     st.markdown("---")
     if st.button("🔄 Atualizar Dados", use_container_width=True):
@@ -369,497 +340,558 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    st.markdown(
-        '<div style="font-size:0.72rem;color:#6b7585;line-height:1.8">'
-        '🟢 Sistema ativo<br>'
-        f'📅 {date.today().strftime("%d/%m/%Y")}'
-        '</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(f'<div style="font-size:.7rem;color:#475569;line-height:2;font-family:JetBrains Mono,monospace">🟢 Online<br>📅 {date.today().strftime("%d/%m/%Y")}</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PÁGINA: DASHBOARD
+# DADOS
 # ══════════════════════════════════════════════════════════════════════════════
-if pagina == "📊 Dashboard":
-    st.markdown("""
-    <div class="page-header">
-      <div class="page-tag tag-dash">📊 Visão Geral</div>
-      <div class="page-h1">Dashboard</div>
-      <div class="page-sub">Acompanhe todas as transferências em tempo real</div>
+df_all = load_transferencias()
+df = df_all.copy() if ver_todas else (df_all[df_all["dt_transferencia"]==data_str].copy() if not df_all.empty else pd.DataFrame(columns=TCOLS))
+periodo_txt = "Todas as datas" if ver_todas else fmt_date(data_str)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DASHBOARD
+# ══════════════════════════════════════════════════════════════════════════════
+if pagina == "📊  Dashboard":
+    st.markdown(f"""
+    <div class="hero hero-dash">
+      <div class="hero-bg"><div class="hero-bg-text">📊</div></div>
+      <div class="hero-content">
+        <div class="hero-tag tag-dash">📊 Visão Geral</div>
+        <div class="hero-h1">Dashboard</div>
+        <div class="hero-sub">Período: <strong style="color:#60a5fa">{periodo_txt}</strong></div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
-    df = load_transferencias()
+    n  = len(df)
+    vt = df["vltotal"].sum() if not df.empty else 0
+    pt = df["pesobrutotot"].sum() if not df.empty else 0
+    nd = df["nomecliente"].nunique() if not df.empty else 0
+    np = int((df["status"]=="pendente").sum()) if not df.empty else 0
+    nr = int((df["status"]=="roteirizado").sum()) if not df.empty else 0
 
-    hoje = date.today().isoformat()
-    total_notas    = len(df)
-    total_valor    = df["vltotal"].sum() if not df.empty else 0
-    total_peso     = df["pesobrutotot"].sum() if not df.empty else 0
-    total_pendente = int((df["status"] == "pendente").sum()) if not df.empty else 0
-    total_rot      = int((df["status"] == "roteirizado").sum()) if not df.empty else 0
-    hoje_df        = df[df["dt_transferencia"] == hoje] if not df.empty else pd.DataFrame()
-    hoje_n         = len(hoje_df)
-    hoje_v         = hoje_df["vltotal"].sum() if not hoje_df.empty else 0
-
-    # KPIs
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-    with c1:
-        st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-bar" style="background:linear-gradient(90deg,#ff6b2b,#ff8f5e)"></div>
-          <div class="metric-lbl">Total de Notas</div>
-          <div class="metric-val">{total_notas}</div>
-          <div class="metric-sub">transferências</div>
-        </div>""", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-bar" style="background:linear-gradient(90deg,#ff6b2b,#ff8f5e)"></div>
-          <div class="metric-lbl">Valor Total</div>
-          <div class="metric-val" style="font-size:1.2rem">{br(total_valor)}</div>
-          <div class="metric-sub">soma de todas</div>
-        </div>""", unsafe_allow_html=True)
-    with c3:
-        st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-bar" style="background:linear-gradient(90deg,#ff6b2b,#ff8f5e)"></div>
-          <div class="metric-lbl">Peso Total</div>
-          <div class="metric-val" style="font-size:1.2rem">{kg(total_peso)}</div>
-          <div class="metric-sub">peso bruto</div>
-        </div>""", unsafe_allow_html=True)
-    with c4:
-        st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-bar" style="background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div>
-          <div class="metric-lbl">Hoje</div>
-          <div class="metric-val">{hoje_n}</div>
-          <div class="metric-sub">{br(hoje_v)}</div>
-        </div>""", unsafe_allow_html=True)
-    with c5:
-        st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-bar" style="background:linear-gradient(90deg,#ef4444,#f87171)"></div>
-          <div class="metric-lbl">⏳ Pendentes</div>
-          <div class="metric-val" style="color:#ef4444">{total_pendente}</div>
-          <div class="metric-sub">aguardando placa</div>
-        </div>""", unsafe_allow_html=True)
-    with c6:
-        st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-bar" style="background:linear-gradient(90deg,#22c55e,#4ade80)"></div>
-          <div class="metric-lbl">✅ Roteirizadas</div>
-          <div class="metric-val" style="color:#22c55e">{total_rot}</div>
-          <div class="metric-sub">placa definida</div>
-        </div>""", unsafe_allow_html=True)
+    c1,c2,c3,c4,c5,c6 = st.columns(6)
+    for col,icon,lbl,val,sub,clr in [
+        (c1,"📦","Notas",str(n),"transferências","#f97316"),
+        (c2,"💰","Valor Total",br(vt),"período","#3b82f6"),
+        (c3,"⚖️","Peso",f"{pt:,.0f} kg","bruto","#8b5cf6"),
+        (c4,"🏪","Clientes",str(nd),"distintos","#10b981"),
+        (c5,"⏳","Pendentes",str(np),"sem placa","#ef4444"),
+        (c6,"✅","Roteiriz.",str(nr),"com placa","#10b981"),
+    ]:
+        with col:
+            st.markdown(f"""<div class="kpi">
+              <div class="kpi-glow" style="background:{clr}"></div>
+              <div class="kpi-icon">{icon}</div>
+              <div class="kpi-lbl">{lbl}</div>
+              <div class="kpi-val">{val}</div>
+              <div class="kpi-sub">{sub}</div>
+              <div class="kpi-bar" style="background:linear-gradient(90deg,{clr}88,{clr}22)"></div>
+            </div>""", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     if not df.empty:
-        # Gráficos
-        por_data = df.groupby("dt_transferencia").agg(
-            valor=("vltotal", "sum"),
-            qtd=("id", "count"),
-            peso=("pesobrutotot", "sum")
-        ).reset_index().sort_values("dt_transferencia").tail(30)
+        try:
+            import plotly.graph_objects as go
+            T = dict(paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)",
+                     font=dict(color="#94a3b8",family="Inter"),
+                     margin=dict(l=10,r=10,t=30,b=10))
+            GC = "#1e2535"
 
-        col_l, col_r = st.columns(2)
-        with col_l:
-            st.markdown("**📅 Valor por Data**")
-            st.area_chart(por_data.set_index("dt_transferencia")["valor"], color="#ff6b2b")
-        with col_r:
-            st.markdown("**📦 Quantidade de Notas por Data**")
-            st.bar_chart(por_data.set_index("dt_transferencia")["qtd"], color="#3b82f6")
+            # Row 1
+            r1a, r1b = st.columns([3,2])
+            with r1a:
+                st.markdown('<div class="cc"><div class="cc-title">📅 Valor por Data de Transferência</div>', unsafe_allow_html=True)
+                if ver_todas and not df.empty:
+                    pd_ = df.groupby("dt_transferencia").agg(valor=("vltotal","sum")).reset_index().sort_values("dt_transferencia").tail(30)
+                    pd_["dt_f"] = pd_["dt_transferencia"].apply(fmt_date)
+                    fig = go.Figure()
+                    fig.add_trace(go.Bar(x=pd_["dt_f"],y=pd_["valor"],
+                        marker=dict(color=pd_["valor"],colorscale=[[0,"#7c2d12"],[0.5,"#f97316"],[1,"#fed7aa"]],showscale=False),
+                        hovertemplate="<b>%{x}</b><br>R$ %{y:,.2f}<extra></extra>"))
+                    fig.add_trace(go.Scatter(x=pd_["dt_f"],y=pd_["valor"],mode="lines",
+                        line=dict(color="#fb923c",width=2,dash="dot"),showlegend=False))
+                    fig.update_layout(**T,height=260,xaxis=dict(gridcolor=GC),yaxis=dict(gridcolor=GC,tickformat=",.0f"))
+                    st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False})
+                else:
+                    st.markdown(f'<div class="al-i">Data selecionada: <strong>{fmt_date(data_str)}</strong> — {n} nota(s) — {br(vt)}</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-        col3, col4 = st.columns(2)
-        with col3:
-            st.markdown("**🏆 Top Clientes por Valor**")
-            top_cli = df.groupby("nomecliente")["vltotal"].sum().sort_values(ascending=False).head(8)
-            st.bar_chart(top_cli, color="#a855f7")
-        with col4:
-            st.markdown("**👤 Valor por Supervisor**")
-            sup = df.groupby("nomesup")["vltotal"].sum().sort_values(ascending=False)
-            st.bar_chart(sup, color="#22c55e")
+            with r1b:
+                st.markdown('<div class="cc"><div class="cc-title">🔄 Status das Notas</div>', unsafe_allow_html=True)
+                if n > 0:
+                    fig2 = go.Figure(go.Pie(
+                        labels=["⏳ Pendentes","✅ Roteirizadas"],
+                        values=[np,nr],hole=0.6,
+                        marker=dict(colors=["#ef4444","#10b981"],line=dict(color="#0e1117",width=3)),
+                        textinfo="percent+value",
+                        hovertemplate="<b>%{label}</b><br>%{value} notas<extra></extra>"))
+                    fig2.update_layout(**T,height=260,
+                        legend=dict(orientation="h",yanchor="bottom",y=-0.2,xanchor="center",x=0.5))
+                    st.plotly_chart(fig2,use_container_width=True,config={"displayModeBar":False})
+                else:
+                    st.markdown('<div class="al-i">Sem dados.</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("---")
+            # Row 2
+            r2a, r2b = st.columns(2)
+            with r2a:
+                st.markdown('<div class="cc"><div class="cc-title">🏆 Top Clientes por Valor</div>', unsafe_allow_html=True)
+                cli = df.groupby("nomecliente")["vltotal"].sum().sort_values(ascending=True).tail(8).reset_index()
+                if not cli.empty:
+                    fig3 = go.Figure(go.Bar(
+                        x=cli["vltotal"],y=cli["nomecliente"],orientation="h",
+                        marker=dict(color=cli["vltotal"],colorscale=[[0,"#1e3a5f"],[0.5,"#3b82f6"],[1,"#bfdbfe"]],showscale=False),
+                        hovertemplate="<b>%{y}</b><br>R$ %{x:,.2f}<extra></extra>"))
+                    fig3.update_layout(**T,height=260,xaxis=dict(gridcolor=GC,tickformat=",.0f"),yaxis=dict(gridcolor="rgba(0,0,0,0)"))
+                    st.plotly_chart(fig3,use_container_width=True,config={"displayModeBar":False})
+                st.markdown('</div>', unsafe_allow_html=True)
 
-    # Filtros e tabela
-    st.markdown("**📋 Registro de Transferências**")
-    col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
-    with col_f1:
-        busca = st.text_input("🔍 Buscar...", key="dash_busca", label_visibility="collapsed")
-    with col_f2:
-        datas = ["Todas as datas"] + (sorted(df["dt_transferencia"].unique().tolist(), reverse=True) if not df.empty else [])
-        filtro_data = st.selectbox("Data", datas, label_visibility="collapsed")
-    with col_f3:
-        filtro_st = st.selectbox("Status", ["Todos", "pendente", "roteirizado"], label_visibility="collapsed")
+            with r2b:
+                st.markdown('<div class="cc"><div class="cc-title">👤 Valor por Supervisor</div>', unsafe_allow_html=True)
+                sup = df.groupby("nomesup")["vltotal"].sum().sort_values(ascending=False).reset_index()
+                if not sup.empty:
+                    COLS_P = ["#8b5cf6","#a78bfa","#c4b5fd","#7c3aed","#6d28d9","#5b21b6"]
+                    fig4 = go.Figure(go.Pie(
+                        labels=sup["nomesup"],values=sup["vltotal"],hole=0.45,
+                        marker=dict(colors=COLS_P[:len(sup)],line=dict(color="#0e1117",width=2)),
+                        hovertemplate="<b>%{label}</b><br>R$ %{value:,.2f}<extra></extra>"))
+                    fig4.update_layout(**T,height=260,
+                        legend=dict(orientation="h",yanchor="bottom",y=-0.25,xanchor="center",x=0.5))
+                    st.plotly_chart(fig4,use_container_width=True,config={"displayModeBar":False})
+                st.markdown('</div>', unsafe_allow_html=True)
 
-    df_show = df.copy() if not df.empty else pd.DataFrame(columns=TRANSF_COLS)
-    if not df_show.empty:
-        if filtro_data != "Todas as datas":
-            df_show = df_show[df_show["dt_transferencia"] == filtro_data]
-        if filtro_st != "Todos":
-            df_show = df_show[df_show["status"] == filtro_st]
+            # Row 3
+            r3a, r3b = st.columns([2,1])
+            with r3a:
+                st.markdown('<div class="cc"><div class="cc-title">📍 Top Destinos por Valor</div>', unsafe_allow_html=True)
+                dest = df.groupby("destino")["vltotal"].sum().sort_values(ascending=True).tail(10).reset_index()
+                if not dest.empty:
+                    fig5 = go.Figure(go.Bar(
+                        x=dest["vltotal"],y=dest["destino"],orientation="h",
+                        marker=dict(color=dest["vltotal"],colorscale=[[0,"#064e3b"],[0.5,"#10b981"],[1,"#a7f3d0"]],showscale=False),
+                        hovertemplate="<b>%{y}</b><br>R$ %{x:,.2f}<extra></extra>"))
+                    fig5.update_layout(**T,height=260,xaxis=dict(gridcolor=GC,tickformat=",.0f"),yaxis=dict(gridcolor="rgba(0,0,0,0)"))
+                    st.plotly_chart(fig5,use_container_width=True,config={"displayModeBar":False})
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            with r3b:
+                st.markdown('<div class="cc"><div class="cc-title">🏙️ Por Praça</div>', unsafe_allow_html=True)
+                praca = df.groupby("praca")["vltotal"].sum().sort_values(ascending=False).head(8).reset_index()
+                if not praca.empty:
+                    COLS_O = ["#f97316","#fb923c","#fdba74","#fed7aa","#ea580c","#c2410c","#9a3412","#7c2d12"]
+                    fig6 = go.Figure(go.Pie(
+                        labels=praca["praca"],values=praca["vltotal"],hole=0.45,
+                        marker=dict(colors=COLS_O[:len(praca)],line=dict(color="#0e1117",width=2)),
+                        hovertemplate="<b>%{label}</b><br>R$ %{value:,.2f}<extra></extra>"))
+                    fig6.update_layout(**T,height=260,
+                        legend=dict(orientation="h",yanchor="bottom",y=-0.3,xanchor="center",x=0.5))
+                    st.plotly_chart(fig6,use_container_width=True,config={"displayModeBar":False})
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            # Row 4 — peso por data
+            if ver_todas:
+                st.markdown('<div class="cc"><div class="cc-title">⚖️ Peso Total por Data (kg)</div>', unsafe_allow_html=True)
+                pp = df.groupby("dt_transferencia").agg(peso=("pesobrutotot","sum"),qtd=("id","count")).reset_index().sort_values("dt_transferencia").tail(30)
+                pp["dt_f"] = pp["dt_transferencia"].apply(fmt_date)
+                fig7 = go.Figure()
+                fig7.add_trace(go.Bar(x=pp["dt_f"],y=pp["qtd"],name="Qtd Notas",yaxis="y2",
+                    marker=dict(color="rgba(59,130,246,0.3)"),hovertemplate="<b>%{x}</b><br>%{y} notas<extra></extra>"))
+                fig7.add_trace(go.Scatter(x=pp["dt_f"],y=pp["peso"],name="Peso kg",
+                    line=dict(color="#10b981",width=2.5),fill="tozeroy",fillcolor="rgba(16,185,129,0.08)",
+                    hovertemplate="<b>%{x}</b><br>%{y:,.0f} kg<extra></extra>"))
+                fig7.update_layout(**T,height=220,
+                    xaxis=dict(gridcolor=GC),
+                    yaxis=dict(gridcolor=GC,title="Peso (kg)"),
+                    yaxis2=dict(overlaying="y",side="right",showgrid=False,title="Qtd"),
+                    legend=dict(orientation="h",yanchor="bottom",y=1,xanchor="right",x=1))
+                st.plotly_chart(fig7,use_container_width=True,config={"displayModeBar":False})
+                st.markdown('</div>', unsafe_allow_html=True)
+
+        except ImportError:
+            st.info("Adicione `plotly` ao requirements.txt para ativar os gráficos.")
+
+    # TABELA
+    st.markdown('<div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-txt">📋 Registro de Transferências</div><div class="sdiv-line"></div></div>', unsafe_allow_html=True)
+
+    cf1,cf2 = st.columns([3,1])
+    with cf1: busca = st.text_input("🔍 Buscar...", key="db", label_visibility="collapsed", placeholder="Nota, cliente, destino, placa...")
+    with cf2: fst = st.selectbox("Status",["Todos","pendente","roteirizado"],key="dst",label_visibility="collapsed")
+
+    df_s = df.copy()
+    if not df_s.empty:
+        if fst!="Todos": df_s=df_s[df_s["status"]==fst]
         if busca:
-            mask = df_show.apply(lambda r: busca.lower() in " ".join(str(v) for v in r).lower(), axis=1)
-            df_show = df_show[mask]
+            m = df_s.apply(lambda r: busca.lower() in " ".join(str(v) for v in r).lower(), axis=1)
+            df_s = df_s[m]
 
-    # Botão exportar
-    if not df_show.empty:
-        out = io.BytesIO()
-        with pd.ExcelWriter(out, engine="openpyxl") as w:
-            df_show.to_excel(w, index=False, sheet_name="Transferencias")
+    if not df_s.empty:
+        out=io.BytesIO()
+        with pd.ExcelWriter(out,engine="openpyxl") as w: df_s.to_excel(w,index=False)
         out.seek(0)
-        st.download_button(
-            "⬇️ Exportar Excel",
-            out,
-            file_name=f"transferencias_{date.today().isoformat()}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
+        st.download_button("⬇️ Exportar Excel",out,file_name=f"transf_{data_str}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    cols_show = ["dt_transferencia", "numnota", "numped", "nomecliente",
-                 "nomesup", "praca", "destino", "pesobrutotot", "vltotal", "placa", "status"]
-    cols_show = [c for c in cols_show if c in df_show.columns]
-    st.dataframe(
-        df_show[cols_show].sort_values("dt_transferencia", ascending=False) if not df_show.empty else df_show,
+    df_d = fmt_col(df_s)
+    if "dt_roteirizacao" in df_d.columns: df_d=fmt_col(df_d,"dt_roteirizacao")
+
+    SHOW_COLS = [c for c in ["dt_transferencia","numnota","numped","nomecliente","nomesup",
+                              "praca","destino","pesobrutotot","vltotal","placa_veiculo","placa_road","status"] if c in df_d.columns]
+
+    st.markdown(f"""<div class="tbl-wrap">
+      <div class="tbl-hd"><span class="tbl-title">Transferências</span><span class="tbl-badge">{len(df_s)} reg.</span></div>
+    </div>""", unsafe_allow_html=True)
+
+    st.dataframe(df_d[SHOW_COLS].sort_values("dt_transferencia",ascending=False) if not df_d.empty else df_d,
         use_container_width=True, hide_index=True,
-    )
-    st.caption(f"{len(df_show)} registro(s)")
+        column_config={
+            "dt_transferencia": st.column_config.TextColumn("📅 Data",width=95),
+            "numnota":          st.column_config.TextColumn("🧾 Nota",width=90),
+            "numped":           st.column_config.TextColumn("📋 Pedido",width=90),
+            "nomecliente":      st.column_config.TextColumn("👤 Cliente",width=200),
+            "nomesup":          st.column_config.TextColumn("👔 Supervisor",width=130),
+            "praca":            st.column_config.TextColumn("🏙️ Praça",width=90),
+            "destino":          st.column_config.TextColumn("📍 Destino",width=130),
+            "pesobrutotot":     st.column_config.NumberColumn("⚖️ Peso kg",format="%.3f",width=95),
+            "vltotal":          st.column_config.NumberColumn("💰 Valor R$",format="R$ %.2f",width=120),
+            "placa_veiculo":    st.column_config.TextColumn("🚗 Placa Veíc.",width=110),
+            "placa_road":       st.column_config.TextColumn("📋 Placa ROAD",width=110),
+            "status":           st.column_config.TextColumn("📌 Status",width=100),
+        })
 
-    # Excluir
     if not df.empty:
-        st.markdown("---")
-        st.markdown("**🗑️ Excluir Transferência**")
+        st.markdown('<div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-txt">🗑️ Excluir</div><div class="sdiv-line"></div></div>', unsafe_allow_html=True)
         ids = df["id"].astype(str).tolist()
-        del_id = st.selectbox("ID para excluir", ["—"] + ids, label_visibility="collapsed")
-        if del_id != "—":
-            row_info = df[df["id"].astype(str) == del_id].iloc[0]
-            st.warning(f"Nota: **{row_info['numnota']}** — {row_info['nomecliente']} — {br(row_info['vltotal'])}")
-            if st.button("🗑️ Confirmar Exclusão", type="secondary"):
-                delete_transferencia(int(del_id))
-                st.success("✅ Excluído com sucesso!")
-                st.rerun()
+        cd1,cd2 = st.columns([3,1])
+        with cd1: del_id = st.selectbox("ID",["—"]+ids,label_visibility="collapsed")
+        with cd2:
+            if del_id!="—" and st.button("🗑️ Excluir",type="secondary"):
+                delete_transf(int(del_id)); st.success("✅ Excluído!"); st.rerun()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PÁGINA: NOVA TRANSFERÊNCIA
+# NOVA TRANSFERÊNCIA
 # ══════════════════════════════════════════════════════════════════════════════
-elif pagina == "➕ Nova Transferência":
-    st.markdown("""
-    <div class="page-header">
-      <div class="page-tag tag-fat">🧾 Faturamento</div>
-      <div class="page-h1">Nova Transferência</div>
-      <div class="page-sub">Registre a transferência de nota para a Roteirização</div>
+elif pagina == "➕  Nova Transferência":
+    st.markdown(f"""
+    <div class="hero hero-fat">
+      <div class="hero-bg"><div class="hero-bg-text">🧾</div></div>
+      <div class="hero-content">
+        <div class="hero-tag tag-fat">🧾 Faturamento</div>
+        <div class="hero-h1">Nova Transferência</div>
+        <div class="hero-sub">Registre a nota — data: <strong style="color:#fb923c">{fmt_date(data_str)}</strong></div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
-    col_form, col_side = st.columns([1.2, 0.8])
+    col_f, col_s = st.columns([1.3,0.7])
 
-    with col_form:
-        st.markdown("**📅 Data da Transferência**")
-        dt_transf = st.date_input("Data", value=date.today(), label_visibility="collapsed")
+    with col_f:
+        st.markdown('<div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-txt">📅 Data & Nota</div><div class="sdiv-line"></div></div>', unsafe_allow_html=True)
+        cd,cn,cb = st.columns([1,2,1])
+        with cd: dt_t = st.date_input("Data",value=data_filtro,label_visibility="visible")
+        with cn: nota_inp = st.text_input("Número da Nota",placeholder="Ex: 398234",key="nn")
+        with cb:
+            st.markdown("<br>",unsafe_allow_html=True)
+            buscar_btn = st.button("🔍 Buscar",use_container_width=True)
 
-        st.markdown("**🔍 Número da Nota (NUMNOTA)**")
-        col_nota, col_btn = st.columns([3, 1])
-        with col_nota:
-            nota_input = st.text_input("Nota", placeholder="Ex: 398234", label_visibility="collapsed",
-                                       key="nova_nota")
-        with col_btn:
-            buscar_btn = st.button("🔍 Buscar", use_container_width=True)
+        if "cur" not in st.session_state: st.session_state.cur = None
 
-        if "nota_encontrada" not in st.session_state:
-            st.session_state.nota_encontrada = None
-        if "ultima_nota_buscada" not in st.session_state:
-            st.session_state.ultima_nota_buscada = ""
-
-        if buscar_btn and nota_input.strip():
-            with st.spinner("Buscando na base ROAD..."):
-                resultado = buscar_nota(nota_input.strip())
-            if resultado:
-                st.session_state.nota_encontrada = resultado
-                st.session_state.ultima_nota_buscada = nota_input.strip()
-                st.markdown('<div class="alert-success">✅ Nota encontrada! Dados preenchidos automaticamente.</div>',
-                            unsafe_allow_html=True)
+        if buscar_btn and nota_inp.strip():
+            with st.spinner("Consultando ROAD..."):
+                r = buscar_nota(nota_inp.strip())
+            if r:
+                st.session_state.cur = r
+                st.markdown('<div class="al-s">✅ Nota encontrada! Dados preenchidos automaticamente.</div>',unsafe_allow_html=True)
             else:
-                st.session_state.nota_encontrada = None
-                st.markdown(f'<div class="alert-error">❌ Nota "{nota_input.strip()}" não encontrada na base ROAD.</div>',
-                            unsafe_allow_html=True)
+                st.session_state.cur = None
+                st.markdown(f'<div class="al-e">❌ Nota "{nota_inp.strip()}" não encontrada na base ROAD.</div>',unsafe_allow_html=True)
 
-        cur = st.session_state.nota_encontrada
-
+        cur = st.session_state.cur
         if cur:
-            st.markdown(f"""
-            <div class="road-box">
-              <div class="road-box-tit">✅ DADOS ENCONTRADOS NA BASE ROAD</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            c1, c2 = st.columns(2)
-            with c1:
-                st.text_input("Pedido", value=cur["numped"] or "—", disabled=True)
-                st.text_input("Cliente", value=cur["nomecliente"], disabled=True)
-                st.text_input("Carregamento", value=cur["numcarregamento"], disabled=True)
-                st.text_input("Peso Bruto (kg)", value=f"{cur['pesobrutotot']:.3f}".replace(".", ","), disabled=True)
-            with c2:
-                st.text_input("Nota Fiscal", value=cur["numnota"], disabled=True)
-                st.text_input("Supervisor", value=cur["nomesup"], disabled=True)
-                st.text_input("Praça", value=cur["praca"] or "—", disabled=True)
-                st.text_input("Destino", value=cur["destino"], disabled=True)
-
-            st.text_input("Valor Total", value=br(cur["vltotal"]), disabled=True)
-
-            obs = st.text_area("💬 Observação (opcional)", placeholder="Alguma observação adicional...",
-                               key="nova_obs")
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            confirmar = st.button("🚛 Confirmar Transferência", type="primary", use_container_width=True)
-
-            if confirmar:
-                dt_str = dt_transf.isoformat()
-                if check_duplicate(cur["numnota"], dt_str):
-                    st.markdown(f'<div class="alert-error">❌ Nota {cur["numnota"]} já registrada nesta data.</div>',
-                                unsafe_allow_html=True)
+            st.markdown('<div class="road-box"><div class="road-tit">✅ Dados da Base ROAD</div></div>',unsafe_allow_html=True)
+            a,b,c_ = st.columns(3)
+            with a: st.text_input("📋 Pedido",value=cur["numped"] or "—",disabled=True)
+            with b: st.text_input("🧾 Nota Fiscal",value=cur["numnota"],disabled=True)
+            with c_: st.text_input("📦 Carregamento",value=cur["numcarregamento"],disabled=True)
+            a2,b2,c2 = st.columns(3)
+            with a2: st.text_input("👤 Cliente",value=cur["nomecliente"],disabled=True)
+            with b2: st.text_input("👔 Supervisor",value=cur["nomesup"],disabled=True)
+            with c2: st.text_input("🏙️ Praça",value=cur["praca"] or "—",disabled=True)
+            a3,b3,c3 = st.columns(3)
+            with a3: st.text_input("📍 Destino",value=cur["destino"],disabled=True)
+            with b3: st.text_input("⚖️ Peso (kg)",value=f"{cur['pesobrutotot']:.3f}".replace(".",","),disabled=True)
+            with c3: st.text_input("💰 Valor Total",value=br(cur["vltotal"]),disabled=True)
+            if cur.get("placa_road"):
+                st.markdown(f'<div class="al-w">🚗 Placa ROAD registrada: <strong>{cur["placa_road"]}</strong></div>',unsafe_allow_html=True)
+            obs = st.text_area("💬 Observação (opcional)",placeholder="Observação adicional...",key="obs")
+            st.markdown("<br>",unsafe_allow_html=True)
+            if st.button("🚛 Confirmar Transferência",type="primary",use_container_width=True):
+                dt_s = dt_t.isoformat()
+                if check_dup(cur["numnota"],dt_s):
+                    st.markdown(f'<div class="al-e">❌ Nota {cur["numnota"]} já registrada em {fmt_date(dt_s)}.</div>',unsafe_allow_html=True)
                 else:
                     with st.spinner("Salvando..."):
-                        append_transferencia({
-                            "dt_transferencia":  dt_str,
-                            "numped":            cur["numped"],
-                            "numnota":           cur["numnota"],
-                            "nomecliente":       cur["nomecliente"],
-                            "nomesup":           cur["nomesup"],
-                            "praca":             cur["praca"],
-                            "pesobrutotot":      cur["pesobrutotot"],
-                            "numcarregamento":   cur["numcarregamento"],
-                            "vltotal":           cur["vltotal"],
-                            "destino":           cur["destino"],
-                            "obs":               obs,
+                        append_transf({
+                            "dt_transferencia":dt_s,"numped":cur["numped"],"numnota":cur["numnota"],
+                            "nomecliente":cur["nomecliente"],"nomesup":cur["nomesup"],"praca":cur["praca"],
+                            "pesobrutotot":cur["pesobrutotot"],"numcarregamento":cur["numcarregamento"],
+                            "vltotal":cur["vltotal"],"destino":cur["destino"],
+                            "placa_road":cur.get("placa_road",""),"obs":obs,
                         })
-                    st.success("✅ Transferência registrada! Nota fica pendente até a Roteirização informar a placa.")
-                    st.session_state.nota_encontrada = None
-                    st.balloons()
-                    st.rerun()
+                    st.success(f"✅ Transferência registrada! Nota **{cur['numnota']}** pendente.")
+                    st.session_state.cur = None; st.balloons(); st.rerun()
 
-    with col_side:
-        st.markdown("**📅 Transferidas Hoje**")
-        df_all = load_transferencias()
-        hoje = date.today().isoformat()
-        df_hoje = df_all[df_all["dt_transferencia"] == hoje] if not df_all.empty else pd.DataFrame()
-
-        if df_hoje.empty:
-            st.markdown('<div class="alert-info">📭 Nenhuma transferência hoje ainda.</div>', unsafe_allow_html=True)
+    with col_s:
+        st.markdown('<div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-txt">📅 Notas do Dia</div><div class="sdiv-line"></div></div>', unsafe_allow_html=True)
+        dt_show = (st.session_state.get("cur") and data_str) or data_str
+        df_hj = df_all[df_all["dt_transferencia"]==data_str] if not df_all.empty else pd.DataFrame()
+        if df_hj.empty:
+            st.markdown('<div class="al-i">📭 Nenhuma nota nesta data.</div>',unsafe_allow_html=True)
         else:
-            for _, row in df_hoje.iterrows():
-                st_icon = "✅" if row.get("status") == "roteirizado" else "⏳"
-                placa_info = f" · 🚗 {row['placa']}" if row.get("placa") else " · Pendente"
-                st.markdown(f"""
-                <div style="padding:.5rem 0;border-bottom:1px solid #2a2f3a;font-size:.83rem">
-                  <span style="font-family:JetBrains Mono,monospace;font-weight:700">{row['numnota']}</span>
-                  <span style="color:#a0aab8;margin-left:.5rem">{str(row['nomecliente'])[:25]}</span><br>
-                  <span style="color:#ff8f5e;font-weight:700">{br(row['vltotal'])}</span>
-                  <span style="color:#6b7585">{st_icon}{placa_info}</span>
+            tv = df_hj["vltotal"].sum()
+            st.markdown(f'<div style="display:flex;justify-content:space-between;padding:.4rem 0;margin-bottom:.5rem;border-bottom:1px solid #1e2535"><span style="color:#94a3b8;font-size:.78rem">{len(df_hj)} notas</span><span style="color:#fb923c;font-weight:700;font-size:.85rem">{br(tv)}</span></div>', unsafe_allow_html=True)
+            for _,row in df_hj.iterrows():
+                pl = row.get("placa_veiculo","")
+                pl_h = f'<span class="placa-chip">🚗 {pl}</span>' if pl else '<span style="color:#ef4444;font-size:.72rem">⏳ Pendente</span>'
+                st.markdown(f"""<div class="nota-card">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                    <div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#f1f5f9;font-size:.88rem">{row['numnota']}</div>
+                      <div style="color:#94a3b8;font-size:.76rem;margin-top:2px">{str(row.get('nomecliente',''))[:28]}</div>
+                    </div>
+                    <div style="text-align:right">
+                      <div style="color:#fb923c;font-weight:700;font-size:.82rem">{br(row['vltotal'])}</div>
+                      {pl_h}
+                    </div>
+                  </div>
                 </div>""", unsafe_allow_html=True)
-            st.markdown(
-                f"**Total hoje:** {len(df_hoje)} notas · {br(df_hoje['vltotal'].sum())}",
-                unsafe_allow_html=False
-            )
-
-        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
-        <div style="background:#1a1d24;border:1px solid #2a2f3a;border-radius:12px;padding:1rem;font-size:.83rem;color:#a0aab8">
-          <strong style="color:#e8ecf3;display:block;margin-bottom:.5rem">💡 Como usar</strong>
-          1. Selecione a <strong style="color:#e8ecf3">data</strong><br>
-          2. Digite o <strong style="color:#e8ecf3">número da nota</strong> e clique <strong style="color:#ff6b2b">Buscar</strong><br>
-          3. Dados preenchidos <strong style="color:#ff6b2b">automaticamente</strong><br>
-          4. Clique em <strong style="color:#e8ecf3">Confirmar Transferência</strong><br><br>
-          <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:.6rem;color:#4ade80">
-            🗺️ Após registrar, a nota ficará <strong>pendente</strong> até a Roteirização informar a placa.
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
+        <div style="background:var(--sur2);border:1px solid var(--bdr);border-radius:12px;padding:1rem;margin-top:1rem">
+          <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#475569;margin-bottom:.6rem;font-family:'JetBrains Mono',monospace">💡 Como usar</div>
+          <ol style="font-size:.81rem;color:#94a3b8;padding-left:1.1rem;line-height:2.3">
+            <li>Selecione a <strong style="color:#f1f5f9">data</strong></li>
+            <li>Digite o <strong style="color:#f1f5f9">número da nota</strong></li>
+            <li>Clique <strong style="color:#f97316">Buscar</strong></li>
+            <li>Dados preenchidos <strong style="color:#f97316">automaticamente</strong></li>
+            <li>Clique <strong style="color:#f1f5f9">Confirmar Transferência</strong></li>
+          </ol>
+        </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PÁGINA: HISTÓRICO
+# HISTÓRICO
 # ══════════════════════════════════════════════════════════════════════════════
-elif pagina == "📋 Histórico":
-    st.markdown("""
-    <div class="page-header">
-      <div class="page-tag tag-fat">🧾 Faturamento</div>
-      <div class="page-h1">Histórico de Transferências</div>
-      <div class="page-sub">Todas as notas registradas</div>
+elif pagina == "📋  Histórico":
+    st.markdown(f"""
+    <div class="hero hero-fat">
+      <div class="hero-bg"><div class="hero-bg-text">📋</div></div>
+      <div class="hero-content">
+        <div class="hero-tag tag-fat">🧾 Faturamento</div>
+        <div class="hero-h1">Histórico</div>
+        <div class="hero-sub">Período: <strong style="color:#fb923c">{periodo_txt}</strong> — {len(df)} registro(s)</div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
-    df = load_transferencias()
+    cf1,cf2,cf3 = st.columns([3,1,1])
+    with cf1: busca = st.text_input("🔍 Buscar...",key="hb",label_visibility="collapsed",placeholder="Nota, cliente, placa...")
+    with cf2: fst = st.selectbox("Status",["Todos","pendente","roteirizado"],key="hst",label_visibility="collapsed")
+    with cf3:
+        sups = ["Todos"]+(sorted(df["nomesup"].dropna().unique().tolist()) if not df.empty else [])
+        fsup = st.selectbox("Supervisor",sups,key="hsup",label_visibility="collapsed")
 
-    col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
-    with col_f1:
-        busca = st.text_input("🔍 Buscar...", key="hist_busca", label_visibility="collapsed")
-    with col_f2:
-        datas = ["Todas as datas"] + (sorted(df["dt_transferencia"].unique().tolist(), reverse=True) if not df.empty else [])
-        filtro_data = st.selectbox("Data", datas, key="hist_data", label_visibility="collapsed")
-    with col_f3:
-        filtro_st = st.selectbox("Status", ["Todos", "pendente", "roteirizado"], key="hist_st", label_visibility="collapsed")
-
-    df_show = df.copy() if not df.empty else pd.DataFrame(columns=TRANSF_COLS)
-    if not df_show.empty:
-        if filtro_data != "Todas as datas":
-            df_show = df_show[df_show["dt_transferencia"] == filtro_data]
-        if filtro_st != "Todos":
-            df_show = df_show[df_show["status"] == filtro_st]
+    df_s = df.copy()
+    if not df_s.empty:
+        if fst!="Todos": df_s=df_s[df_s["status"]==fst]
+        if fsup!="Todos": df_s=df_s[df_s["nomesup"]==fsup]
         if busca:
-            mask = df_show.apply(lambda r: busca.lower() in " ".join(str(v) for v in r).lower(), axis=1)
-            df_show = df_show[mask]
+            m=df_s.apply(lambda r: busca.lower() in " ".join(str(v) for v in r).lower(),axis=1)
+            df_s=df_s[m]
 
-    if not df_show.empty:
-        out = io.BytesIO()
-        with pd.ExcelWriter(out, engine="openpyxl") as w:
-            df_show.to_excel(w, index=False, sheet_name="Transferencias")
+    if not df_s.empty:
+        out=io.BytesIO()
+        with pd.ExcelWriter(out,engine="openpyxl") as w: df_s.to_excel(w,index=False)
         out.seek(0)
-        st.download_button("⬇️ Exportar Excel", out,
-                           file_name=f"transferencias_{date.today().isoformat()}.xlsx",
-                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.download_button("⬇️ Exportar Excel",out,file_name=f"historico_{data_str}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-    st.dataframe(
-        df_show.sort_values("dt_transferencia", ascending=False) if not df_show.empty else df_show,
-        use_container_width=True, hide_index=True,
-    )
-    st.caption(f"{len(df_show)} registro(s)")
+    df_d = fmt_col(df_s)
+    if "dt_roteirizacao" in df_d.columns: df_d=fmt_col(df_d,"dt_roteirizacao")
+    HCOLS = [c for c in ["dt_transferencia","numnota","numped","nomecliente","nomesup","praca",
+                          "destino","pesobrutotot","vltotal","placa_veiculo","placa_road",
+                          "status","obs","dt_roteirizacao"] if c in df_d.columns]
+    st.markdown(f"""<div class="tbl-wrap">
+      <div class="tbl-hd"><span class="tbl-title">📋 Todas as Transferências</span><span class="tbl-badge">{len(df_s)} reg.</span></div>
+    </div>""", unsafe_allow_html=True)
+    st.dataframe(df_d[HCOLS].sort_values("dt_transferencia",ascending=False) if not df_d.empty else df_d,
+        use_container_width=True,hide_index=True,
+        column_config={
+            "dt_transferencia": st.column_config.TextColumn("📅 Data",width=95),
+            "numnota":          st.column_config.TextColumn("🧾 Nota",width=90),
+            "numped":           st.column_config.TextColumn("📋 Pedido",width=90),
+            "nomecliente":      st.column_config.TextColumn("👤 Cliente",width=190),
+            "nomesup":          st.column_config.TextColumn("👔 Supervisor",width=120),
+            "praca":            st.column_config.TextColumn("🏙️ Praça",width=90),
+            "destino":          st.column_config.TextColumn("📍 Destino",width=130),
+            "pesobrutotot":     st.column_config.NumberColumn("⚖️ Peso kg",format="%.3f",width=95),
+            "vltotal":          st.column_config.NumberColumn("💰 Valor R$",format="R$ %.2f",width=120),
+            "placa_veiculo":    st.column_config.TextColumn("🚗 Placa Veíc.",width=110),
+            "placa_road":       st.column_config.TextColumn("📋 Placa ROAD",width=110),
+            "status":           st.column_config.TextColumn("📌 Status",width=100),
+            "obs":              st.column_config.TextColumn("💬 Obs",width=150),
+            "dt_roteirizacao":  st.column_config.TextColumn("🗺️ Dt. Roteiriz.",width=110),
+        })
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PÁGINA: ROTEIRIZAÇÃO
+# ROTEIRIZAÇÃO
 # ══════════════════════════════════════════════════════════════════════════════
-elif pagina == "🗺️ Roteirização":
-    st.markdown("""
-    <div class="page-header">
-      <div class="page-tag tag-rot">🗺️ Roteirização</div>
-      <div class="page-h1">Roteirizar Notas</div>
-      <div class="page-sub">Informe a placa do veículo para cada nota transferida</div>
+elif pagina == "🗺️  Roteirização":
+    st.markdown(f"""
+    <div class="hero hero-rot">
+      <div class="hero-bg"><div class="hero-bg-text">🗺️</div></div>
+      <div class="hero-content">
+        <div class="hero-tag tag-rot">🗺️ Roteirização</div>
+        <div class="hero-h1">Roteirizar Notas</div>
+        <div class="hero-sub">Período: <strong style="color:#34d399">{periodo_txt}</strong></div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
-    df = load_transferencias()
+    pend = df[df["status"]=="pendente"] if not df.empty else pd.DataFrame()
+    rote = df[df["status"]=="roteirizado"] if not df.empty else pd.DataFrame()
 
-    pendentes  = df[df["status"] == "pendente"] if not df.empty else pd.DataFrame()
-    roteiriz   = df[df["status"] == "roteirizado"] if not df.empty else pd.DataFrame()
+    c1,c2,c3,c4 = st.columns(4)
+    for col,icon,lbl,val,sub,clr in [
+        (c1,"⏳","Pendentes",len(pend),br(pend["vltotal"].sum()) if not pend.empty else "R$ 0,00","#ef4444"),
+        (c2,"✅","Roteirizadas",len(rote),br(rote["vltotal"].sum()) if not rote.empty else "R$ 0,00","#10b981"),
+        (c3,"⚖️","Peso Pend.",f"{pend['pesobrutotot'].sum():.0f} kg" if not pend.empty else "0 kg","peso","#f59e0b"),
+        (c4,"⚖️","Peso Rot.",f"{rote['pesobrutotot'].sum():.0f} kg" if not rote.empty else "0 kg","peso","#8b5cf6"),
+    ]:
+        with col:
+            st.markdown(f"""<div class="kpi">
+              <div class="kpi-glow" style="background:{clr}"></div>
+              <div class="kpi-icon">{icon}</div>
+              <div class="kpi-lbl">{lbl}</div>
+              <div class="kpi-val" style="color:{clr}">{val}</div>
+              <div class="kpi-sub">{sub}</div>
+              <div class="kpi-bar" style="background:linear-gradient(90deg,{clr}88,{clr}22)"></div>
+            </div>""", unsafe_allow_html=True)
 
-    # KPIs rápidos
-    c1, c2 = st.columns(2)
-    with c1:
-        n = len(pendentes)
-        v = pendentes["vltotal"].sum() if not pendentes.empty else 0
-        st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-bar" style="background:linear-gradient(90deg,#ef4444,#f87171)"></div>
-          <div class="metric-lbl">⏳ Pendentes</div>
-          <div class="metric-val" style="color:#ef4444">{n}</div>
-          <div class="metric-sub">{br(v)}</div>
-        </div>""", unsafe_allow_html=True)
-    with c2:
-        n2 = len(roteiriz)
-        v2 = roteiriz["vltotal"].sum() if not roteiriz.empty else 0
-        st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-bar" style="background:linear-gradient(90deg,#22c55e,#4ade80)"></div>
-          <div class="metric-lbl">✅ Roteirizadas</div>
-          <div class="metric-val" style="color:#22c55e">{n2}</div>
-          <div class="metric-sub">{br(v2)}</div>
-        </div>""", unsafe_allow_html=True)
+    st.markdown("<br>",unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    # PENDENTES
+    st.markdown(f"""<div class="tbl-wrap" style="border-color:rgba(239,68,68,.25)">
+      <div class="tbl-hd" style="border-bottom-color:rgba(239,68,68,.2)">
+        <span class="tbl-title" style="color:#fca5a5">⏳ Pendentes</span>
+        <span class="tbl-badge">{len(pend)}</span>
+      </div>
+    </div>""", unsafe_allow_html=True)
 
-    # ── PENDENTES ──
-    st.markdown("### ⏳ Notas Pendentes de Roteirização")
-    if pendentes.empty:
-        st.markdown('<div class="alert-success">✅ Nenhuma nota pendente! Tudo roteirizado.</div>', unsafe_allow_html=True)
+    if pend.empty:
+        st.markdown('<div class="al-s">✅ Nenhuma nota pendente!</div>',unsafe_allow_html=True)
     else:
-        col_bp1, col_bp2 = st.columns([2, 1])
-        with col_bp1:
-            busca_p = st.text_input("🔍 Buscar pendentes...", key="rot_busca_p", label_visibility="collapsed")
-        with col_bp2:
-            datas_p = ["Todas as datas"] + sorted(pendentes["dt_transferencia"].unique().tolist(), reverse=True)
-            fd_p = st.selectbox("Data", datas_p, key="rot_data_p", label_visibility="collapsed")
-
-        df_p = pendentes.copy()
-        if fd_p != "Todas as datas":
-            df_p = df_p[df_p["dt_transferencia"] == fd_p]
-        if busca_p:
-            mask = df_p.apply(lambda r: busca_p.lower() in " ".join(str(v) for v in r).lower(), axis=1)
-            df_p = df_p[mask]
-
-        cols_p = ["id", "dt_transferencia", "numnota", "numped", "nomecliente",
-                  "nomesup", "praca", "destino", "pesobrutotot", "vltotal"]
-        cols_p = [c for c in cols_p if c in df_p.columns]
-        st.dataframe(df_p[cols_p], use_container_width=True, hide_index=True)
+        pb1,pb2 = st.columns([3,1])
+        with pb1: bp = st.text_input("🔍 Buscar pendentes...",key="rbp",label_visibility="collapsed")
+        with pb2:
+            dp_opts = ["Todas"]+sorted(pend["dt_transferencia"].unique().tolist(),reverse=True)
+            fdp = st.selectbox("Data",dp_opts,key="rdp",label_visibility="collapsed")
+        df_p = pend.copy()
+        if fdp!="Todas": df_p=df_p[df_p["dt_transferencia"]==fdp]
+        if bp:
+            m=df_p.apply(lambda r: bp.lower() in " ".join(str(v) for v in r).lower(),axis=1)
+            df_p=df_p[m]
+        PCOLS=[c for c in ["id","dt_transferencia","numnota","numped","nomecliente","nomesup","praca","destino","pesobrutotot","vltotal","placa_road"] if c in df_p.columns]
+        df_pd=fmt_col(df_p)
+        st.dataframe(df_pd[PCOLS].sort_values("dt_transferencia",ascending=False),
+            use_container_width=True,hide_index=True,
+            column_config={
+                "id":               st.column_config.NumberColumn("ID",width=55),
+                "dt_transferencia": st.column_config.TextColumn("📅 Data",width=95),
+                "numnota":          st.column_config.TextColumn("🧾 Nota",width=90),
+                "numped":           st.column_config.TextColumn("📋 Pedido",width=90),
+                "nomecliente":      st.column_config.TextColumn("👤 Cliente",width=190),
+                "nomesup":          st.column_config.TextColumn("👔 Supervisor",width=120),
+                "praca":            st.column_config.TextColumn("🏙️ Praça",width=90),
+                "destino":          st.column_config.TextColumn("📍 Destino",width=130),
+                "pesobrutotot":     st.column_config.NumberColumn("⚖️ Peso kg",format="%.3f",width=95),
+                "vltotal":          st.column_config.NumberColumn("💰 Valor R$",format="R$ %.2f",width=120),
+                "placa_road":       st.column_config.TextColumn("📋 Placa ROAD",width=110),
+            })
         st.caption(f"{len(df_p)} pendente(s)")
 
-        # Formulário para informar placa
-        st.markdown("---")
-        st.markdown("**🚗 Informar Placa**")
-
-        ids_p = df_p["id"].astype(str).tolist() if not df_p.empty else []
+        st.markdown('<div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-txt">🚗 Informar Placa</div><div class="sdiv-line"></div></div>',unsafe_allow_html=True)
+        ids_p = df_p["id"].astype(str).tolist()
         if ids_p:
-            col_sel, col_placa, col_ok = st.columns([1, 2, 1])
-            with col_sel:
-                sel_id = st.selectbox("Nota (ID)", ids_p, label_visibility="collapsed")
-            with col_placa:
-                nova_placa = st.text_input("Placa", placeholder="Ex: ABC-1234",
-                                           key="rot_placa_input", label_visibility="collapsed").upper()
-            with col_ok:
-                confirmar_placa = st.button("✅ Confirmar", use_container_width=True)
-
-            if sel_id:
-                row_sel = df_p[df_p["id"].astype(str) == sel_id]
-                if not row_sel.empty:
-                    r = row_sel.iloc[0]
-                    st.markdown(f"""
-                    <div style="background:#1a1d24;border:1px solid #2a2f3a;border-radius:10px;
-                                padding:.75rem 1rem;font-size:.83rem;color:#a0aab8;margin:.5rem 0">
-                      📋 <strong style="color:#e8ecf3">{r['numnota']}</strong> ·
-                      {r['nomecliente']} ·
-                      <span style="color:#ff8f5e">{br(r['vltotal'])}</span> ·
-                      Destino: {r.get('destino','—')}
-                    </div>""", unsafe_allow_html=True)
-
-            if confirmar_placa:
-                if not nova_placa.strip():
-                    st.error("⚠️ Informe a placa!")
+            cs,cp,cok = st.columns([1.5,2,1])
+            with cs: sel = st.selectbox("Nota (ID)",ids_p,label_visibility="visible")
+            with cp: nova_pl = st.text_input("Placa do Veículo",placeholder="Ex: ABC-1234",key="rpl").upper()
+            with cok:
+                st.markdown("<br>",unsafe_allow_html=True)
+                conf = st.button("✅ Confirmar",use_container_width=True)
+            if sel:
+                rs = df_p[df_p["id"].astype(str)==sel]
+                if not rs.empty:
+                    r=rs.iloc[0]
+                    pr=r.get("placa_road","")
+                    pr_h=f'&nbsp;·&nbsp;<span class="placa-chip">📋 ROAD: {pr}</span>' if pr else ""
+                    st.markdown(f"""<div style="background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:.7rem 1rem;font-size:.82rem;display:flex;align-items:center;gap:.75rem;margin:.4rem 0">
+                      <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#f1f5f9">{r['numnota']}</span>
+                      <span style="color:#94a3b8">{r.get('nomecliente','')}</span>
+                      <span style="color:#fb923c;font-weight:700">{br(r['vltotal'])}</span>
+                      <span style="color:#94a3b8">📍 {r.get('destino','—')}</span>{pr_h}
+                    </div>""",unsafe_allow_html=True)
+            if conf:
+                if not nova_pl.strip():
+                    st.markdown('<div class="al-e">⚠️ Informe a placa!</div>',unsafe_allow_html=True)
                 else:
                     with st.spinner("Salvando..."):
-                        update_transferencia(int(sel_id), {
-                            "placa":           nova_placa.strip(),
-                            "dt_roteirizacao": date.today().isoformat(),
-                            "status":          "roteirizado",
-                        })
-                    st.success(f"🚗 Placa **{nova_placa.strip()}** registrada!")
-                    st.rerun()
+                        update_transf(int(sel),{"placa_veiculo":nova_pl.strip(),"dt_roteirizacao":date.today().isoformat(),"status":"roteirizado"})
+                    st.success(f"🚗 Placa **{nova_pl.strip()}** registrada!"); st.rerun()
 
-    # ── ROTEIRIZADAS ──
-    st.markdown("---")
-    st.markdown("### ✅ Notas Roteirizadas")
-    if roteiriz.empty:
-        st.markdown('<div class="alert-info">📋 Nenhuma nota roteirizada ainda.</div>', unsafe_allow_html=True)
+    # ROTEIRIZADAS
+    st.markdown(f"""<div class="tbl-wrap" style="margin-top:1.5rem;border-color:rgba(16,185,129,.25)">
+      <div class="tbl-hd" style="border-bottom-color:rgba(16,185,129,.2)">
+        <span class="tbl-title" style="color:#34d399">✅ Roteirizadas</span>
+        <span class="tbl-badge">{len(rote)}</span>
+      </div>
+    </div>""", unsafe_allow_html=True)
+
+    if rote.empty:
+        st.markdown('<div class="al-i">📋 Nenhuma nota roteirizada neste período.</div>',unsafe_allow_html=True)
     else:
-        busca_r = st.text_input("🔍 Buscar roteirizadas...", key="rot_busca_r", label_visibility="collapsed")
-        df_r = roteiriz.copy()
-        if busca_r:
-            mask = df_r.apply(lambda r: busca_r.lower() in " ".join(str(v) for v in r).lower(), axis=1)
-            df_r = df_r[mask]
-
-        cols_r = ["id", "dt_transferencia", "numnota", "numped", "nomecliente",
-                  "nomesup", "praca", "destino", "pesobrutotot", "vltotal", "placa", "dt_roteirizacao"]
-        cols_r = [c for c in cols_r if c in df_r.columns]
-        st.dataframe(df_r[cols_r], use_container_width=True, hide_index=True)
+        br_ = st.text_input("🔍 Buscar roteirizadas...",key="rbr",label_visibility="collapsed")
+        df_r = rote.copy()
+        if br_:
+            m=df_r.apply(lambda r: br_.lower() in " ".join(str(v) for v in r).lower(),axis=1)
+            df_r=df_r[m]
+        RCOLS=[c for c in ["id","dt_transferencia","numnota","numped","nomecliente","nomesup","praca","destino","pesobrutotot","vltotal","placa_veiculo","placa_road","dt_roteirizacao"] if c in df_r.columns]
+        df_rd=fmt_col(df_r)
+        if "dt_roteirizacao" in df_rd.columns: df_rd=fmt_col(df_rd,"dt_roteirizacao")
+        st.dataframe(df_rd[RCOLS].sort_values("dt_transferencia",ascending=False),
+            use_container_width=True,hide_index=True,
+            column_config={
+                "id":               st.column_config.NumberColumn("ID",width=55),
+                "dt_transferencia": st.column_config.TextColumn("📅 Data",width=95),
+                "numnota":          st.column_config.TextColumn("🧾 Nota",width=90),
+                "numped":           st.column_config.TextColumn("📋 Pedido",width=90),
+                "nomecliente":      st.column_config.TextColumn("👤 Cliente",width=190),
+                "nomesup":          st.column_config.TextColumn("👔 Supervisor",width=120),
+                "praca":            st.column_config.TextColumn("🏙️ Praça",width=90),
+                "destino":          st.column_config.TextColumn("📍 Destino",width=130),
+                "pesobrutotot":     st.column_config.NumberColumn("⚖️ Peso kg",format="%.3f",width=95),
+                "vltotal":          st.column_config.NumberColumn("💰 Valor R$",format="R$ %.2f",width=120),
+                "placa_veiculo":    st.column_config.TextColumn("🚗 Placa Veíc.",width=110),
+                "placa_road":       st.column_config.TextColumn("📋 Placa ROAD",width=110),
+                "dt_roteirizacao":  st.column_config.TextColumn("🗺️ Dt. Roteiriz.",width=110),
+            })
         st.caption(f"{len(df_r)} roteirizada(s)")
-
-        st.markdown("---")
-        st.markdown("**↩️ Devolver para Pendente**")
-        ids_r = df_r["id"].astype(str).tolist()
+        st.markdown('<div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-txt">↩️ Devolver para Pendente</div><div class="sdiv-line"></div></div>',unsafe_allow_html=True)
+        ids_r=df_r["id"].astype(str).tolist()
         if ids_r:
-            col_dr, col_dbtn = st.columns([3, 1])
-            with col_dr:
-                del_rot_id = st.selectbox("ID para devolver", ids_r, key="rot_del", label_visibility="collapsed")
-            with col_dbtn:
-                if st.button("↩️ Devolver", use_container_width=True):
-                    update_transferencia(int(del_rot_id), {
-                        "placa": "", "dt_roteirizacao": "", "status": "pendente"
-                    })
-                    st.success("↩️ Nota devolvida para pendentes!")
-                    st.rerun()
+            cd1,cd2=st.columns([3,1])
+            with cd1: dvid=st.selectbox("ID",ids_r,key="rdv",label_visibility="collapsed")
+            with cd2:
+                if st.button("↩️ Devolver",use_container_width=True):
+                    update_transf(int(dvid),{"placa_veiculo":"","dt_roteirizacao":"","status":"pendente"})
+                    st.success("↩️ Devolvida para pendentes!"); st.rerun()
