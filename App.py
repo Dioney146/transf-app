@@ -253,19 +253,64 @@ def buscar_nota(numnota):
     if dtlib_col is None:
         dtlib_col = next((c for c in df.columns if "LIBERADO" in c or "LIBERACAO" in c), None)
 
+    # Placa antiga: busca qualquer coluna que contenha "PLACA"
+    placa_cols = [c for c in df.columns if "PLACA" in c]
+    placa_road = ""
+    for pc in placa_cols:
+        v = str(r.get(pc, "")).strip()
+        if v and v not in ("nan", "None", ""):
+            placa_road = v[:-2] if v.endswith(".0") else v
+            break
+
+    # Vendedor: coluna pode ser "VENDEDOR" ou conter "VEND"
+    vend_cols = [c for c in df.columns if "VEND" in c]
+    vend_val = ""
+    for vc in vend_cols:
+        v = str(r.get(vc, "")).strip()
+        if v and v not in ("nan", "None", ""):
+            vend_val = v
+            break
+
+    # Supervisor: coluna pode conter "SUP"
+    sup_cols = [c for c in df.columns if "SUP" in c]
+    sup_val = ""
+    for sc in sup_cols:
+        v = str(r.get(sc, "")).strip()
+        if v and v not in ("nan", "None", ""):
+            sup_val = v
+            break
+
+    # Destino: coluna pode conter "DEST"
+    dest_cols = [c for c in df.columns if "DEST" in c]
+    dest_val = ""
+    for dc in dest_cols:
+        v = str(r.get(dc, "")).strip()
+        if v and v not in ("nan", "None", ""):
+            dest_val = v
+            break
+
+    # Cliente: coluna pode conter "CLIEN"
+    cli_cols = [c for c in df.columns if "CLIEN" in c]
+    cli_val = ""
+    for clc in cli_cols:
+        v = str(r.get(clc, "")).strip()
+        if v and v not in ("nan", "None", ""):
+            cli_val = v
+            break
+
     return {
         "numped":          safe(ped_col or "PEDIDO"),
         "numnota":         safe(nf_col),
-        "nomecliente":     safe("CLIENTE"),
+        "nomecliente":     cli_val or safe("CLIENTE"),
         "dt_liberado":     safe(dtlib_col or "DATA LIBERADO", "DATA LIBERADO", "DT LIBERADO"),
-        "nomevend":        safe("VENDEDOR"),
-        "nomesup":         safe("SUPERVISOR"),
+        "nomevend":        vend_val or safe("VENDEDOR"),
+        "nomesup":         sup_val or safe("SUPERVISOR"),
         "pesobrutotot":    peso,
         "vltotal":         vl,
         "praca":           praca,
         "numcarregamento": carr_val,
-        "destino":         safe("DESTINO"),
-        "placa_road":      safe("PLACA ANTIGA", "PLACA", "PLACA ANT"),
+        "destino":         dest_val or safe("DESTINO"),
+        "placa_road":      placa_road,
     }
 
 # ─── Formatação ───────────────────────────────────────────────────────────────
@@ -813,6 +858,22 @@ if pagina == "📝  Registro":
 
         st.markdown("</div></div>", unsafe_allow_html=True)
 
+        # ── Debug: mostrar colunas reais da aba ROAD ──────────────────────────
+        with st.expander("🔧 Debug — Colunas da aba ROAD", expanded=False):
+            df_dbg = load_road()
+            if df_dbg.empty:
+                st.warning("Aba ROAD não encontrada ou vazia.")
+            else:
+                st.write("**Colunas encontradas:**")
+                st.code(", ".join(df_dbg.columns.tolist()))
+                st.write(f"**Total de linhas:** {len(df_dbg)}")
+                placa_cols_dbg = [c for c in df_dbg.columns if "PLACA" in c]
+                st.write(f"**Colunas com 'PLACA':** {placa_cols_dbg}")
+                if placa_cols_dbg:
+                    amostra_placa = df_dbg[placa_cols_dbg[0]].dropna().astype(str)
+                    amostra_placa = amostra_placa[amostra_placa.str.strip() != ""].head(5).tolist()
+                    st.write(f"**Amostra da coluna `{placa_cols_dbg[0]}`:** {amostra_placa}")
+
         if "cur" not in st.session_state:
             st.session_state.cur = None
 
@@ -1250,8 +1311,14 @@ elif pagina == "📋  Histórico":
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
 
-    df_h = df.copy()
+    # Histórico usa df_all para mostrar TODOS os registros, incluindo
+    # roteirizados em datas diferentes. O filtro de data do topo é aplicado
+    # como filtro adicional (não exclui automaticamente).
+    df_h = df_all.copy() if not df_all.empty else pd.DataFrame(columns=TCOLS)
     if not df_h.empty:
+        # Aplica filtro de data somente se NÃO for "ver todas"
+        if not ver_todas:
+            df_h = df_h[df_h["dt_transferencia"] == data_str]
         if fst != "Todos":
             df_h = df_h[df_h["status"] == fst]
         if fsup != "Todos":
@@ -1261,6 +1328,10 @@ elif pagina == "📋  Histórico":
             df_h = df_h[m]
 
     # ── Tabela completa ────────────────────────────────────────────────────────
+    # Garante que colunas de roteirização existem no df (mesmo que vazias)
+    for _col in ["placa_veiculo", "dt_saida", "status"]:
+        if _col not in df_h.columns:
+            df_h[_col] = ""
     HIST_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status"] if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
