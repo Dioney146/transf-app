@@ -46,40 +46,46 @@ TCOLS = [
 
 def ensure_header():
     """
-    Garante que a aba 'transferencias' existe e que a linha 1
-    contém EXATAMENTE os cabeçalhos em TCOLS (na ordem correta).
-    Se existirem colunas extras após TCOLS, elas são mantidas no final.
+    Garante que a aba 'transferencias' tem os cabeçalhos de TCOLS
+    exatamente nas posições corretas (1-based).
+    Reescreve toda a linha 1 de uma vez para evitar desalinhamento.
     """
     ws = get_sheet("transferencias")
     hdr = ws.row_values(1)
-    if not hdr:
-        # Aba vazia: escreve cabeçalho do zero
-        ws.update("A1", [TCOLS])
-    else:
-        # Verifica se os primeiros N cabeçalhos batem com TCOLS
-        mismatch = (hdr[:len(TCOLS)] != TCOLS)
-        missing = [c for c in TCOLS if c not in hdr]
-        if mismatch or missing:
-            # Reescreve as colunas de TCOLS nas posições corretas (1-indexed)
-            for idx, col in enumerate(TCOLS, start=1):
-                if idx > len(hdr) or hdr[idx-1] != col:
-                    ws.update_cell(1, idx, col)
+    # Verifica se os primeiros len(TCOLS) campos batem exatamente
+    needs_fix = (
+        len(hdr) < len(TCOLS)
+        or hdr[:len(TCOLS)] != TCOLS
+    )
+    if needs_fix:
+        # Reescreve linha 1 inteira com TCOLS (uma única chamada à API)
+        ws.update("A1:S1", [TCOLS])  # S = coluna 19 (len(TCOLS) = 19)
     return ws
 
 @st.cache_data(ttl=15, show_spinner=False)
 def load_transferencias():
+    """
+    Usa get_all_values() posicional para evitar o bug do gspread
+    que perde colunas com get_all_records() quando há colunas com
+    nomes duplicados ou cabeçalhos fora de ordem.
+    """
     ws = ensure_header()
-    try:
-        data = ws.get_all_records(expected_headers=[])
-    except Exception:
-        vals = ws.get_all_values()
-        if not vals or len(vals) < 2:
-            return pd.DataFrame(columns=TCOLS)
-        hdr = vals[0]
-        data = [dict(zip(hdr, row)) for row in vals[1:]]
-    if not data:
+    vals = ws.get_all_values()
+    if not vals or len(vals) < 2:
         return pd.DataFrame(columns=TCOLS)
-    df = pd.DataFrame(data)
+    hdr_raw = vals[0]
+    rows    = vals[1:]
+    # Normaliza cabeçalhos
+    hdr = [str(c).strip() for c in hdr_raw]
+    n   = len(hdr)
+    # Garante que todas as linhas têm o mesmo comprimento
+    rows_padded = [
+        row + [""] * (n - len(row)) if len(row) < n else row[:n]
+        for row in rows
+    ]
+    df = pd.DataFrame(rows_padded, columns=hdr)
+    # Remove linhas completamente vazias
+    df = df[df.apply(lambda r: any(str(v).strip() for v in r), axis=1)]
     for c in ["pesobrutotot", "vltotal"]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0.0)
