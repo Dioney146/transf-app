@@ -34,7 +34,6 @@ def get_sheet(name):
     try: return ss.worksheet(name)
     except gspread.WorksheetNotFound: return ss.add_worksheet(title=name, rows=5000, cols=20)
 
-# ─── TCOLS agora inclui nomerca (RCA) ────────────────────────────────────
 TCOLS = ["id","dt_transferencia","numped","numnota","nomecliente","nomerca","nomesup",
          "praca","pesobrutotot","numcarregamento","vltotal","destino","obs",
          "placa_veiculo","placa_road","dt_roteirizacao","dt_saida","status","criado_em"]
@@ -44,7 +43,6 @@ def ensure_header():
     if not ws.row_values(1):
         ws.update("A1", [TCOLS])
     else:
-        # Garante que nomerca está no cabeçalho (migração)
         hdr = ws.row_values(1)
         if "nomerca" not in hdr:
             ws.update_cell(1, len(hdr)+1, "nomerca")
@@ -659,21 +657,21 @@ if pagina == "📊  Dashboard":
         df_d[SHOW_COLS].sort_values("dt_transferencia",ascending=False) if not df_d.empty else df_d,
         use_container_width=True, hide_index=True,
         column_config={
-            "dt_transferencia": st.column_config.TextColumn("Data",width=100),
-            "numnota":          st.column_config.TextColumn("Nota",width=90),
-            "numped":           st.column_config.TextColumn("Pedido",width=90),
-            "nomecliente":      st.column_config.TextColumn("Cliente",width=200),
-            "nomerca":          st.column_config.TextColumn("RCA",width=160),
-            "nomesup":          st.column_config.TextColumn("Supervisor",width=130),
-            "praca":            st.column_config.TextColumn("Praça",width=130),
-            "numcarregamento":  st.column_config.TextColumn("Carregamento",width=120),
-            "destino":          st.column_config.TextColumn("Destino",width=170),
-            "pesobrutotot":     st.column_config.NumberColumn("Peso (kg)",format="%.3f",width=100),
-            "vltotal":          st.column_config.NumberColumn("Valor (R$)",format="R$ %.2f",width=125),
-            "placa_road":       st.column_config.TextColumn("Placa Antiga",width=120),
-            "placa_veiculo":    st.column_config.TextColumn("Nova Placa",width=115),
-            "dt_saida":         st.column_config.TextColumn("Dt. Saída",width=100),
-            "status":           st.column_config.TextColumn("Status",width=100),
+            "dt_transferencia": st.column_config.TextColumn("📅 Data",width=100),
+            "numnota":          st.column_config.TextColumn("🧾 Nota",width=90),
+            "numped":           st.column_config.TextColumn("📋 Pedido",width=90),
+            "nomecliente":      st.column_config.TextColumn("👤 Cliente",width=200),
+            "nomerca":          st.column_config.TextColumn("🧑‍💼 RCA",width=160),
+            "nomesup":          st.column_config.TextColumn("👔 Supervisor",width=130),
+            "praca":            st.column_config.TextColumn("🏙️ Praça",width=130),
+            "numcarregamento":  st.column_config.TextColumn("📦 Carregamento",width=120),
+            "destino":          st.column_config.TextColumn("📍 Destino",width=170),
+            "pesobrutotot":     st.column_config.NumberColumn("⚖️ Peso (kg)",format="%.3f",width=100),
+            "vltotal":          st.column_config.NumberColumn("💰 Valor (R$)",format="R$ %.2f",width=125),
+            "placa_road":       st.column_config.TextColumn("🚛 Placa Antiga",width=120),
+            "placa_veiculo":    st.column_config.TextColumn("🚗 Nova Placa",width=115),
+            "dt_saida":         st.column_config.TextColumn("🚚 Dt. Saída",width=100),
+            "status":           st.column_config.TextColumn("📌 Status",width=100),
         }
     )
 
@@ -730,25 +728,21 @@ elif pagina == "➕  Nova Transferência":
         if cur:
             st.markdown('<div class="road-box"><div class="road-title">✅ Dados da Base ROAD</div></div>', unsafe_allow_html=True)
 
-            # Linha 1: Pedido | Nota | Carregamento
             a, b, c_ = st.columns(3)
             with a: st.text_input("📋 Nº Pedido", value=cur["numped"] or "—", disabled=True)
             with b: st.text_input("🧾 Nota Fiscal", value=cur["numnota"], disabled=True)
             with c_: st.text_input("📦 Nº Carregamento", value=cur["numcarregamento"], disabled=True)
 
-            # Linha 2: Cliente | RCA | Supervisor
             a2, b2, c2 = st.columns(3)
             with a2: st.text_input("👤 Cliente", value=cur["nomecliente"], disabled=True)
             with b2: st.text_input("🧑‍💼 RCA", value=cur.get("nomerca","") or "—", disabled=True)
             with c2: st.text_input("👔 Supervisor", value=cur["nomesup"], disabled=True)
 
-            # Linha 3: Praça | Destino | Peso
             a3, b3, c3 = st.columns(3)
             with a3: st.text_input("🏙️ Praça", value=cur["praca"] or "—", disabled=True)
             with b3: st.text_input("📍 Destino", value=cur["destino"], disabled=True)
             with c3: st.text_input("⚖️ Peso Bruto (kg)", value=f"{cur['pesobrutotot']:.3f}".replace(".",","), disabled=True)
 
-            # Linha 4: Valor | Placa Antiga
             a4, b4 = st.columns(2)
             with a4: st.text_input("💰 Valor Total", value=br(cur["vltotal"]), disabled=True)
             with b4:
@@ -758,7 +752,6 @@ elif pagina == "➕  Nova Transferência":
             if cur.get("placa_road"):
                 st.markdown(f'<div class="al-w">⚠️ Esta nota já tinha a placa <strong>{cur["placa_road"]}</strong> na entrega anterior.</div>', unsafe_allow_html=True)
 
-            # Observação (sem data de saída aqui — vai para Roteirização)
             obs = st.text_area("💬 Observação (opcional)", placeholder="Observação adicional...", key="obs")
 
             st.markdown('<div class="al-i">💡 A <strong>Data de Saída</strong> e a <strong>Nova Placa</strong> serão informadas na aba Roteirização.</div>', unsafe_allow_html=True)
@@ -865,24 +858,19 @@ elif pagina == "📋  Histórico":
     if "dt_roteirizacao" in df_d.columns: df_d = fmt_col(df_d,"dt_roteirizacao")
     if "dt_saida" in df_d.columns: df_d = fmt_col(df_d,"dt_saida")
 
-    # ─── Colunas do Histórico: ordem conforme solicitado ─────────────────
+    # ─── Colunas do Histórico ─────────────────────────────────────────────
     HCOLS = [c for c in [
-        "dt_transferencia",   # Data
+        "dt_transferencia",   # Data registrada
         "numped",             # Pedido
         "nomecliente",        # Cliente
-        "numnota",            # Nota
-        "nomerca",            # RCA
-        "nomesup",            # Supervisor
-        "pesobrutotot",       # Peso
-        "vltotal",            # Valor
-        "praca",              # Praça
+        "numnota",            # Nota Fiscal
         "numcarregamento",    # Carregamento
         "destino",            # Destino
+        "nomerca",            # Vendedor (RCA)
+        "nomesup",            # Supervisor
+        "pesobrutotot",       # Peso Total
+        "vltotal",            # Valor Total
         "placa_road",         # Placa Antiga
-        "placa_veiculo",      # Nova Placa (informada pela Roteirização)
-        "dt_saida",           # Data de Saída (informada pela Roteirização)
-        "status",
-        "obs",
     ] if c in df_d.columns]
 
     st.markdown(f"""
@@ -895,25 +883,20 @@ elif pagina == "📋  Histórico":
     """, unsafe_allow_html=True)
 
     st.dataframe(
-        df_d[HCOLS].sort_values("dt_transferencia",ascending=False) if not df_d.empty else df_d,
+        df_d[HCOLS].sort_values("dt_transferencia", ascending=False) if not df_d.empty else df_d,
         use_container_width=True, hide_index=True,
         column_config={
-            "dt_transferencia": st.column_config.TextColumn("📅 Data",width=100),
-            "numped":           st.column_config.TextColumn("📋 Pedido",width=100),
-            "nomecliente":      st.column_config.TextColumn("👤 Cliente",width=200),
-            "numnota":          st.column_config.TextColumn("🧾 Nota",width=90),
-            "nomerca":          st.column_config.TextColumn("🧑‍💼 RCA",width=170),
-            "nomesup":          st.column_config.TextColumn("👔 Supervisor",width=140),
-            "pesobrutotot":     st.column_config.NumberColumn("⚖️ Peso (kg)",format="%.3f",width=100),
-            "vltotal":          st.column_config.NumberColumn("💰 Valor (R$)",format="R$ %.2f",width=125),
-            "praca":            st.column_config.TextColumn("🏙️ Praça",width=140),
-            "numcarregamento":  st.column_config.TextColumn("📦 Carregamento",width=120),
-            "destino":          st.column_config.TextColumn("📍 Destino",width=170),
-            "placa_road":       st.column_config.TextColumn("🚛 Placa Antiga",width=120),
-            "placa_veiculo":    st.column_config.TextColumn("🚗 Nova Placa",width=115),
-            "dt_saida":         st.column_config.TextColumn("🚚 Dt. Saída",width=100),
-            "status":           st.column_config.TextColumn("📌 Status",width=105),
-            "obs":              st.column_config.TextColumn("💬 Obs",width=150),
+            "dt_transferencia": st.column_config.TextColumn("📅 Data Registrada", width=110),
+            "numped":           st.column_config.TextColumn("📋 Pedido",          width=100),
+            "nomecliente":      st.column_config.TextColumn("👤 Cliente",          width=200),
+            "numnota":          st.column_config.TextColumn("🧾 Nota Fiscal",      width=100),
+            "numcarregamento":  st.column_config.TextColumn("📦 Carregamento",     width=120),
+            "destino":          st.column_config.TextColumn("📍 Destino",          width=170),
+            "nomerca":          st.column_config.TextColumn("🧑‍💼 Vendedor",        width=170),
+            "nomesup":          st.column_config.TextColumn("👔 Supervisor",       width=140),
+            "pesobrutotot":     st.column_config.NumberColumn("⚖️ Peso Total (kg)", format="%.3f", width=115),
+            "vltotal":          st.column_config.NumberColumn("💰 Valor Total (R$)", format="R$ %.2f", width=130),
+            "placa_road":       st.column_config.TextColumn("🚛 Placa Antiga",     width=120),
         }
     )
 
@@ -981,21 +964,20 @@ elif pagina == "🗺️  Roteirização":
             m = df_p.apply(lambda r: bp.lower() in " ".join(str(v) for v in r).lower(), axis=1)
             df_p = df_p[m]
 
-        # ─── Colunas da tabela de Pendentes ──────────────────────────────
         PCOLS = [c for c in [
             "id",
-            "dt_transferencia",   # Data
-            "numped",             # Pedido
-            "nomecliente",        # Cliente
-            "numnota",            # Nota
-            "nomerca",            # RCA
-            "nomesup",            # Supervisor
-            "pesobrutotot",       # Peso
-            "vltotal",            # Valor
-            "praca",              # Praça
-            "numcarregamento",    # Carregamento
-            "destino",            # Destino
-            "placa_road",         # Placa Antiga
+            "dt_transferencia",
+            "numped",
+            "nomecliente",
+            "numnota",
+            "nomerca",
+            "nomesup",
+            "pesobrutotot",
+            "vltotal",
+            "praca",
+            "numcarregamento",
+            "destino",
+            "placa_road",
         ] if c in df_p.columns]
 
         df_pd = fmt_col(df_p)
@@ -1020,7 +1002,6 @@ elif pagina == "🗺️  Roteirização":
         )
         st.caption(f"{len(df_p)} nota(s) pendente(s)")
 
-        # ─── Seção de Informar Placa + Data de Saída (ROTEIRIZAÇÃO) ──────
         st.markdown('<div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-txt">🚗 Informar Nova Placa e Data de Saída</div><div class="sdiv-line"></div></div>', unsafe_allow_html=True)
 
         ids_p = df_p["id"].astype(str).tolist()
@@ -1091,24 +1072,23 @@ elif pagina == "🗺️  Roteirização":
             m = df_r.apply(lambda r: br_.lower() in " ".join(str(v) for v in r).lower(), axis=1)
             df_r = df_r[m]
 
-        # ─── Colunas da tabela de Roteirizadas ───────────────────────────
         RCOLS = [c for c in [
             "id",
-            "dt_transferencia",   # Data
-            "numped",             # Pedido
-            "nomecliente",        # Cliente
-            "numnota",            # Nota
-            "nomerca",            # RCA
-            "nomesup",            # Supervisor
-            "pesobrutotot",       # Peso
-            "vltotal",            # Valor
-            "praca",              # Praça
-            "numcarregamento",    # Carregamento
-            "destino",            # Destino
-            "placa_road",         # Placa Antiga
-            "placa_veiculo",      # Nova Placa
-            "dt_saida",           # Data de Saída
-            "dt_roteirizacao",    # Dt. Roteirização
+            "dt_transferencia",
+            "numped",
+            "nomecliente",
+            "numnota",
+            "nomerca",
+            "nomesup",
+            "pesobrutotot",
+            "vltotal",
+            "praca",
+            "numcarregamento",
+            "destino",
+            "placa_road",
+            "placa_veiculo",
+            "dt_saida",
+            "dt_roteirizacao",
         ] if c in df_r.columns]
 
         df_rd = fmt_col(df_r)
