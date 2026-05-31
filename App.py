@@ -111,20 +111,37 @@ def append_transf(row):
     load_transferencias.clear()
 
 def update_transf(tid, updates):
+    """
+    Atualiza campos de um registro pelo ID.
+    Usa batch_update para reduzir chamadas à API e evitar
+    erros de índice com colunas duplicadas.
+    """
     ws = ensure_header()
     data = ws.get_all_values()
     if not data:
         return
     hdr = data[0]
+    # Cria mapa coluna→índice (1-based) usando a última ocorrência de cada nome
+    col_idx = {}
+    for idx, c in enumerate(hdr, start=1):
+        col_idx[c.strip()] = idx  # sobrescreve com o último índice (mais seguro)
+    # Adiciona colunas faltantes
     for col in updates:
-        if col not in hdr:
-            ws.update_cell(1, len(hdr) + 1, col)
-            hdr = hdr + [col]
+        if col not in col_idx:
+            new_idx = max(col_idx.values()) + 1 if col_idx else 1
+            ws.update_cell(1, new_idx, col)
+            col_idx[col] = new_idx
+    # Encontra a linha do registro
     for i, row in enumerate(data[1:], start=2):
-        if dict(zip(hdr, row)).get("id", "") == str(tid):
+        row_dict = dict(zip([c.strip() for c in hdr], row))
+        if row_dict.get("id", "") == str(tid):
+            # Batch: monta lista de Cell para uma única chamada
+            cells = []
             for col, val in updates.items():
-                if col in hdr:
-                    ws.update_cell(i, hdr.index(col) + 1, str(val))
+                if col in col_idx:
+                    cells.append(gspread.Cell(i, col_idx[col], str(val)))
+            if cells:
+                ws.update_cells(cells, value_input_option="USER_ENTERED")
             break
     load_transferencias.clear()
 
@@ -153,25 +170,32 @@ def check_dup(numnota, dt):
 
 @st.cache_data(ttl=60, show_spinner=False)
 def load_road():
+    """
+    Carrega a aba ROAD usando get_all_values() posicional para evitar
+    o bug do gspread que perde colunas com get_all_records() quando há
+    cabeçalhos duplicados ou células mescladas.
+    """
     try:
         ws = get_sheet("ROAD")
-        try:
-            data = ws.get_all_records(expected_headers=[])
-        except Exception:
-            vals = ws.get_all_values()
-            if not vals or len(vals) < 2:
-                return pd.DataFrame()
-            hdr = vals[0]
-            data = [dict(zip(hdr, row)) for row in vals[1:]]
-        if not data:
+        vals = ws.get_all_values()
+        if not vals or len(vals) < 2:
             return pd.DataFrame()
-        df = pd.DataFrame(data)
-        df.columns = [str(c).upper().strip() for c in df.columns]
+        hdr_raw = vals[0]
+        rows    = vals[1:]
+        # Normaliza cabeçalhos: maiúsculas + strip
+        hdr = [str(c).upper().strip() for c in hdr_raw]
+        # Garante que todas as linhas tenham o mesmo comprimento do cabeçalho
+        n = len(hdr)
+        rows_padded = [row + [""] * (n - len(row)) if len(row) < n else row[:n] for row in rows]
+        df = pd.DataFrame(rows_padded, columns=hdr)
+        # Remove colunas completamente vazias de cabeçalho
+        df = df.loc[:, df.columns.str.strip() != ""]
+        # Normaliza NOTA FISCAL e PEDIDO (remove .0 de número)
         for c in ["NOTA FISCAL", "PEDIDO"]:
             if c in df.columns:
                 df[c] = df[c].astype(str).str.split(".").str[0].str.strip()
         return df
-    except Exception:
+    except Exception as e:
         return pd.DataFrame()
 
 def buscar_nota(numnota):
@@ -859,20 +883,39 @@ if pagina == "📝  Registro":
         st.markdown("</div></div>", unsafe_allow_html=True)
 
         # ── Debug: mostrar colunas reais da aba ROAD ──────────────────────────
-        with st.expander("🔧 Debug — Colunas da aba ROAD", expanded=False):
+        with st.expander("🔧 Debug — Diagnóstico da base ROAD", expanded=False):
             df_dbg = load_road()
             if df_dbg.empty:
-                st.warning("Aba ROAD não encontrada ou vazia.")
+                st.error("Aba ROAD não encontrada ou vazia.")
             else:
-                st.write("**Colunas encontradas:**")
-                st.code(", ".join(df_dbg.columns.tolist()))
-                st.write(f"**Total de linhas:** {len(df_dbg)}")
-                placa_cols_dbg = [c for c in df_dbg.columns if "PLACA" in c]
-                st.write(f"**Colunas com 'PLACA':** {placa_cols_dbg}")
-                if placa_cols_dbg:
-                    amostra_placa = df_dbg[placa_cols_dbg[0]].dropna().astype(str)
-                    amostra_placa = amostra_placa[amostra_placa.str.strip() != ""].head(5).tolist()
-                    st.write(f"**Amostra da coluna `{placa_cols_dbg[0]}`:** {amostra_placa}")
+                cols_list = df_dbg.columns.tolist()
+                st.write(f"**Total de colunas:** {len(cols_list)} | **Linhas:** {len(df_dbg)}")
+                # Mostra com número de posição
+                cols_numbered = " | ".join([f"{i+1}:{c}" for i, c in enumerate(cols_list)])
+                st.code(cols_numbered)
+                # Coluna 18 especificamente
+                if len(cols_list) >= 18:
+                    col18 = cols_list[17]
+                    st.write(f"**Coluna 18 (posição):** `{col18}`")
+                    amostra18 = df_dbg[col18].dropna().astype(str)
+                    amostra18 = amostra18[amostra18.str.strip().isin(["","nan","None"]) == False].head(5).tolist()
+                    st.write(f"**Amostra col.18:** {amostra18}")
+                # Colunas com PLACA
+                placa_cols_dbg = [f"{i+1}:{c}" for i, c in enumerate(cols_list) if "PLACA" in c]
+                st.write(f"**Colunas contendo 'PLACA':** {placa_cols_dbg if placa_cols_dbg else 'nenhuma encontrada'}")
+                # Aba transferencias
+                st.divider()
+                st.write("**Cabeçalho da aba `transferencias`:**")
+                try:
+                    ws_t = get_sheet("transferencias")
+                    hdr_t = ws_t.row_values(1)
+                    hdr_t_numbered = " | ".join([f"{i+1}:{c}" for i, c in enumerate(hdr_t)])
+                    st.code(hdr_t_numbered)
+                    placa_v_idx = next((i+1 for i,c in enumerate(hdr_t) if c=="placa_veiculo"), None)
+                    placa_r_idx = next((i+1 for i,c in enumerate(hdr_t) if c=="placa_road"), None)
+                    st.write(f"**placa_veiculo na coluna:** {placa_v_idx} | **placa_road na coluna:** {placa_r_idx}")
+                except Exception as ex:
+                    st.warning(f"Erro ao ler aba transferencias: {ex}")
 
         if "cur" not in st.session_state:
             st.session_state.cur = None
