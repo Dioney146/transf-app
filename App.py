@@ -1,3 +1,74 @@
+<think>
+The user provided a Python script that implements a Streamlit dashboard called "Delly's — Transferências" for managing transfer logistics (notas fiscales, roteirização, etc.).
+The user wants to "Improve the visual of my site". They like the current functionality but want improvements in UI/UX.
+The current script already has a good amount of CSS (dark theme, custom fonts, glassmorphism, etc.), but there are areas to improve:
+1.  **Aesthetics**: Better spacing, perhaps more modern gradients or subtle animations.
+2.  **Layout**: The columns and cards could be tighter.
+3.  **Typography**: Better font weights or hierarchy.
+4.  **Feedback**: Toast messages or animations on updates.
+5.  **Interactive Elements**: Better badges, hover effects.
+6.  **Color Palette**: Maybe a more cohesive neon/dark mode vibe specific to "Delly's", perhaps blue/yellow or a distinct brand color.
+
+Since the user didn't specify *what* to improve, I will analyze the existing code and suggest specific visual upgrades that are easy to inject while keeping the logic intact.
+
+**Main areas for visual improvement in Streamlit:**
+1.  **Global CSS**: Increase contrast for text, refine inputs.
+2.  **Sidebar**: Better visual hierarchy.
+3.  **Dataframes**: Make them look more like data grids (grid view).
+4.  **Buttons**: Make primary actions pop more.
+5.  **Cards**: Use shadows and sticky headers.
+
+Let's create an "improved" version of the script.
+Changes I will make:
+- Add a more refined dark theme (less grey, more deep blue/black).
+- Refine the `st.dataframe` styling to look like a pro dashboard.
+- Improve the "Filter bar" and "Nav tabs".
+- Add a subtle animation on load.
+- Use `st.toast` for success messages (native Streamlit) instead of pure HTML alerts, or keep the HTML but style them better. The user uses custom HTML alerts which is fine, but native `st.toast` is cleaner. I'll stick to the user's pattern but make them look better (more vibrant).
+- Refine the font (Sora is good, but maybe tweak sizes).
+
+**Plan:**
+1.  Keep all logic (Google Sheets API, functions).
+2.  Rewrite the CSS block to be sharper.
+    - Use a subtle mesh gradient background instead of blur.
+    - Make inputs feel like "glass" inputs.
+    - Style the dataframe more aggressively.
+3.  Layout tweaks: Adjust column widths in the sidebar/filter sections.
+4.  Add a "KPI" section visual refresh.
+
+Let's output the improved code. I will focus on the CSS and layout structure improvements specifically.
+
+**Specific visual tweaks to apply:**
+- **Background**: A very subtle mesh gradient (CSS).
+- **Cards**: Better border radius, lighter borders, subtle inner glow.
+- **Inputs**: Remove the default border and replace with a custom focus state.
+- **Buttons**: Add a glow effect on hover.
+- **Dataframes**: Use `st.dataframe` options to remove row hover if it's ugly, or style it better.
+
+*Wait, I need to be careful not to break the logic.*
+I will provide a version that looks significantly more "SaaS-like" / Premium.
+
+**Modifications in Detail:**
+- **CSS**:
+    - Change `--bg` to `#0B0E14` (deep dark blue-black).
+    - Add `@keyframes fade-in`.
+    - Style `div[data-testid="stDataFrame"]` to remove borders and use alternating rows.
+    - Style the scrollbars to be thin.
+- **Layout**:
+    - Put the Logo/Topbar in a cleaner container.
+    - Make the "Filter bar" icons look consistent.
+- **Components**:
+    - Improve the "Badge" styles.
+    - Make tables look more integrated with the dark theme.
+
+I will present the complete, improved code which preserves all logic but upgrades the presentation significantly.
+</think>
+
+Para melhorar o visual do seu site, foquei em três pilares principais: **Modernização do Visual (Deep Dark Mode), Aperfeiçoamento dos Componentes (Glassmorphism refinado) e Experiência do Usuário (micro-interações e feedback visual).**
+
+Aqui está o código aprimorado. Eu refiz o bloco de CSS para um visual mais "SaaS Premium", melhorei a tipografia, ajustei os formulários e tabelas para ficarem mais integrados ao tema escuro, eadinhei as mensagens de alerta.
+
+```python
 import streamlit as st
 import pandas as pd
 import gspread
@@ -299,4 +370,6 @@ st.markdown("""
   
   --text-main: #f3f4f6;
   --text-muted: #9ca3af;
-  --text
+  --text-dim: #4b5563;
+  
+  --border: rgba(255, 255, 255, 0
