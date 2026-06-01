@@ -1827,10 +1827,11 @@ elif pagina == "🗺️  Roteirização":
 
             # Cabeçalho da tabela
             st.markdown("""
-            <div style="margin:.5rem 1.25rem 0 1.25rem">
-              <div style="display:grid;grid-template-columns:90px 1fr 110px 110px 120px 130px 110px;gap:6px;padding:.45rem .75rem;background:rgba(255,255,255,0.05);border:1px solid var(--bdr);border-radius:8px 8px 0 0;font-size:.68rem;font-weight:700;color:var(--txt2);letter-spacing:.05em;text-transform:uppercase;">
-                <div>Nota</div>
-                <div>Cliente / Praça</div>
+            <div style="margin:.75rem 1.25rem 0 1.25rem">
+              <div style="display:grid;grid-template-columns:110px 1.6fr 0.9fr 130px 130px 140px 140px 120px;gap:8px;padding:.65rem 1rem;background:rgba(255,255,255,0.06);border:1px solid var(--bdr);border-radius:10px 10px 0 0;font-size:.78rem;font-weight:700;color:var(--txt2);letter-spacing:.06em;text-transform:uppercase;">
+                <div>Nota / ID</div>
+                <div>Cliente</div>
+                <div>Praça</div>
                 <div>Destino</div>
                 <div style="text-align:right">Valor</div>
                 <div>Placa Ant.</div>
@@ -1844,39 +1845,44 @@ elif pagina == "🗺️  Roteirização":
                 rid = str(row_r["id"])
                 pr  = str(row_r.get("placa_road", "") or "")
                 _obs_rot = str(row_r.get("observacao","")).strip()
-                _obs_html = f'<div style="font-size:.6rem;color:var(--ylw);margin-top:2px;font-style:italic">📝 {_obs_rot}</div>' if _obs_rot else ""
-                placa_ant_html = f'<span style="font-family:JetBrains Mono,monospace;font-size:.72rem;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:4px;padding:2px 6px;color:#60a5fa">{pr}</span>' if pr else '<span style="color:var(--txt3);font-size:.7rem">—</span>'
+                _obs_html = f'<div style="font-size:.72rem;color:var(--ylw);margin-top:3px;font-style:italic">📝 {_obs_rot}</div>' if _obs_rot else ""
+                placa_ant_html = (
+                    f'<span style="font-family:JetBrains Mono,monospace;font-size:.82rem;font-weight:600;'
+                    f'background:rgba(59,130,246,0.14);border:1px solid rgba(59,130,246,0.30);'
+                    f'border-radius:5px;padding:3px 8px;color:#60a5fa">{pr}</span>'
+                    if pr else '<span style="color:var(--txt3);font-size:.82rem">—</span>'
+                )
 
-                # Linha estática da tabela
+                # Linha de dados + inputs numa estrutura unificada por st.columns
                 st.markdown(f"""
-                <div style="margin:0 1.25rem">
-                  <div style="display:grid;grid-template-columns:90px 1fr 110px 110px 120px 130px 110px;gap:6px;align-items:center;padding:.6rem .75rem;background:rgba(255,255,255,0.02);border-left:1px solid var(--bdr);border-right:1px solid var(--bdr);border-bottom:1px solid rgba(255,255,255,0.05);">
+                <div style="margin:0 1.25rem;border-left:1px solid var(--bdr);border-right:1px solid var(--bdr);border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.025);">
+                  <div style="display:grid;grid-template-columns:110px 1.6fr 0.9fr 130px 130px 140px 140px 120px;gap:8px;align-items:center;padding:.75rem 1rem;">
                     <div>
-                      <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.85rem;color:var(--txt)">{row_r["numnota"]}</div>
-                      <div style="font-size:.6rem;color:var(--txt3)">ID {rid}</div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;color:var(--txt)">{row_r["numnota"]}</div>
+                      <div style="font-size:.74rem;color:var(--txt3);margin-top:2px">ID {rid}</div>
                     </div>
                     <div>
-                      <div style="font-size:.78rem;color:var(--txt);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px" title="{str(row_r.get("nomecliente",""))}">{str(row_r.get("nomecliente",""))[:26]}</div>
-                      <div style="font-size:.65rem;color:var(--txt2)">🏙️ {row_r.get("praca","—")}</div>
+                      <div style="font-size:.88rem;color:var(--txt);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px" title="{str(row_r.get("nomecliente",""))}">{str(row_r.get("nomecliente",""))[:32]}</div>
                       {_obs_html}
                     </div>
-                    <div style="font-size:.75rem;color:var(--txt2)">📍 {str(row_r.get("destino","—"))[:14]}</div>
-                    <div style="font-weight:700;color:var(--acc);font-size:.82rem;text-align:right">{br(row_r["vltotal"])}</div>
+                    <div style="font-size:.82rem;color:var(--txt2)">🏙️ {row_r.get("praca","—")}</div>
+                    <div style="font-size:.82rem;color:var(--txt2)">📍 {str(row_r.get("destino","—"))[:16]}</div>
+                    <div style="font-weight:700;color:var(--acc);font-size:.9rem;text-align:right">{br(row_r["vltotal"])}</div>
                     <div>{placa_ant_html}</div>
-                    <div></div>
-                    <div></div>
+                    <div style="font-size:.74rem;color:var(--txt3);font-style:italic">↓ preencha abaixo</div>
+                    <div style="font-size:.74rem;color:var(--txt3);font-style:italic">↓ preencha abaixo</div>
                   </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                # Linha de inputs (Nova Placa + Data Saída + Botão) logo abaixo, alinhada à grid
-                _c_gap, c_nova_pl, c_dt_saida, c_btn = st.columns([0.01, 1.15, 0.95, 0.8])
+                # Inputs na linha seguinte, alinhados às colunas Nova Placa e Dt. Saída
+                _sp1, _sp2, c_nova_pl, c_dt_saida, c_btn = st.columns([0.08, 3.42, 1.1, 0.95, 0.75])
                 with c_nova_pl:
                     nova_pl_i = st.text_input(
                         "Nova Placa",
                         placeholder="Ex: ABC-1234",
                         key=f"pl_{rid}",
-                        label_visibility="collapsed",
+                        label_visibility="visible",
                     )
                 with c_dt_saida:
                     dt_saida_i = st.date_input(
@@ -1884,9 +1890,10 @@ elif pagina == "🗺️  Roteirização":
                         value=None,
                         key=f"dt_{rid}",
                         format="DD/MM/YYYY",
-                        label_visibility="collapsed",
+                        label_visibility="visible",
                     )
                 with c_btn:
+                    st.markdown("<br>", unsafe_allow_html=True)
                     if st.button("✅ Roteirizar", key=f"btn_{rid}", use_container_width=True):
                         if not nova_pl_i.strip():
                             st.markdown('<div class="al-e">⚠️ Informe a placa!</div>', unsafe_allow_html=True)
