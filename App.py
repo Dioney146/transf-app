@@ -969,6 +969,173 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 
 input[type="date"] {{ color-scheme: dark !important; }}
 
+
+/* ── Dashboard Grid ── */
+.dash-grid {{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}}
+.kpi-card {{
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bdr);
+  border-radius: 16px;
+  padding: 1.25rem 1.35rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+}}
+.kpi-card::before {{
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+}}
+.kpi-card:hover {{
+  border-color: var(--bdr2);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}}
+.kpi-card-icon {{
+  font-size: 1.5rem;
+  margin-bottom: .65rem;
+  display: block;
+}}
+.kpi-card-label {{
+  font-size: .60rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .12em;
+  color: var(--txt2); margin-bottom: .45rem;
+  font-family: 'JetBrains Mono', monospace;
+}}
+.kpi-card-value {{
+  font-size: 2rem; font-weight: 900;
+  letter-spacing: -.05em; line-height: 1;
+  color: var(--txt);
+}}
+.kpi-card-sub {{
+  font-size: .68rem; color: var(--txt3); margin-top: 5px;
+}}
+.kpi-card-badge {{
+  position: absolute; top: .85rem; right: .85rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .58rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 4px;
+}}
+.kpi-card-accent {{ border-top: 3px solid var(--acc); }}
+.kpi-card-green  {{ border-top: 3px solid var(--grn); }}
+.kpi-card-red    {{ border-top: 3px solid var(--red); }}
+.kpi-card-yellow {{ border-top: 3px solid var(--ylw); }}
+
+/* ── Progress bar ── */
+.progress-wrap {{
+  margin-top: .75rem;
+  height: 4px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 99px;
+  overflow: hidden;
+}}
+.progress-bar {{
+  height: 100%;
+  border-radius: 99px;
+  transition: width .6s cubic-bezier(0.4,0,0.2,1);
+}}
+
+/* ── Chart container ── */
+.chart-wrap {{
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--bdr);
+  border-radius: 14px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}}
+.chart-head {{
+  padding: .9rem 1.35rem;
+  border-bottom: 1px solid var(--bdr);
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+}}
+.chart-title {{
+  font-size: .68rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .11em; color: var(--txt);
+}}
+.chart-body {{ padding: 1.1rem 1.35rem 1.35rem; }}
+
+/* ── Table aprimorada com fundo transparente e bordas visíveis ── */
+.stDataFrame [data-testid="stDataFrameResizable"] {{
+  border-radius: 0 !important;
+}}
+.stDataFrame iframe {{
+  background: transparent !important;
+}}
+/* Força as tabelas do dataframe a usar o tema escuro */
+[data-testid="stDataFrame"] > div {{
+  background: transparent !important;
+}}
+
+/* ── Recent activity list ── */
+.activity-item {{
+  display: flex; align-items: center; gap: .85rem;
+  padding: .7rem 1.1rem;
+  border-bottom: 1px solid var(--bdr);
+  transition: background .15s;
+}}
+.activity-item:hover {{ background: rgba(59,130,246,0.04); }}
+.activity-item:last-child {{ border-bottom: none; }}
+.activity-dot {{
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}}
+.activity-content {{ flex: 1; min-width: 0; }}
+.activity-title {{
+  font-size: .79rem; color: var(--txt); font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}}
+.activity-meta {{ font-size: .65rem; color: var(--txt3); margin-top: 1px; }}
+.activity-value {{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .76rem; font-weight: 700; color: var(--acc);
+  white-space: nowrap;
+}}
+
+/* ── Rank list ── */
+.rank-item {{
+  display: flex; align-items: center; gap: .7rem;
+  padding: .55rem .9rem;
+}}
+.rank-num {{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .62rem; font-weight: 700; color: var(--txt3);
+  min-width: 18px;
+}}
+.rank-bar-wrap {{ flex: 1; height: 5px; background: rgba(255,255,255,0.06); border-radius: 99px; }}
+.rank-bar {{ height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--acc), var(--grn)); }}
+.rank-name {{ font-size: .76rem; color: var(--txt); min-width: 80px; font-weight: 500; }}
+.rank-val {{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .72rem; color: var(--acc); font-weight: 700;
+  white-space: nowrap;
+}}
+
+/* ── Welcome header dashboard ── */
+.dash-welcome {{
+  margin-bottom: 1.75rem;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}}
+.dash-welcome-left {{}}
+.dash-clock {{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .70rem; color: var(--txt2);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--bdr);
+  border-radius: 8px; padding: .35rem .75rem;
+}}
+
 /* ── Scrollbar premium ── */
 ::-webkit-scrollbar {{ width:5px; height:5px; }}
 ::-webkit-scrollbar-track {{ background:transparent; }}
@@ -1096,6 +1263,188 @@ STD_CONFIG = {
 }
 
 st.markdown('<div class="page-body">', unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DASHBOARD OVERVIEW (topo sempre visível)
+# ═══════════════════════════════════════════════════════════════════════════════
+_df_all_dash = load_transferencias()
+_today_str   = date.today().isoformat()
+_df_today    = _df_all_dash[_df_all_dash["dt_transferencia"] == _today_str] if not _df_all_dash.empty else pd.DataFrame()
+_df_pend_all = _df_all_dash[_df_all_dash["status"].isin(["pendente",""])  | _df_all_dash["status"].isna()] if not _df_all_dash.empty else pd.DataFrame()
+_df_rot_all  = _df_all_dash[_df_all_dash["status"] == "roteirizado"] if not _df_all_dash.empty else pd.DataFrame()
+_n_today     = len(_df_today)
+_n_pend      = len(_df_pend_all)
+_n_rot       = len(_df_rot_all)
+_n_total     = len(_df_all_dash)
+_vl_today    = _df_today["vltotal"].sum() if not _df_today.empty else 0
+_vl_total    = _df_all_dash["vltotal"].sum() if not _df_all_dash.empty else 0
+_peso_today  = _df_today["pesobrutotot"].sum() if not _df_today.empty else 0
+_pct_rot     = int((_n_rot / _n_total * 100) if _n_total > 0 else 0)
+_pct_pend    = 100 - _pct_rot
+
+# Top supervisores por valor
+_top_sup = pd.DataFrame()
+if not _df_all_dash.empty and "nomesup" in _df_all_dash.columns:
+    _top_sup = _df_all_dash.groupby("nomesup")["vltotal"].sum().sort_values(ascending=False).head(5).reset_index()
+    _top_sup.columns = ["supervisor", "valor"]
+
+# Top praças por volume
+_top_praca = pd.DataFrame()
+if not _df_all_dash.empty and "praca" in _df_all_dash.columns:
+    _top_praca = _df_all_dash.groupby("praca")["numnota"].count().sort_values(ascending=False).head(5).reset_index()
+    _top_praca.columns = ["praca", "qtd"]
+
+# Last 5 notas
+_last5 = _df_all_dash.tail(5)[::-1] if not _df_all_dash.empty else pd.DataFrame()
+
+st.markdown("""
+<div class="dash-welcome">
+  <div class="dash-welcome-left">
+    <div class="page-eyebrow">Dashboard</div>
+    <div class="page-title">Visão Geral — Transferências</div>
+    <div class="page-sub">Resumo em tempo real · todos os registros</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ── KPI Cards ──────────────────────────────────────────────────────────────────
+_dc1, _dc2, _dc3, _dc4, _dc5 = st.columns(5)
+with _dc1:
+    st.markdown(f"""
+    <div class="kpi-card kpi-card-accent">
+      <span class="kpi-card-icon">📦</span>
+      <div class="kpi-card-label">Total de Notas</div>
+      <div class="kpi-card-value">{_n_total}</div>
+      <div class="kpi-card-sub">{br(_vl_total)}</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:100%;background:var(--acc)"></div></div>
+    </div>
+    """, unsafe_allow_html=True)
+with _dc2:
+    st.markdown(f"""
+    <div class="kpi-card kpi-card-accent">
+      <span class="kpi-card-icon">📅</span>
+      <div class="kpi-card-label">Hoje</div>
+      <div class="kpi-card-value">{_n_today}</div>
+      <div class="kpi-card-sub">{br(_vl_today)} · {_peso_today:.0f} kg</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:{min(int(_n_today/max(_n_total,1)*100),100)}%;background:var(--acc)"></div></div>
+    </div>
+    """, unsafe_allow_html=True)
+with _dc3:
+    st.markdown(f"""
+    <div class="kpi-card kpi-card-yellow">
+      <span class="kpi-card-icon">⏳</span>
+      <div class="kpi-card-label">Pendentes</div>
+      <div class="kpi-card-value" style="color:var(--ylw)">{_n_pend}</div>
+      <div class="kpi-card-sub">aguardando roteirização</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:{_pct_pend}%;background:var(--ylw)"></div></div>
+    </div>
+    """, unsafe_allow_html=True)
+with _dc4:
+    st.markdown(f"""
+    <div class="kpi-card kpi-card-green">
+      <span class="kpi-card-icon">✅</span>
+      <div class="kpi-card-label">Roteirizadas</div>
+      <div class="kpi-card-value" style="color:var(--grn)">{_n_rot}</div>
+      <div class="kpi-card-sub">{_pct_rot}% do total</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:{_pct_rot}%;background:var(--grn)"></div></div>
+    </div>
+    """, unsafe_allow_html=True)
+with _dc5:
+    _vl_pend = _df_pend_all["vltotal"].sum() if not _df_pend_all.empty else 0
+    st.markdown(f"""
+    <div class="kpi-card kpi-card-red">
+      <span class="kpi-card-icon">💰</span>
+      <div class="kpi-card-label">Valor Pendente</div>
+      <div class="kpi-card-value" style="color:var(--red);font-size:1.3rem">{br(_vl_pend)}</div>
+      <div class="kpi-card-sub">em aguardo de saída</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:{_pct_pend}%;background:var(--red)"></div></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Dashboard Row 2: Charts + Recent activity ──────────────────────────────────
+_drow1, _drow2, _drow3 = st.columns([1.4, 1.4, 1.2])
+
+with _drow1:
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="chart-head">
+      <span class="chart-title">🏆 Top Supervisores · valor</span>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+    if not _top_sup.empty:
+        _max_v = _top_sup["valor"].max()
+        for _i, _row in _top_sup.iterrows():
+            _pct_v = int(_row["valor"] / _max_v * 100) if _max_v > 0 else 0
+            _sup_name = str(_row["supervisor"])[:20] if _row["supervisor"] else "—"
+            st.markdown(f"""
+            <div class="rank-item">
+              <span class="rank-num">#{_i+1}</span>
+              <span class="rank-name">{_sup_name}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" style="width:{_pct_v}%"></div></div>
+              <span class="rank-val">{br(_row['valor'])}</span>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.markdown('<div style="padding:.75rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados</div>', unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+with _drow2:
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="chart-head">
+      <span class="chart-title">📍 Top Praças · volume</span>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+    if not _top_praca.empty:
+        _max_q = _top_praca["qtd"].max()
+        for _i, _row in _top_praca.iterrows():
+            _pct_q = int(_row["qtd"] / _max_q * 100) if _max_q > 0 else 0
+            _prc_name = str(_row["praca"])[:20] if _row["praca"] else "—"
+            st.markdown(f"""
+            <div class="rank-item">
+              <span class="rank-num">#{_i+1}</span>
+              <span class="rank-name">{_prc_name}</span>
+              <div class="rank-bar-wrap"><div class="rank-bar" style="width:{_pct_q}%;background:linear-gradient(90deg,var(--grn),var(--acc))"></div></div>
+              <span class="rank-val" style="color:var(--grn)">{_row['qtd']} NFs</span>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.markdown('<div style="padding:.75rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados</div>', unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+with _drow3:
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="chart-head">
+      <span class="chart-title">🕐 Últimas Notas</span>
+    </div>
+    """, unsafe_allow_html=True)
+    if not _last5.empty:
+        for _, _rr in _last5.iterrows():
+            _st = str(_rr.get("status","")).strip()
+            _dot_color = "#34d399" if _st == "roteirizado" else "#fbbf24"
+            _nota_n = str(_rr.get("numnota",""))[:12]
+            _cli_n  = str(_rr.get("nomecliente",""))[:18]
+            st.markdown(f"""
+            <div class="activity-item">
+              <div class="activity-dot" style="background:{_dot_color};box-shadow:0 0 8px {_dot_color}55"></div>
+              <div class="activity-content">
+                <div class="activity-title">NF {_nota_n}</div>
+                <div class="activity-meta">{_cli_n}</div>
+              </div>
+              <div class="activity-value">{br(_rr['vltotal'])}</div>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.markdown('<div style="padding:1.25rem;color:var(--txt3);font-size:.78rem;text-align:center">Nenhum registro ainda.</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div class="sec-div"><div class="sec-div-line"></div><div class="sec-div-txt">Navegação por seção</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # REGISTRO
