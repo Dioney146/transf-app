@@ -1819,130 +1819,120 @@ elif pagina == "🗺️  Roteirização":
         st.caption(f"{len(df_p)} nota(s) pendentes")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ── Tabela de notas pendentes ─────────────────────────────────────────
+        # ── Tabela nativa (st.dataframe) + painel de roteirização ───────────
+        PEND_COLS = [c for c in [
+            "numnota", "numped", "nomecliente", "dt_liberado",
+            "nomevend", "nomesup", "pesobrutotot", "vltotal",
+            "praca", "numcarregamento", "destino", "placa_road", "observacao",
+        ] if c in df_p.columns]
+
+        PEND_CONFIG = {
+            "numnota":         st.column_config.TextColumn("Nota Fiscal",   width=110),
+            "numped":          st.column_config.TextColumn("Pedido",        width=100),
+            "nomecliente":     st.column_config.TextColumn("Cliente",       width=210),
+            "dt_liberado":     st.column_config.TextColumn("Dt. Liberado",  width=110),
+            "nomevend":        st.column_config.TextColumn("Vendedor",      width=160),
+            "nomesup":         st.column_config.TextColumn("Supervisor",    width=140),
+            "pesobrutotot":    st.column_config.NumberColumn("Peso (kg)",   format="%.3f", width=95),
+            "vltotal":         st.column_config.NumberColumn("Valor (R$)",  format="R$ %.2f", width=120),
+            "praca":           st.column_config.TextColumn("Praça",         width=130),
+            "numcarregamento": st.column_config.TextColumn("Carregamento",  width=115),
+            "destino":         st.column_config.TextColumn("Destino",       width=160),
+            "placa_road":      st.column_config.TextColumn("Placa Antiga",  width=115),
+            "observacao":      st.column_config.TextColumn("Observação",    width=220),
+        }
+
         if df_p.empty:
             st.markdown('<div class="al-i" style="margin:1rem 1.25rem">Nenhuma nota pendente nos filtros.</div>', unsafe_allow_html=True)
         else:
-            df_p_sorted = df_p.sort_values("dt_liberado", ascending=False) if not df_p.empty else df_p
+            df_p_sorted = df_p.sort_values("dt_liberado", ascending=False).reset_index(drop=True)
+            df_p_display = dedup_columns(df_p_sorted[PEND_COLS].copy()) if PEND_COLS else df_p_sorted
 
-            # Cabeçalho da tabela
-            st.markdown("""
-            <div style="margin:.75rem 1.25rem 0 1.25rem">
-              <div style="display:grid;grid-template-columns:110px 1.6fr 0.9fr 130px 130px 140px 140px 120px;gap:8px;padding:.65rem 1rem;background:rgba(255,255,255,0.06);border:1px solid var(--bdr);border-radius:10px 10px 0 0;font-size:.78rem;font-weight:700;color:var(--txt2);letter-spacing:.06em;text-transform:uppercase;">
-                <div>Nota / ID</div>
-                <div>Cliente</div>
-                <div>Praça</div>
-                <div>Destino</div>
-                <div style="text-align:right">Valor</div>
-                <div>Placa Ant.</div>
-                <div>Nova Placa</div>
-                <div>Dt. Saída</div>
-              </div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.dataframe(
+                df_p_display,
+                use_container_width=True,
+                hide_index=True,
+                column_config={k: v for k, v in PEND_CONFIG.items() if k in df_p_display.columns},
+            )
 
-            for idx_r, row_r in df_p_sorted.iterrows():
-                rid = str(row_r["id"])
-                pr  = str(row_r.get("placa_road", "") or "")
-                _obs_rot = str(row_r.get("observacao","")).strip()
-                _obs_html = f'<div style="font-size:.72rem;color:var(--ylw);margin-top:3px;font-style:italic">📝 {_obs_rot}</div>' if _obs_rot else ""
-                placa_ant_html = (
-                    f'<span style="font-family:JetBrains Mono,monospace;font-size:.82rem;font-weight:600;'
-                    f'background:rgba(59,130,246,0.14);border:1px solid rgba(59,130,246,0.30);'
-                    f'border-radius:5px;padding:3px 8px;color:#60a5fa">{pr}</span>'
-                    if pr else '<span style="color:var(--txt3);font-size:.82rem">—</span>'
+            st.markdown('<div class="sec-div" style="margin-top:.5rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar nota</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
+
+            # Selectbox para escolher qual nota roteirizar
+            notas_opcoes = df_p_sorted["numnota"].astype(str).tolist()
+            notas_label  = [
+                f"{row['numnota']} — {str(row.get('nomecliente',''))[:30]}"
+                for _, row in df_p_sorted.iterrows()
+            ]
+            sel_idx = st.selectbox(
+                "Selecione a nota para roteirizar",
+                options=range(len(notas_label)),
+                format_func=lambda i: notas_label[i],
+                key="sel_nota_rot",
+            )
+
+            row_r   = df_p_sorted.iloc[sel_idx]
+            rid     = str(row_r["id"])
+
+            c_nova_pl, c_dt_saida, c_btn = st.columns([1.4, 1.1, 0.8])
+            with c_nova_pl:
+                nova_pl_i = st.text_input(
+                    "Nova Placa",
+                    placeholder="Ex: ABC-1234",
+                    key=f"pl_{rid}",
                 )
-
-                # Linha de dados + inputs numa estrutura unificada por st.columns
-                st.markdown(f"""
-                <div style="margin:0 1.25rem;border-left:1px solid var(--bdr);border-right:1px solid var(--bdr);border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.025);">
-                  <div style="display:grid;grid-template-columns:110px 1.6fr 0.9fr 130px 130px 140px 140px 120px;gap:8px;align-items:center;padding:.75rem 1rem;">
-                    <div>
-                      <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;color:var(--txt)">{row_r["numnota"]}</div>
-                      <div style="font-size:.74rem;color:var(--txt3);margin-top:2px">ID {rid}</div>
-                    </div>
-                    <div>
-                      <div style="font-size:.88rem;color:var(--txt);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px" title="{str(row_r.get("nomecliente",""))}">{str(row_r.get("nomecliente",""))[:32]}</div>
-                      {_obs_html}
-                    </div>
-                    <div style="font-size:.82rem;color:var(--txt2)">🏙️ {row_r.get("praca","—")}</div>
-                    <div style="font-size:.82rem;color:var(--txt2)">📍 {str(row_r.get("destino","—"))[:16]}</div>
-                    <div style="font-weight:700;color:var(--acc);font-size:.9rem;text-align:right">{br(row_r["vltotal"])}</div>
-                    <div>{placa_ant_html}</div>
-                    <div style="font-size:.74rem;color:var(--txt3);font-style:italic">↓ preencha abaixo</div>
-                    <div style="font-size:.74rem;color:var(--txt3);font-style:italic">↓ preencha abaixo</div>
-                  </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Inputs na linha seguinte, alinhados às colunas Nova Placa e Dt. Saída
-                _sp1, _sp2, c_nova_pl, c_dt_saida, c_btn = st.columns([0.08, 3.42, 1.1, 0.95, 0.75])
-                with c_nova_pl:
-                    nova_pl_i = st.text_input(
-                        "Nova Placa",
-                        placeholder="Ex: ABC-1234",
-                        key=f"pl_{rid}",
-                        label_visibility="visible",
-                    )
-                with c_dt_saida:
-                    dt_saida_i = st.date_input(
-                        "Data de Saída",
-                        value=None,
-                        key=f"dt_{rid}",
-                        format="DD/MM/YYYY",
-                        label_visibility="visible",
-                    )
-                with c_btn:
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    if st.button("✅ Roteirizar", key=f"btn_{rid}", use_container_width=True):
-                        if not nova_pl_i.strip():
-                            st.markdown('<div class="al-e">⚠️ Informe a placa!</div>', unsafe_allow_html=True)
-                        elif not dt_saida_i:
-                            st.markdown('<div class="al-e">⚠️ Informe a data de saída!</div>', unsafe_allow_html=True)
+            with c_dt_saida:
+                dt_saida_i = st.date_input(
+                    "Data de Saída",
+                    value=None,
+                    key=f"dt_{rid}",
+                    format="DD/MM/YYYY",
+                )
+            with c_btn:
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("✅ Roteirizar", key=f"btn_{rid}", use_container_width=True):
+                    if not nova_pl_i.strip():
+                        st.markdown('<div class="al-e">⚠️ Informe a placa!</div>', unsafe_allow_html=True)
+                    elif not dt_saida_i:
+                        st.markdown('<div class="al-e">⚠️ Informe a data de saída!</div>', unsafe_allow_html=True)
+                    else:
+                        ws_direct = get_sheet("transferencias")
+                        data_direct = ws_direct.get_all_values()
+                        hdr_direct = [str(c).strip() for c in data_direct[0]]
+                        needed = ["placa_veiculo", "dt_saida", "dt_roteirizacao", "status"]
+                        import string as _string
+                        def _col_letter(n):
+                            res = ""
+                            while n > 0:
+                                n, r2 = divmod(n - 1, 26)
+                                res = _string.ascii_uppercase[r2] + res
+                            return res
+                        for _nc in needed:
+                            if _nc not in hdr_direct:
+                                hdr_direct.append(_nc)
+                                ws_direct.update_cell(1, len(hdr_direct), _nc)
+                        col_map = {c: i+1 for i, c in enumerate(hdr_direct)}
+                        target_row = None
+                        for _i, _row in enumerate(data_direct[1:], start=2):
+                            _row_pad = _row + [""] * (len(hdr_direct) - len(_row))
+                            if _row_pad[col_map["id"]-1].strip() == rid:
+                                target_row = _i
+                                break
+                        if target_row:
+                            to_write = {
+                                "placa_veiculo":   nova_pl_i.strip().upper(),
+                                "dt_saida":        dt_saida_i.isoformat(),
+                                "dt_roteirizacao": date.today().strftime("%d/%m/%Y"),
+                                "status":          "roteirizado",
+                            }
+                            for _col, _val in to_write.items():
+                                _cn = col_map[_col]
+                                _ref = f"{_col_letter(_cn)}{target_row}"
+                                ws_direct.update(_ref, [[_val]], value_input_option="USER_ENTERED")
+                            load_transferencias.clear()
+                            st.success(f"✅ Nota {row_r['numnota']} roteirizada! Placa: {nova_pl_i.strip().upper()}")
+                            st.rerun()
                         else:
-                            ws_direct = get_sheet("transferencias")
-                            data_direct = ws_direct.get_all_values()
-                            hdr_direct = [str(c).strip() for c in data_direct[0]]
-                            # Garante colunas no cabeçalho
-                            needed = ["placa_veiculo", "dt_saida", "dt_roteirizacao", "status"]
-                            import string as _string
-                            def _col_letter(n):
-                                res = ""
-                                while n > 0:
-                                    n, r2 = divmod(n - 1, 26)
-                                    res = _string.ascii_uppercase[r2] + res
-                                return res
-                            for _nc in needed:
-                                if _nc not in hdr_direct:
-                                    hdr_direct.append(_nc)
-                                    ws_direct.update_cell(1, len(hdr_direct), _nc)
-                            col_map = {c: i+1 for i, c in enumerate(hdr_direct)}
-                            # Acha a linha pelo ID
-                            target_row = None
-                            for _i, _row in enumerate(data_direct[1:], start=2):
-                                _row_pad = _row + [""] * (len(hdr_direct) - len(_row))
-                                if _row_pad[col_map["id"]-1].strip() == rid:
-                                    target_row = _i
-                                    break
-                            if target_row:
-                                to_write = {
-                                    "placa_veiculo":   nova_pl_i.strip().upper(),
-                                    "dt_saida":        dt_saida_i.isoformat(),
-                                    "dt_roteirizacao": date.today().strftime("%d/%m/%Y"),
-                                    "status":          "roteirizado",
-                                }
-                                for _col, _val in to_write.items():
-                                    _cn = col_map[_col]
-                                    _ref = f"{_col_letter(_cn)}{target_row}"
-                                    ws_direct.update(_ref, [[_val]], value_input_option="USER_ENTERED")
-                                load_transferencias.clear()
-                                st.success(f"✅ Nota {row_r['numnota']} roteirizada! Placa: {nova_pl_i.strip().upper()}")
-                                st.rerun()
-                            else:
-                                st.error(f"ID {rid} não encontrado na planilha.")
-
-            # Rodapé da tabela
-            st.markdown('<div style="margin:0 1.25rem .75rem 1.25rem;border:1px solid var(--bdr);border-top:none;border-radius:0 0 8px 8px;height:6px;background:rgba(248,113,113,0.06)"></div>', unsafe_allow_html=True)
+                            st.error(f"ID {rid} não encontrado na planilha.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
