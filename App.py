@@ -1,14 +1,3 @@
-<think>
-O usuário está dizendo que houve um erro de sintaxe no código que eu forneci. Parece que o código foi truncado ou algo deu errado na transmissão. O erro indica que a string multilinha (triple-quoted string) não foi terminada corretamente.
-
-Eu preciso fornecer o código completo e corrigido. Vou criar uma versão mais robusta que não tenha esse problema - talvez dividindo em partes menores ou garantindo que todas as strings estejam properly fechado.
-
-Vou reescrever o código de forma mais cuidadosa, quebrando em partes menores para evitar o problema de strings não terminadas.
-</think>
-
-Sim! O código ficou incompleto na transmissão. Deixa eu corrigir isso e te passar o código completo e funcional:
-
-```python
 import streamlit as st
 import pandas as pd
 import gspread
@@ -27,7 +16,7 @@ st.set_page_config(
 )
 
 # ============================================================
-# ESTILO CORPORATIVO - PARTE 1
+# ESTILO CORPORATIVO - TEMA ESCURO
 # ============================================================
 st.markdown("""
 <style>
@@ -156,6 +145,7 @@ st.markdown("""
         flex-wrap: wrap;
     }
     
+    /* KPI GRID */
     .kpi-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
@@ -227,15 +217,27 @@ st.markdown("""
         color: var(--branco);
     }
     
-    .tabela-filtros {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid var(--borda);
-        flex-wrap: wrap;
+    /* STATUS TAGS */
+    .status-tag {
+        display: inline-block;
+        padding: 0.25rem 0.625rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
     }
     
+    .status-tag.pendente {
+        background-color: rgba(245, 158, 11, 0.15);
+        color: var(--amarelo_alerta);
+    }
+    
+    .status-tag.roteirizado {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: var(--verde_sucesso);
+    }
+    
+    /* SCROLLBAR */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
@@ -249,15 +251,8 @@ st.markdown("""
         background: var(--borda_clara);
         border-radius: 4px;
     }
-</style>
-""", unsafe_allow_html=True)
-
-# ============================================================
-# STYLE ADDITIONAL - PARTE 2
-# ============================================================
-st.markdown("""
-<style>
-    /* Input styles */
+    
+    /* INPUTS */
     .filtros-container input[type="text"],
     .filtros-container input[type="date"] {
         background-color: var(--bg_secundario) !important;
@@ -273,7 +268,7 @@ st.markdown("""
         outline: none !important;
     }
     
-    /* DataFrame */
+    /* DATAFRAME */
     .dataframe {
         font-family: 'Inter', sans-serif !important;
         font-size: 0.875rem !important;
@@ -301,32 +296,7 @@ st.markdown("""
         background-color: var(--bg_hover) !important;
     }
     
-    /* Status tags */
-    .status-tag {
-        display: inline-block;
-        padding: 0.25rem 0.625rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .status-tag.pendente {
-        background-color: rgba(245, 158, 11, 0.15);
-        color: var(--amarelo_alerta);
-    }
-    
-    .status-tag.roteirizado {
-        background-color: rgba(16, 185, 129, 0.15);
-        color: var(--verde_sucesso);
-    }
-    
-    .status-tag.concluido {
-        background-color: rgba(59, 130, 246, 0.15);
-        color: var(--azul_institucional);
-    }
-    
-    /* Button */
+    /* BUTTONS */
     .stButton > button {
         background-color: var(--bg_card);
         color: var(--texto_principal);
@@ -337,6 +307,24 @@ st.markdown("""
     .stButton > button:hover {
         background-color: var(--bg_hover);
         border-color: var(--borda_clara);
+    }
+    
+    /* ALERTS */
+    .stWarning {
+        background-color: rgba(245, 158, 11, 0.1);
+        border: 1px solid var(--amarelo_alerta);
+        color: var(--amarelo_alerta);
+    }
+    
+    .stSuccess {
+        background-color: rgba(16, 185, 129, 0.1);
+        border: 1px solid var(--verde_sucesso);
+        color: var(--verde_sucesso);
+    }
+    
+    /* Sidebar hide */
+    section[data-testid="stSidebar"] {
+        display: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -352,7 +340,6 @@ gc = gspread.authorize(credentials)
 SPREADSHEET_ID = st.secrets["spreadsheet_id"]
 
 def get_sheet_data(sheet_name):
-    """Retorna os dados brutos de uma aba como DataFrame"""
     try:
         sh = gc.open_by_key(SPREADSHEET_ID)
         worksheet = sh.worksheet(sheet_name)
@@ -371,58 +358,19 @@ def load_road():
     return get_sheet_data("road")
 
 def dedup_columns(df):
-    """Garante que colunas duplicadas não causem conflito"""
     return df.loc[:, ~df.columns.duplicated()]
 
 def br(val):
-    """Formatação de moeda BRL"""
     try:
         return f"R$ {float(val):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     except:
         return "R$ 0,00"
 
 def peso_format(val):
-    """Formatação de peso em KG"""
     try:
         return f"{float(val):,.2f} kg".replace(",", "X").replace(".", ",").replace("X", ".")
     except:
         return "0,00 kg"
-
-# ============================================================
-# SIDEBAR - MENU
-# ============================================================
-with st.sidebar:
-    st.markdown("""
-    <div class="logo-container">
-        <p class="logo-titulo">🚛 Sistema de Transferências</p>
-        <p class="logo-subtitulo">Logística e Gestão</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Menu itens
-    menu_opcoes = [
-        ("📊", "Dashboard", True),
-        ("📋", "Registro", False),
-        ("🗺️", "Roteirização", False),
-        ("📜", "Histórico", False),
-    ]
-    
-    for icon, titulo, ativo in menu_opcoes:
-        classe = "menu-item active" if ativo else "menu-item"
-        st.markdown(f"""
-        <div class="{classe}">
-            <span class="menu-icon">{icon}</span>
-            <span>{titulo}</span>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("<hr style='border-color: #32363e; margin: 1.5rem 0;'>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style="padding: 0.5rem 1rem; color: #6b7280; font-size: 0.75rem;">
-        © 2024 - Sistema de Transferências<br>
-        Versão 1.0.0
-    </div>
-    """, unsafe_allow_html=True)
 
 # ============================================================
 # HEADER
@@ -475,7 +423,6 @@ data_str = data_filtro.isoformat()
 data_display = data_filtro.strftime("%d/%m/%Y")
 
 df_all = load_transferencias()
-df_road = load_road()
 
 if df_all.empty:
     st.warning("Nenhum dado encontrado na aba 'transferências'.")
@@ -495,28 +442,47 @@ else:
 n_total = len(df_h)
 n_pend = len(df_h[df_h["status"] != "roteirizado"]) if "status" in df_h.columns else 0
 n_rot = len(df_h[df_h["status"] == "roteirizado"]) if "status" in df_h.columns else 0
-
-# Calcula valor total e peso total
 valor_total = df_h["vltotal"].sum() if "vltotal" in df_h.columns else 0
-peso_total = df_h["peso"].sum() if "peso" in df_h.columns else 0
+peso_total = df_h["pesobrutotot"].sum() if "pesobrutotot" in df_h.columns else 0
 
 # Renderiza KPIs
 st.markdown("""
 <div class="kpi-grid">
     <div class="kpi-card">
         <div class="kpi-label">Total de Notas</div>
-        <div class="kpi-valor azul">{n_total}</div>
+        <div class="kpi-valor azul">__N_TOTAL__</div>
         <div class="kpi-sub">registradas na data</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-label">Pendentes</div>
-        <div class="kpi-valor amarelo">{n_pend}</div>
+        <div class="kpi-valor amarelo">__N_PEND__</div>
         <div class="kpi-sub">aguardando roteirização</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-label">Roteirizadas</div>
-        <div class="kpi-valor verde">{n_rot}</div>
+        <div class="kpi-valor verde">__N_ROT__</div>
         <div class="kpi-sub">com placa definida</div>
     </div>
     <div class="kpi-card">
-        <div class="kpi-label
+        <div class="kpi-label">Valor Total</div>
+        <div class="kpi-valor">__VL_TOTAL__</div>
+        <div class="kpi-sub">em transferências</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Peso Total</div>
+        <div class="kpi-valor">__PS_TOTAL__</div>
+        <div class="kpi-sub">kg transportados</div>
+    </div>
+</div>
+""".replace("__N_TOTAL__", str(n_total))
+   .replace("__N_PEND__", str(n_pend))
+   .replace("__N_ROT__", str(n_rot))
+   .replace("__VL_TOTAL__", br(valor_total))
+   .replace("__PS_TOTAL__", peso_format(peso_total)), unsafe_allow_html=True)
+
+# TABELA
+st.markdown('<div class="tabela-container">', unsafe_allow_html=True)
+st.markdown(f"""
+<div class="tabela-header">
+    <span class="tabela-titulo">📋 Histórico de Transferências</span>
+    <span class="card-count">{
