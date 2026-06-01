@@ -1149,8 +1149,21 @@ if pagina == "📝  Registro":
 # ROTEIRIZAÇÃO
 # ═══════════════════════════════════════════════════════════════════════════════
 elif pagina == "🗺️  Roteirização":
-    pend = df_all[df_all["status"].isin(["pendente", ""]) | df_all["status"].isna()] if not df_all.empty else pd.DataFrame()
-    rote = df[df["status"] == "roteirizado"] if not df.empty else pd.DataFrame()
+    # pend: todas as notas pendentes (qualquer data), garantindo colunas de roteirização
+    pend = df_all[df_all["status"].isin(["pendente", ""]) | df_all["status"].isna()].copy() if not df_all.empty else pd.DataFrame()
+    # rote: usa df_all (não df filtrado por data) para não perder notas roteirizadas em outras datas
+    rote_base = df_all[df_all["status"] == "roteirizado"].copy() if not df_all.empty else pd.DataFrame()
+    # Aplica filtro de data somente se não for "ver todas"
+    if ver_todas or rote_base.empty:
+        rote = rote_base
+    else:
+        rote = rote_base[rote_base["dt_transferencia"] == data_str]
+    # Garante que colunas de roteirização existem
+    for _c in ["placa_veiculo", "dt_saida", "dt_roteirizacao"]:
+        if not pend.empty and _c not in pend.columns:
+            pend[_c] = ""
+        if not rote.empty and _c not in rote.columns:
+            rote[_c] = ""
 
     st.markdown(f"""
     <div class="page-title-block">
@@ -1298,15 +1311,23 @@ elif pagina == "🗺️  Roteirização":
             m = df_r.apply(lambda r: br_input.lower() in " ".join(str(v) for v in r).lower(), axis=1)
             df_r = df_r[m]
 
+        # Garante colunas de roteirização no df_r
+        for _c in ["placa_veiculo", "dt_saida"]:
+            if _c not in df_r.columns:
+                df_r[_c] = ""
         ROT_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida"] if c in df_r.columns]
         ROT_CONFIG = {
             **STD_CONFIG,
-            "placa_veiculo": st.column_config.TextColumn("Nova Placa", width=110),
-            "dt_saida":      st.column_config.TextColumn("Dt. Saída",  width=100),
+            "placa_veiculo": st.column_config.TextColumn("Nova Placa", width=120),
+            "dt_saida":      st.column_config.TextColumn("Dt. Saída",  width=110),
         }
         df_rd = dedup_columns(df_r[ROT_COLS].copy())
         if "dt_saida" in df_rd.columns:
             df_rd["dt_saida"] = df_rd["dt_saida"].apply(fmt_date)
+        # Substitui vazios por traço para exibição limpa
+        for _c2 in ["placa_veiculo", "dt_saida"]:
+            if _c2 in df_rd.columns:
+                df_rd[_c2] = df_rd[_c2].replace({"": "—", "nan": "—", "None": "—"})
 
         st.dataframe(
             df_rd.sort_values("dt_liberado", ascending=False) if not df_rd.empty else df_rd,
