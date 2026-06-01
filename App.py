@@ -1718,34 +1718,6 @@ elif pagina == "🗺️  Roteirização":
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Resumo rápido da roteirização ──────────────────────────────────────────
-    _peso_pend_rot = pend["pesobrutotot"].sum() if not pend.empty else 0
-    _peso_rot_rot  = rote["pesobrutotot"].sum() if not rote.empty else 0
-    st.markdown(f"""
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
-      <div class="kpi-mini" style="border-left:3px solid #f87171">
-        <div class="kpi-mini-label">⏳ Pendentes</div>
-        <div class="kpi-mini-value" style="color:#f87171">{len(pend)}</div>
-        <div class="kpi-mini-sub">{br(pend["vltotal"].sum()) if not pend.empty else "R$ 0,00"}</div>
-      </div>
-      <div class="kpi-mini" style="border-left:3px solid #10b981">
-        <div class="kpi-mini-label">✅ Roteirizadas</div>
-        <div class="kpi-mini-value" style="color:#10b981">{len(rote)}</div>
-        <div class="kpi-mini-sub">{br(rote["vltotal"].sum()) if not rote.empty else "R$ 0,00"}</div>
-      </div>
-      <div class="kpi-mini" style="border-left:3px solid #fbbf24">
-        <div class="kpi-mini-label">⚖️ Peso Pendente</div>
-        <div class="kpi-mini-value" style="color:#fbbf24">{_peso_pend_rot:.0f} kg</div>
-        <div class="kpi-mini-sub">total</div>
-      </div>
-      <div class="kpi-mini" style="border-left:3px solid #3b82f6">
-        <div class="kpi-mini-label">⚖️ Peso Roteirizado</div>
-        <div class="kpi-mini-value" style="color:#3b82f6">{_peso_rot_rot:.0f} kg</div>
-        <div class="kpi-mini-sub">total</div>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
     st.markdown('<div class="card" style="border-top:3px solid #f87171">', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="card-head">
