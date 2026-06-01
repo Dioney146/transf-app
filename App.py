@@ -47,11 +47,18 @@ TCOLS = [
 ]
 
 def ensure_header():
+    """
+    Garante que a aba 'transferencias' tem EXATAMENTE os cabeçalhos de TCOLS
+    nas posições corretas. Sempre reescreve a linha 1 para evitar desalinhamento.
+    """
     ws = get_sheet("transferencias")
     hdr = ws.row_values(1)
-    needs_fix = (len(hdr) < len(TCOLS) or hdr[:len(TCOLS)] != TCOLS)
-    if needs_fix:
-        ws.update("A1:S1", [TCOLS])
+    # Verifica se já está correto (evita chamada desnecessária à API)
+    if hdr[:len(TCOLS)] == TCOLS and len(hdr) >= len(TCOLS):
+        return ws
+    # Reescreve linha 1 completa com TCOLS
+    end_col = chr(ord("A") + len(TCOLS) - 1)  # "S" para 19 colunas
+    ws.update(f"A1:{end_col}1", [TCOLS])
     return ws
 
 def dedup_columns(df):
@@ -117,29 +124,60 @@ def append_transf(row):
     load_transferencias.clear()
 
 def update_transf(tid, updates):
+    """
+    Atualiza campos de um registro pelo ID.
+    Sempre relê o cabeçalho real da planilha para mapear colunas.
+    Se a coluna não existe no cabeçalho, adiciona ela.
+    Usa range notation (ex: "O2") para garantir a célula certa.
+    """
     ws = ensure_header()
+    # Força leitura fresca sem cache
     data = ws.get_all_values()
     if not data:
         return
-    hdr = data[0]
-    col_idx = {}
-    for idx, c in enumerate(hdr, start=1):
-        col_idx[c.strip()] = idx
+
+    hdr = [str(c).strip() for c in data[0]]
+
+    # Garante que todas as colunas de updates existem no cabeçalho
     for col in updates:
-        if col not in col_idx:
-            new_idx = max(col_idx.values()) + 1 if col_idx else 1
-            ws.update_cell(1, new_idx, col)
-            col_idx[col] = new_idx
+        if col not in hdr:
+            # Adiciona a coluna no final do cabeçalho
+            hdr.append(col)
+            col_num = len(hdr)
+            ws.update_cell(1, col_num, col)
+
+    # Monta mapa coluna -> número (1-based)
+    col_idx = {c: i + 1 for i, c in enumerate(hdr)}
+
+    # Encontra a linha do registro pelo ID
+    row_num = None
     for i, row in enumerate(data[1:], start=2):
-        row_dict = dict(zip([c.strip() for c in hdr], row))
-        if row_dict.get("id", "") == str(tid):
-            cells = []
-            for col, val in updates.items():
-                if col in col_idx:
-                    cells.append(gspread.Cell(i, col_idx[col], str(val)))
-            if cells:
-                ws.update_cells(cells, value_input_option="USER_ENTERED")
+        # Padeia a linha se necessário
+        row_padded = row + [""] * (len(hdr) - len(row))
+        row_dict = dict(zip(hdr, row_padded))
+        if row_dict.get("id", "").strip() == str(tid).strip():
+            row_num = i
             break
+
+    if row_num is None:
+        st.warning(f"ID {tid} não encontrado na planilha.")
+        return
+
+    # Atualiza cada campo individualmente usando notação A1 para precisão máxima
+    import string
+    def col_letter(n):
+        """Converte número de coluna (1-based) para letra(s) estilo Excel."""
+        result = ""
+        while n > 0:
+            n, rem = divmod(n - 1, 26)
+            result = string.ascii_uppercase[rem] + result
+        return result
+
+    for col, val in updates.items():
+        if col in col_idx:
+            cell_ref = f"{col_letter(col_idx[col])}{row_num}"
+            ws.update(cell_ref, [[str(val)]], value_input_option="USER_ENTERED")
+
     load_transferencias.clear()
 
 def delete_transf(tid):
@@ -1276,14 +1314,27 @@ elif pagina == "🗺️  Roteirização":
                 elif not dt_saida_rot:
                     st.markdown('<div class="al-e">⚠️ Informe a data de saída!</div>', unsafe_allow_html=True)
                 else:
-                    with st.spinner("Salvando..."):
-                        update_transf(int(sel), {
-                            "placa_veiculo":   nova_pl.strip(),
-                            "dt_roteirizacao": date.today().strftime("%d/%m/%Y"),
-                            "dt_saida":        dt_saida_rot.isoformat(),
-                            "status":          "roteirizado",
-                        })
-                    st.success(f"✅ Nota roteirizada! Placa: {nova_pl.strip()} · Saída: {fmt_date(dt_saida_rot.isoformat())}")
+                    updates_rot = {
+                        "placa_veiculo":   nova_pl.strip(),
+                        "dt_roteirizacao": date.today().strftime("%d/%m/%Y"),
+                        "dt_saida":        dt_saida_rot.isoformat(),
+                        "status":          "roteirizado",
+                    }
+                    with st.spinner("Salvando na planilha..."):
+                        update_transf(int(sel), updates_rot)
+                    # Confirma leitura após gravar
+                    load_transferencias.clear()
+                    df_confirm = load_transferencias()
+                    row_confirm = df_confirm[df_confirm["id"].astype(str) == str(sel)]
+                    if not row_confirm.empty:
+                        pl_ok = str(row_confirm.iloc[0].get("placa_veiculo", ""))
+                        dt_ok = str(row_confirm.iloc[0].get("dt_saida", ""))
+                        if pl_ok.strip() and pl_ok.strip() != nova_pl.strip():
+                            st.markdown(f'<div class="al-w">⚠️ Placa gravada: <b>{pl_ok}</b> (esperado: <b>{nova_pl.strip()}</b>). Verifique a planilha.</div>', unsafe_allow_html=True)
+                        else:
+                            st.success(f"✅ Gravado! Placa: {pl_ok} · Saída: {fmt_date(dt_ok)}")
+                    else:
+                        st.success(f"✅ Nota roteirizada! Placa: {nova_pl.strip()} · Saída: {fmt_date(dt_saida_rot.isoformat())}")
                     st.rerun()
         else:
             st.markdown('<div class="al-i">Nenhuma nota pendente nos filtros selecionados.</div>', unsafe_allow_html=True)
