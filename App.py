@@ -1298,44 +1298,79 @@ elif pagina == "🗺️  Roteirização":
                         key=f"dt_{rid}",
                         format="DD/MM/YYYY",
                     )
-                with c3:
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    if st.button("✅ Roteirizar", key=f"btn_{rid}", use_container_width=True):
-                        if not nova_pl_i.strip():
-                            st.markdown('<div class="al-e">⚠️ Informe a placa!</div>', unsafe_allow_html=True)
-                        elif not dt_saida_i:
-                            st.markdown('<div class="al-e">⚠️ Informe a data de saída!</div>', unsafe_allow_html=True)
-                        else:
-                            ws_direct = get_sheet("transferencias")
-                            data_direct = ws_direct.get_all_values()
-                            hdr_direct = [str(c).strip() for c in data_direct[0]]
-                            # Garante colunas no cabeçalho
-                            needed = ["placa_veiculo", "dt_saida", "dt_roteirizacao", "status"]
-                            import string as _string
-                            def _col_letter(n):
-                                res = ""
-                                while n > 0:
-                                    n, r2 = divmod(n - 1, 26)
-                                    res = _string.ascii_uppercase[r2] + res
-                                return res
-                            for _nc in needed:
-                                if _nc not in hdr_direct:
-                                    hdr_direct.append(_nc)
-                                    ws_direct.update_cell(1, len(hdr_direct), _nc)
-                            col_map = {c: i+1 for i, c in enumerate(hdr_direct)}
-                            # Acha a linha pelo ID
-                            target_row = None
-                            for _i, _row in enumerate(data_direct[1:], start=2):
-                                _row_pad = _row + [""] * (len(hdr_direct) - len(_row))
-                                if _row_pad[col_map["id"]-1].strip() == rid:
-                                    target_row = _i
-                                    break
-                            if target_row:
-                                to_write = {
-                                    "placa_veiculo":   nova_pl_i.strip().upper(),
-                                    "dt_saida":        dt_saida_i.isoformat(),
-                                    "dt_roteirizacao": date.today().strftime("%d/%m/%Y"),
-                                    "status":          "roteirizado",
+               if st.button("✅ Roteirizar", key=f"btn_{rid}", use_container_width=True):
+    if not nova_pl_i.strip():
+        st.markdown('<div class="al-e">⚠️ Informe a placa!</div>', unsafe_allow_html=True)
+    elif not dt_saida_i:
+        st.markdown('<div class="al-e">⚠️ Informe a data de saída!</div>', unsafe_allow_html=True)
+    else:
+        import string as _string
+
+        def _col_letter(n):
+            res = ""
+            while n > 0:
+                n, r2 = divmod(n - 1, 26)
+                res = _string.ascii_uppercase[r2] + res
+            return res
+
+        ws_direct = get_sheet("transferencias")
+
+        # Step 1: read current header ONCE
+        hdr_direct = [str(c).strip() for c in ws_direct.row_values(1)]
+
+        # Step 2: add missing columns to the sheet header NOW,
+        #         before reading data, so the sheet and hdr_direct stay in sync
+        needed = ["placa_veiculo", "dt_saida", "dt_roteirizacao", "status"]
+        for _nc in needed:
+            if _nc not in hdr_direct:
+                hdr_direct.append(_nc)
+                ws_direct.update_cell(1, len(hdr_direct), _nc)
+
+        # Step 3: re-read ALL data now that the header is final
+        data_direct = ws_direct.get_all_values()
+        if not data_direct:
+            st.error("Planilha vazia.")
+            st.stop()
+
+        # Rebuild col_map from the ACTUAL header in the sheet (row 0 of data_direct)
+        live_hdr = [str(c).strip() for c in data_direct[0]]
+        col_map = {c: i + 1 for i, c in enumerate(live_hdr)}
+
+        # Step 4: find the target row by ID
+        target_row = None
+        for _i, _row in enumerate(data_direct[1:], start=2):
+            # Pad to live header length so index access is safe
+            _row_pad = _row + [""] * (len(live_hdr) - len(_row))
+            id_col_idx = col_map.get("id", 1) - 1  # 0-based
+            if _row_pad[id_col_idx].strip() == str(rid).strip():
+                target_row = _i
+                break
+
+        if target_row is None:
+            st.error(f"ID {rid} não encontrado na planilha.")
+        else:
+            to_write = {
+                "placa_veiculo":   nova_pl_i.strip().upper(),
+                "dt_saida":        dt_saida_i.isoformat(),
+                "dt_roteirizacao": date.today().strftime("%d/%m/%Y"),
+                "status":          "roteirizado",
+            }
+            for _col, _val in to_write.items():
+                if _col not in col_map:
+                    st.warning(f"Coluna '{_col}' não encontrada após sync.")
+                    continue
+                _cn = col_map[_col]
+                _ref = f"{_col_letter(_cn)}{target_row}"
+                ws_direct.update(
+                    _ref, [[str(_val)]],
+                    value_input_option="USER_ENTERED"
+                )
+            load_transferencias.clear()
+            st.success(
+                f"✅ Nota {row_r['numnota']} roteirizada! "
+                f"Placa: {nova_pl_i.strip().upper()}"
+            )
+            st.rerun()
                                 }
                                 for _col, _val in to_write.items():
                                     _cn = col_map[_col]
