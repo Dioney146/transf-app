@@ -600,7 +600,7 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 }}
 
 /* ── Page body ── */
-.page-body {{ padding: 2rem 2rem 3rem; max-width: 1440px; margin: 0 auto; }}
+.page-body {{ padding: 1rem 1.5rem 2rem; max-width: 1440px; margin: 0 auto; }}
 
 /* ── Page title ── */
 .page-title-block {{ margin-bottom: 1.75rem; }}
@@ -1299,154 +1299,102 @@ if not _df_all_dash.empty and "praca" in _df_all_dash.columns:
 # Last 5 notas
 _last5 = _df_all_dash.tail(5)[::-1] if not _df_all_dash.empty else pd.DataFrame()
 
-st.markdown("""
-<div class="dash-welcome">
-  <div class="dash-welcome-left">
-    <div class="page-eyebrow">Dashboard</div>
-    <div class="page-title">Visão Geral — Transferências</div>
-    <div class="page-sub">Resumo em tempo real · todos os registros</div>
+_vl_pend = _df_pend_all["vltotal"].sum() if not _df_pend_all.empty else 0
+
+# ── Dashboard compacto: KPIs em linha + rankings lado a lado ──────────────────
+st.markdown(f"""
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
+  <div class="kpi-mini" style="border-left:3px solid var(--acc)">
+    <div class="kpi-mini-label">📦 Total de Notas</div>
+    <div class="kpi-mini-value">{_n_total}</div>
+    <div class="kpi-mini-sub">{br(_vl_total)}</div>
+  </div>
+  <div class="kpi-mini" style="border-left:3px solid var(--acc)">
+    <div class="kpi-mini-label">📅 Hoje</div>
+    <div class="kpi-mini-value">{_n_today}</div>
+    <div class="kpi-mini-sub">{br(_vl_today)} · {_peso_today:.0f} kg</div>
+  </div>
+  <div class="kpi-mini" style="border-left:3px solid var(--ylw)">
+    <div class="kpi-mini-label">⏳ Pendentes</div>
+    <div class="kpi-mini-value" style="color:var(--ylw)">{_n_pend}</div>
+    <div class="kpi-mini-sub">aguardando roteirização</div>
+  </div>
+  <div class="kpi-mini" style="border-left:3px solid var(--grn)">
+    <div class="kpi-mini-label">✅ Roteirizadas</div>
+    <div class="kpi-mini-value" style="color:var(--grn)">{_n_rot}</div>
+    <div class="kpi-mini-sub">{_pct_rot}% do total</div>
+  </div>
+  <div class="kpi-mini" style="border-left:3px solid var(--red)">
+    <div class="kpi-mini-label">💰 Valor Pendente</div>
+    <div class="kpi-mini-value" style="color:var(--red);font-size:1.05rem">{br(_vl_pend)}</div>
+    <div class="kpi-mini-sub">em aguardo de saída</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ── KPI Cards ──────────────────────────────────────────────────────────────────
-_dc1, _dc2, _dc3, _dc4, _dc5 = st.columns(5)
-with _dc1:
-    st.markdown(f"""
-    <div class="kpi-card kpi-card-accent">
-      <span class="kpi-card-icon">📦</span>
-      <div class="kpi-card-label">Total de Notas</div>
-      <div class="kpi-card-value">{_n_total}</div>
-      <div class="kpi-card-sub">{br(_vl_total)}</div>
-      <div class="progress-wrap"><div class="progress-bar" style="width:100%;background:var(--acc)"></div></div>
-    </div>
-    """, unsafe_allow_html=True)
-with _dc2:
-    st.markdown(f"""
-    <div class="kpi-card kpi-card-accent">
-      <span class="kpi-card-icon">📅</span>
-      <div class="kpi-card-label">Hoje</div>
-      <div class="kpi-card-value">{_n_today}</div>
-      <div class="kpi-card-sub">{br(_vl_today)} · {_peso_today:.0f} kg</div>
-      <div class="progress-wrap"><div class="progress-bar" style="width:{min(int(_n_today/max(_n_total,1)*100),100)}%;background:var(--acc)"></div></div>
-    </div>
-    """, unsafe_allow_html=True)
-with _dc3:
-    st.markdown(f"""
-    <div class="kpi-card kpi-card-yellow">
-      <span class="kpi-card-icon">⏳</span>
-      <div class="kpi-card-label">Pendentes</div>
-      <div class="kpi-card-value" style="color:var(--ylw)">{_n_pend}</div>
-      <div class="kpi-card-sub">aguardando roteirização</div>
-      <div class="progress-wrap"><div class="progress-bar" style="width:{_pct_pend}%;background:var(--ylw)"></div></div>
-    </div>
-    """, unsafe_allow_html=True)
-with _dc4:
-    st.markdown(f"""
-    <div class="kpi-card kpi-card-green">
-      <span class="kpi-card-icon">✅</span>
-      <div class="kpi-card-label">Roteirizadas</div>
-      <div class="kpi-card-value" style="color:var(--grn)">{_n_rot}</div>
-      <div class="kpi-card-sub">{_pct_rot}% do total</div>
-      <div class="progress-wrap"><div class="progress-bar" style="width:{_pct_rot}%;background:var(--grn)"></div></div>
-    </div>
-    """, unsafe_allow_html=True)
-with _dc5:
-    _vl_pend = _df_pend_all["vltotal"].sum() if not _df_pend_all.empty else 0
-    st.markdown(f"""
-    <div class="kpi-card kpi-card-red">
-      <span class="kpi-card-icon">💰</span>
-      <div class="kpi-card-label">Valor Pendente</div>
-      <div class="kpi-card-value" style="color:var(--red);font-size:1.3rem">{br(_vl_pend)}</div>
-      <div class="kpi-card-sub">em aguardo de saída</div>
-      <div class="progress-wrap"><div class="progress-bar" style="width:{_pct_pend}%;background:var(--red)"></div></div>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# ── Dashboard Row 2: Charts + Recent activity ──────────────────────────────────
 _drow1, _drow2, _drow3 = st.columns([1.4, 1.4, 1.2])
 
 with _drow1:
     st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="chart-head">
-      <span class="chart-title">🏆 Top Supervisores · valor</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="chart-head"><span class="chart-title">🏆 Top Supervisores · valor</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="chart-body">', unsafe_allow_html=True)
     if not _top_sup.empty:
         _max_v = _top_sup["valor"].max()
         for _i, _row in _top_sup.iterrows():
             _pct_v = int(_row["valor"] / _max_v * 100) if _max_v > 0 else 0
-            _sup_name = str(_row["supervisor"])[:20] if _row["supervisor"] else "—"
-            st.markdown(f"""
+            _sup_name = str(_row["supervisor"])[:22] if _row["supervisor"] else "—"
+            st.markdown(f'''
             <div class="rank-item">
               <span class="rank-num">#{_i+1}</span>
               <span class="rank-name">{_sup_name}</span>
               <div class="rank-bar-wrap"><div class="rank-bar" style="width:{_pct_v}%"></div></div>
               <span class="rank-val">{br(_row['valor'])}</span>
-            </div>
-            """, unsafe_allow_html=True)
+            </div>''', unsafe_allow_html=True)
     else:
-        st.markdown('<div style="padding:.75rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados</div>', unsafe_allow_html=True)
+        st.markdown('<div style="padding:.5rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados</div>', unsafe_allow_html=True)
     st.markdown("</div></div>", unsafe_allow_html=True)
 
 with _drow2:
     st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="chart-head">
-      <span class="chart-title">📍 Top Praças · volume</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="chart-head"><span class="chart-title">📍 Top Praças · volume</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="chart-body">', unsafe_allow_html=True)
     if not _top_praca.empty:
         _max_q = _top_praca["qtd"].max()
         for _i, _row in _top_praca.iterrows():
             _pct_q = int(_row["qtd"] / _max_q * 100) if _max_q > 0 else 0
-            _prc_name = str(_row["praca"])[:20] if _row["praca"] else "—"
-            st.markdown(f"""
+            _prc_name = str(_row["praca"])[:22] if _row["praca"] else "—"
+            st.markdown(f'''
             <div class="rank-item">
               <span class="rank-num">#{_i+1}</span>
               <span class="rank-name">{_prc_name}</span>
               <div class="rank-bar-wrap"><div class="rank-bar" style="width:{_pct_q}%;background:linear-gradient(90deg,var(--grn),var(--acc))"></div></div>
               <span class="rank-val" style="color:var(--grn)">{_row['qtd']} NFs</span>
-            </div>
-            """, unsafe_allow_html=True)
+            </div>''', unsafe_allow_html=True)
     else:
-        st.markdown('<div style="padding:.75rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados</div>', unsafe_allow_html=True)
+        st.markdown('<div style="padding:.5rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados</div>', unsafe_allow_html=True)
     st.markdown("</div></div>", unsafe_allow_html=True)
 
 with _drow3:
     st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="chart-head">
-      <span class="chart-title">🕐 Últimas Notas</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="chart-head"><span class="chart-title">🕐 Últimas Notas</span></div>', unsafe_allow_html=True)
     if not _last5.empty:
         for _, _rr in _last5.iterrows():
-            _st = str(_rr.get("status","")).strip()
-            _dot_color = "#34d399" if _st == "roteirizado" else "#fbbf24"
-            _nota_n = str(_rr.get("numnota",""))[:12]
-            _cli_n  = str(_rr.get("nomecliente",""))[:18]
-            st.markdown(f"""
+            _st2 = str(_rr.get("status","")).strip()
+            _dot_color = "#34d399" if _st2 == "roteirizado" else "#fbbf24"
+            st.markdown(f'''
             <div class="activity-item">
               <div class="activity-dot" style="background:{_dot_color};box-shadow:0 0 8px {_dot_color}55"></div>
               <div class="activity-content">
-                <div class="activity-title">NF {_nota_n}</div>
-                <div class="activity-meta">{_cli_n}</div>
+                <div class="activity-title">NF {str(_rr.get("numnota",""))[:12]}</div>
+                <div class="activity-meta">{str(_rr.get("nomecliente",""))[:20]}</div>
               </div>
               <div class="activity-value">{br(_rr['vltotal'])}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            </div>''', unsafe_allow_html=True)
     else:
-        st.markdown('<div style="padding:1.25rem;color:var(--txt3);font-size:.78rem;text-align:center">Nenhum registro ainda.</div>', unsafe_allow_html=True)
+        st.markdown('<div style="padding:1rem;color:var(--txt3);font-size:.78rem;text-align:center">Nenhum registro ainda.</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="sec-div"><div class="sec-div-line"></div><div class="sec-div-txt">Navegação por seção</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
+st.markdown('<div class="sec-div" style="margin:.75rem 0"><div class="sec-div-line"></div><div class="sec-div-txt">Navegação por seção</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # REGISTRO
@@ -1770,23 +1718,33 @@ elif pagina == "🗺️  Roteirização":
     </div>
     """, unsafe_allow_html=True)
 
-    k1, k2, k3, k4 = st.columns(4)
-    for col, label, value, sub, color in [
-        (k1, "Pendentes",    str(len(pend)),  br(pend["vltotal"].sum()) if not pend.empty else "R$ 0,00",  "#f87171"),
-        (k2, "Roteirizadas", str(len(rote)),  br(rote["vltotal"].sum()) if not rote.empty else "R$ 0,00",  "#10b981"),
-        (k3, "Peso Pend.",   f"{pend['pesobrutotot'].sum():.0f} kg" if not pend.empty else "0 kg", "total", "#fbbf24"),
-        (k4, "Peso Rot.",    f"{rote['pesobrutotot'].sum():.0f} kg" if not rote.empty else "0 kg", "total", "#3b82f6"),
-    ]:
-        with col:
-            st.markdown(f"""
-            <div class="kpi-mini">
-              <div class="kpi-mini-label">{label}</div>
-              <div class="kpi-mini-value" style="color:{color}">{value}</div>
-              <div class="kpi-mini-sub">{sub}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
+    # ── Resumo rápido da roteirização ──────────────────────────────────────────
+    _peso_pend_rot = pend["pesobrutotot"].sum() if not pend.empty else 0
+    _peso_rot_rot  = rote["pesobrutotot"].sum() if not rote.empty else 0
+    st.markdown(f"""
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+      <div class="kpi-mini" style="border-left:3px solid #f87171">
+        <div class="kpi-mini-label">⏳ Pendentes</div>
+        <div class="kpi-mini-value" style="color:#f87171">{len(pend)}</div>
+        <div class="kpi-mini-sub">{br(pend["vltotal"].sum()) if not pend.empty else "R$ 0,00"}</div>
+      </div>
+      <div class="kpi-mini" style="border-left:3px solid #10b981">
+        <div class="kpi-mini-label">✅ Roteirizadas</div>
+        <div class="kpi-mini-value" style="color:#10b981">{len(rote)}</div>
+        <div class="kpi-mini-sub">{br(rote["vltotal"].sum()) if not rote.empty else "R$ 0,00"}</div>
+      </div>
+      <div class="kpi-mini" style="border-left:3px solid #fbbf24">
+        <div class="kpi-mini-label">⚖️ Peso Pendente</div>
+        <div class="kpi-mini-value" style="color:#fbbf24">{_peso_pend_rot:.0f} kg</div>
+        <div class="kpi-mini-sub">total</div>
+      </div>
+      <div class="kpi-mini" style="border-left:3px solid #3b82f6">
+        <div class="kpi-mini-label">⚖️ Peso Roteirizado</div>
+        <div class="kpi-mini-value" style="color:#3b82f6">{_peso_rot_rot:.0f} kg</div>
+        <div class="kpi-mini-sub">total</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown('<div class="card" style="border-top:3px solid #f87171">', unsafe_allow_html=True)
     st.markdown(f"""
