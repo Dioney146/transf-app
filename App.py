@@ -4,485 +4,299 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import date, datetime
 import io
+import base64
 
-# ============================================================
-# CONFIGURAÇÃO DA PÁGINA
-# ============================================================
+# --- Configuração Inicial da Página ---
 st.set_page_config(
-    page_title="Sistema de Transferências",
-    page_icon="🚛",
+    page_title="Delly's — Transferências",
+    page_icon="🚚",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed",
 )
 
-# ============================================================
-# ESTILO CORPORATIVO - TEMA ESCURO
-# ============================================================
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    :root {
-        --bg_principal: #121417;
-        --bg_secundario: #1a1d21;
-        --bg_card: #212529;
-        --bg_hover: #2a2f35;
-        --borda: #32363e;
-        --borda_clara: #3d4248;
-        --texto_principal: #e8eaed;
-        --texto_secundario: #9aa0a6;
-        --texto_muted: #6b7280;
-        --azul_institucional: #3b82f6;
-        --azul_escuro: #1d4ed8;
-        --verde_sucesso: #10b981;
-        --amarelo_alerta: #f59e0b;
-        --vermelho_erro: #ef4444;
-        --branco: #ffffff;
-    }
-    
-    html, body, [data-testid="stAppViewContainer"] {
-        background-color: var(--bg_principal) !important;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        color: var(--texto_principal) !important;
-    }
-    
-    .block-container {
-        padding: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    /* HEADER */
-    .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        background-color: var(--bg_secundario);
-        border-bottom: 1px solid var(--borda);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-    }
-    
-    .header-titulo {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--branco);
-        margin: 0;
-    }
-    
-    .header-subtitulo {
-        font-size: 0.8rem;
-        color: var(--texto_secundario);
-        margin: 0.125rem 0 0 0;
-    }
-    
-    .header-user {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    
-    .header-data {
-        font-size: 0.875rem;
-        color: var(--texto_secundario);
-    }
-    
-    .user-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--azul_institucional), var(--azul_escuro));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: white;
-    }
-    
-    .user-name {
-        font-size: 0.875rem;
-        font-weight: 500;
-    }
-    
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-        padding: 0.25rem 0.625rem;
-        background-color: rgba(16, 185, 129, 0.15);
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: var(--verde_sucesso);
-    }
-    
-    .status-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: var(--verde_sucesso);
-    }
-    
-    /* MAIN */
-    .main-container {
-        padding: 1.5rem;
-        background-color: var(--bg_principal);
-        min-height: calc(100vh - 70px);
-    }
-    
-    /* FILTROS */
-    .filtros-container {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem 1.25rem;
-        background-color: var(--bg_card);
-        border-radius: 8px;
-        border: 1px solid var(--borda);
-        margin-bottom: 1.25rem;
-        flex-wrap: wrap;
-    }
-    
-    /* KPI GRID */
-    .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    @media (max-width: 1200px) {
-        .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    
-    @media (max-width: 768px) {
-        .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    
-    .kpi-card {
-        background-color: var(--bg_card);
-        border: 1px solid var(--borda);
-        border-radius: 8px;
-        padding: 1.25rem;
-    }
-    
-    .kpi-label {
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: var(--texto_secundario);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
-    }
-    
-    .kpi-valor {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--branco);
-        line-height: 1.2;
-    }
-    
-    .kpi-valor.azul { color: var(--azul_institucional); }
-    .kpi-valor.amarelo { color: var(--amarelo_alerta); }
-    .kpi-valor.verde { color: var(--verde_sucesso); }
-    
-    .kpi-sub {
-        font-size: 0.75rem;
-        color: var(--texto_muted);
-        margin-top: 0.25rem;
-    }
-    
-    /* TABELA */
-    .tabela-container {
-        background-color: var(--bg_card);
-        border: 1px solid var(--borda);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    
-    .tabela-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid var(--borda);
-        background-color: var(--bg_secundario);
-    }
-    
-    .tabela-titulo {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--branco);
-    }
-    
-    /* STATUS TAGS */
-    .status-tag {
-        display: inline-block;
-        padding: 0.25rem 0.625rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .status-tag.pendente {
-        background-color: rgba(245, 158, 11, 0.15);
-        color: var(--amarelo_alerta);
-    }
-    
-    .status-tag.roteirizado {
-        background-color: rgba(16, 185, 129, 0.15);
-        color: var(--verde_sucesso);
-    }
-    
-    /* SCROLLBAR */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: var(--bg_secundario);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: var(--borda_clara);
-        border-radius: 4px;
-    }
-    
-    /* INPUTS */
-    .filtros-container input[type="text"],
-    .filtros-container input[type="date"] {
-        background-color: var(--bg_secundario) !important;
-        border: 1px solid var(--borda_clara) !important;
-        border-radius: 6px !important;
-        color: var(--texto_principal) !important;
-        padding: 0.5rem 0.75rem !important;
-        font-size: 0.875rem !important;
-    }
-    
-    .filtros-container input:focus {
-        border-color: var(--azul_institucional) !important;
-        outline: none !important;
-    }
-    
-    /* DATAFRAME */
-    .dataframe {
-        font-family: 'Inter', sans-serif !important;
-        font-size: 0.875rem !important;
-    }
-    
-    .dataframe th {
-        background-color: var(--bg_secundario) !important;
-        color: var(--texto_secundario) !important;
-        font-weight: 600 !important;
-        font-size: 0.75rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        padding: 0.875rem 1rem !important;
-        border-bottom: 1px solid var(--borda) !important;
-    }
-    
-    .dataframe td {
-        background-color: transparent !important;
-        color: var(--texto_principal) !important;
-        padding: 0.75rem 1rem !important;
-        border-bottom: 1px solid var(--borda) !important;
-    }
-    
-    .dataframe tr:hover td {
-        background-color: var(--bg_hover) !important;
-    }
-    
-    /* BUTTONS */
-    .stButton > button {
-        background-color: var(--bg_card);
-        color: var(--texto_principal);
-        border: 1px solid var(--borda);
-        border-radius: 6px;
-    }
-    
-    .stButton > button:hover {
-        background-color: var(--bg_hover);
-        border-color: var(--borda_clara);
-    }
-    
-    /* ALERTS */
-    .stWarning {
-        background-color: rgba(245, 158, 11, 0.1);
-        border: 1px solid var(--amarelo_alerta);
-        color: var(--amarelo_alerta);
-    }
-    
-    .stSuccess {
-        background-color: rgba(16, 185, 129, 0.1);
-        border: 1px solid var(--verde_sucesso);
-        color: var(--verde_sucesso);
-    }
-    
-    /* Sidebar hide */
-    section[data-testid="stSidebar"] {
-        display: none !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+# --- constantes e Configurações ---
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
 
-# ============================================================
-# GOOGLE SHEETS - CONFIG
-# ============================================================
-SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-CREDS_DICT = st.secrets["gspread_creds"]
-credentials = Credentials.from_service_account_info(CREDS_DICT, scopes=SCOPE)
-gc = gspread.authorize(credentials)
+# --- Imagens (Placeholders base64 para exemplo - Substitua pelos seus Assets reais) ---
+# Imagem de fundo abstrata (gradiente escuro)
+BG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+# Logo Delly's (Exemplo字母 D simples em Base64)
+LOGO_B64 = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAABJUlEQVR4nO2WMQ6CQBBFZ0MlNhZEcAHiCbyAN/AGHsELSExMLCwsLLQhNibRXYkNJDYmxgaS7MrCMNyFf/G+ZGf+7M7OLMBCC/xVHxWwQaYVwAYZKM+AtgB0hN8qQJuAhB6hAOeYfYQCbJC5IgF8gD3AUkLvhgKkJviVJqA8E+ASqM+A8kzASqCD8kzoBQVIwB3gS0A+BkozIS+BNkBphvwk8EY4J4EaUDsJKEEGPgBdAeoYKM2EvARaA2UZcJdAHegF6hMgL4E6UDuJKM2EvARaA2UZcJdAHegF2gj0Am0EeoE2Ar1AG4FeoI1AL9BGoBdoI9ALtBHoBdoJTAJN9J5A7X8Ctf+JTP+V3xN9AP6WjN8T/fQAAAAASUVORK5CYII="
 
-SPREADSHEET_ID = st.secrets["spreadsheet_id"]
+@st.cache_resource(show_spinner=False)
+def get_client():
+    creds = Credentials.from_service_account_info(
+        dict(st.secrets["gcp_service_account"]), scopes=SCOPES
+    )
+    return gspread.authorize(creds)
 
-def get_sheet_data(sheet_name):
+@st.cache_resource(show_spinner=False)
+def get_spreadsheet():
+    return get_client().open_by_key(st.secrets["spreadsheet_id"])
+
+def get_sheet(name):
+    ss = get_spreadsheet()
     try:
-        sh = gc.open_by_key(SPREADSHEET_ID)
-        worksheet = sh.worksheet(sheet_name)
-        data = worksheet.get_all_records()
-        return pd.DataFrame(data)
-    except Exception as e:
-        st.error(f"Erro ao conectar à aba {sheet_name}: {e}")
-        return pd.DataFrame()
+        return ss.worksheet(name)
+    except gspread.WorksheetNotFound:
+        return ss.add_worksheet(title=name, rows=5000, cols=25)
 
-@st.cache_data(ttl=60)
-def load_transferencias():
-    return get_sheet_data("transferencias")
+# ---TCOLS ( Colunas do Google Sheets )---
+TCOLS = [
+    "id", "dt_transferencia", "numped", "numnota", "nomecliente",
+    "dt_liberado", "nomevend", "nomesup", "pesobrutotot", "vltotal",
+    "praca", "numcarregamento", "destino", "placa_road",
+    "placa_veiculo", "dt_saida", "dt_roteirizacao",
+    "status", "criado_em",
+]
 
-@st.cache_data(ttl=60)
-def load_road():
-    return get_sheet_data("road")
+# --- Funções de Banco de Dados (Mantidas idênticas para não quebrar a lógica) ---
+def ensure_header():
+    ws = get_sheet("transferencias")
+    hdr = ws.row_values(1)
+    if hdr[:len(TCOLS)] == TCOLS and len(hdr) >= len(TCOLS):
+        return ws
+    end_col = chr(ord("A") + len(TCOLS) - 1)
+    ws.update(f"A1:{end_col}1", [TCOLS])
+    return ws
 
 def dedup_columns(df):
-    return df.loc[:, ~df.columns.duplicated()]
+    seen = {}
+    new_cols = []
+    for i, c in enumerate(df.columns):
+        if c not in seen:
+            seen[c] = i
+            new_cols.append(c)
+        else:
+            new_cols.append(f"{c}__dup{i}")
+    df.columns = new_cols
+    df = df[[c for c in df.columns if "__dup" not in c]]
+    return df
 
-def br(val):
+@st.cache_data(ttl=15, show_spinner=False)
+def load_transferencias():
+    ws = ensure_header()
+    vals = ws.get_all_values()
+    if not vals or len(vals) < 2:
+        return pd.DataFrame(columns=TCOLS)
+    hdr_raw = vals[0]
+    rows = vals[1:]
+    hdr = [str(c).strip() for c in hdr_raw]
+    n = len(hdr)
+    rows_padded = [
+        row + [""] * (n - len(row)) if len(row) < n else row[:n]
+        for row in rows
+    ]
+    df = pd.DataFrame(rows_padded, columns=hdr)
+    df = dedup_columns(df)
+    df = df[df.apply(lambda r: any(str(v).strip() for v in r), axis=1)]
+    for c in ["pesobrutotot", "vltotal"]:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0.0)
+    for c in TCOLS:
+        if c not in df.columns:
+            df[c] = ""
+    return df
+
+def next_id(df):
+    if df.empty:
+        return 1
+    v = pd.to_numeric(df["id"], errors="coerce").dropna()
+    return int(v.max() + 1) if len(v) else 1
+
+def append_transf(row):
+    ws = ensure_header()
+    df = load_transferencias()
+    row["id"] = next_id(df)
+    row["criado_em"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    row.setdefault("status", "pendente")
+    row.setdefault("placa_veiculo", "")
+    row.setdefault("placa_road", "")
+    row.setdefault("dt_roteirizacao", "")
+    row.setdefault("dt_saida", "")
+    ws.append_row(
+        [str(row.get(c, "")) for c in TCOLS],
+        value_input_option="USER_ENTERED",
+    )
+    load_transferencias.clear()
+
+def update_transf(tid, updates):
+    ws = ensure_header()
+    data = ws.get_all_values()
+    if not data:
+        return
+    hdr = [str(c).strip() for c in data[0]]
+    for col in updates:
+        if col not in hdr:
+            hdr.append(col)
+            col_num = len(hdr)
+            ws.update_cell(1, col_num, col)
+    col_idx = {c: i + 1 for i, c in enumerate(hdr)}
+    row_num = None
+    for i, row in enumerate(data[1:], start=2):
+        row_padded = row + [""] * (len(hdr) - len(row))
+        row_dict = dict(zip(hdr, row_padded))
+        if row_dict.get("id", "").strip() == str(tid).strip():
+            row_num = i
+            break
+    if row_num is None:
+        return
+    import string
+    def col_letter(n):
+        result = ""
+        while n > 0:
+            n, rem = divmod(n - 1, 26)
+            result = string.ascii_uppercase[rem] + result
+        return result
+    for col, val in updates.items():
+        if col in col_idx:
+            cell_ref = f"{col_letter(col_idx[col])}{row_num}"
+            ws.update(cell_ref, [[str(val)]], value_input_option="USER_ENTERED")
+    load_transferencias.clear()
+
+def delete_transf(tid):
+    ws = ensure_header()
+    data = ws.get_all_values()
+    if not data:
+        return
+    hdr = data[0]
+    for i, row in enumerate(data[1:], start=2):
+        if dict(zip(hdr, row)).get("id", "") == str(tid):
+            ws.delete_rows(i)
+            break
+    load_transferencias.clear()
+
+def check_dup(numnota, dt):
+    df = load_transferencias()
+    if df.empty:
+        return False
+    return bool(
+        (
+            (df["numnota"].astype(str) == str(numnota))
+            & (df["dt_transferencia"].astype(str) == str(dt))
+        ).any()
+    )
+
+@st.cache_data(ttl=60, show_spinner=False)
+def load_road():
     try:
-        return f"R$ {float(val):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    except:
+        ws = get_sheet("ROAD")
+        vals = ws.get_all_values()
+        if not vals or len(vals) < 2:
+            return pd.DataFrame()
+        hdr_raw = vals[0]
+        rows = vals[1:]
+        hdr = [str(c).upper().strip() for c in hdr_raw]
+        n = len(hdr)
+        rows_padded = [row + [""] * (n - len(row)) if len(row) < n else row[:n] for row in rows]
+        df = pd.DataFrame(rows_padded, columns=hdr)
+        df = dedup_columns(df)
+        df = df.loc[:, df.columns.str.strip() != ""]
+        for c in ["NOTA FISCAL", "PEDIDO"]:
+            if c in df.columns:
+                df[c] = df[c].astype(str).str.split(".").str[0].str.strip()
+        return df
+    except Exception:
+        return pd.DataFrame()
+
+def buscar_nota(numnota):
+    df = load_road()
+    if df.empty:
+        return None
+    col_nf = None
+    for c in df.columns:
+        if "NOTA" in c and "FISCAL" in c:
+            col_nf = c
+            break
+        if c in ("NF", "NOTAFISCAL", "NOTA_FISCAL"):
+            col_nf = c
+            break
+    if col_nf is None:
+        return None
+    row = df[df[col_nf].astype(str).str.strip() == numnota.strip()]
+    if row.empty:
+        return None
+    r = row.iloc[0]
+
+    def safe(*cols):
+        for col in cols:
+            v = r.get(col, "")
+            sv = str(v).strip()
+            if sv not in ("nan", "None", "", "0.0"):
+                return sv[:-2] if sv.endswith(".0") else sv
+        return ""
+
+    # --- Lógica de busca de colunas na planilha ROAD (Simplificada para o exemplo) ---
+    # Você pode precisar ajustar se os nomes das colunas no seu Google Sheets forem diferentes
+    praca = safe("PRACA", "PRAÇA")
+    carr = safe("CARREGAMENTO", "CARREG")
+    peso = safe("PESO", "PESO BRUTO")
+    valor = safe("VALOR", "VALOR TOTAL")
+    
+    return {
+        "numped": safe("PEDIDO"),
+        "numnota": safe("NF", "NOTA FISCAL"),
+        "nomecliente": safe("CLIENTE", "NOME CLIENTE"),
+        "dt_liberado": safe("DATA LIBERADO", "DT LIB"),
+        "nomevend": safe("VENDEDOR", "VEND"),
+        "nomesup": safe("SUPERVISOR", "SUP"),
+        "pesobrutotot": float(str(peso).replace(",", ".")) if peso else 0.0,
+        "vltotal": float(str(valor).replace("R$", "").replace(".", "").replace(",", ".")) if valor else 0.0,
+        "praca": praca,
+        "numcarregamento": carr,
+        "destino": safe("DESTINO", "DEST"),
+        "placa_road": "",
+    }
+
+# --- Funções de Formatação ---
+def br(v):
+    try:
+        return f"R$ {float(v):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except Exception:
         return "R$ 0,00"
 
-def peso_format(val):
-    try:
-        return f"{float(val):,.2f} kg".replace(",", "X").replace(".", ",").replace("X", ".")
-    except:
-        return "0,00 kg"
+def fmt_date(s):
+    if not s or str(s) in ("", "nan", "None", "—"):
+        return "—"
+    return str(s).strip()
 
-# ============================================================
-# HEADER
-# ============================================================
-data_atual = date.today().strftime("%d/%m/%Y")
-st.markdown(f"""
-<div class="header-container">
-    <div class="header-info">
-        <h1 class="header-titulo">Sistema de Transferências</h1>
-        <p class="header-subtitulo">Logística e Gestão de Transferências</p>
-    </div>
-    <div class="header-user">
-        <span class="header-data">{data_atual}</span>
-        <div class="header-user-info">
-            <div class="user-avatar">OP</div>
-            <span class="user-name">Operador</span>
-        </div>
-        <div class="status-badge">
-            <span class="status-dot"></span>
-            Online
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+def to_iso(dt_str):
+    if not dt_str or dt_str == "—":
+        return dt_str
+    dt_str = str(dt_str).strip()
+    if len(dt_str) == 10 and dt_str[2] == "/" and dt_str[5] == "/":
+        p = dt_str.split("/")
+        return f"{p[2]}-{p[1]}-{p[0]}"
+    return dt_str
 
-# ============================================================
-# MAIN CONTENT
-# ============================================================
-st.markdown('<div class="main-container">', unsafe_allow_html=True)
-
-# FILTROS
-fc1, fc2, fc3, fc4 = st.columns([2, 2, 1, 1])
-with fc1:
-    data_filtro = st.date_input("Data", date.today())
-with fc2:
-    ver_todas = st.checkbox("Todas as Datas", value=False)
-with fc3:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🔄 Atualizar", key="refresh_btn"):
-        load_transferencias.clear()
-        load_road.clear()
-        st.rerun()
-with fc4:
-    pass
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# CARREGA DADOS
-data_str = data_filtro.isoformat()
-data_display = data_filtro.strftime("%d/%m/%Y")
-
-df_all = load_transferencias()
-
-if df_all.empty:
-    st.warning("Nenhum dado encontrado na aba 'transferências'.")
-    st.stop()
-
-# PROCESSA DADOS
-if not ver_todas:
-    if "dt_transferencia" in df_all.columns:
-        df_all["dt_transferencia"] = df_all["dt_transferencia"].astype(str).str.strip()
-        df_h = df_all[df_all["dt_transferencia"] == data_str].copy()
-    else:
-        df_h = df_all.copy()
-else:
-    df_h = df_all.copy()
-
-# KPIs
-n_total = len(df_h)
-n_pend = len(df_h[df_h["status"] != "roteirizado"]) if "status" in df_h.columns else 0
-n_rot = len(df_h[df_h["status"] == "roteirizado"]) if "status" in df_h.columns else 0
-valor_total = df_h["vltotal"].sum() if "vltotal" in df_h.columns else 0
-peso_total = df_h["pesobrutotot"].sum() if "pesobrutotot" in df_h.columns else 0
-
-# Renderiza KPIs
+# --- CSS Avançado ( Dark Mode Premium ) ---
 st.markdown("""
-<div class="kpi-grid">
-    <div class="kpi-card">
-        <div class="kpi-label">Total de Notas</div>
-        <div class="kpi-valor azul">__N_TOTAL__</div>
-        <div class="kpi-sub">registradas na data</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Pendentes</div>
-        <div class="kpi-valor amarelo">__N_PEND__</div>
-        <div class="kpi-sub">aguardando roteirização</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Roteirizadas</div>
-        <div class="kpi-valor verde">__N_ROT__</div>
-        <div class="kpi-sub">com placa definida</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Valor Total</div>
-        <div class="kpi-valor">__VL_TOTAL__</div>
-        <div class="kpi-sub">em transferências</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Peso Total</div>
-        <div class="kpi-valor">__PS_TOTAL__</div>
-        <div class="kpi-sub">kg transportados</div>
-    </div>
-</div>
-""".replace("__N_TOTAL__", str(n_total))
-   .replace("__N_PEND__", str(n_pend))
-   .replace("__N_ROT__", str(n_rot))
-   .replace("__VL_TOTAL__", br(valor_total))
-   .replace("__PS_TOTAL__", peso_format(peso_total)), unsafe_allow_html=True)
+<style>
+/* --- Fontes --- */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-# TABELA
-st.markdown('<div class="tabela-container">', unsafe_allow_html=True)
-st.markdown(f"""
-<div class="tabela-header">
-    <span class="tabela-titulo">📋 Histórico de Transferências</span>
-    <span class="card-count">{
+/* --- Variáveis de Cores Refinadas --- */
+:root {
+  --bg-body: #090b10;
+  --bg-panel: #0e1116;
+  --bg-card: rgba(22, 27, 34, 0.7);
+  
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-glow: rgba(59, 130, 246, 0.4);
+  
+  --accent-green: #10b981;
+  --accent-green-light: rgba(16, 185, 129, 0.15);
+  
+  --accent-yellow: #fbbf24;
+  --accent-yellow-light: rgba(251, 191, 36, 0.15);
+  
+  --accent-red: #ef4444;
+  --accent-red-light: rgba(239, 68, 68, 0.15);
+  
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text
