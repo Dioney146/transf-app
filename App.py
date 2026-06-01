@@ -5,312 +5,509 @@ from google.oauth2.service_account import Credentials
 from datetime import date, datetime
 import io
 
-BG_B64 = "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"
+# ============================================================
+# CONFIGURAÇÃO DA PÁGINA
+# ============================================================
+st.set_page_config(
+    page_title="Sistema de Transferências",
+    page_icon="🚛",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Configurações globais de layout e estilo CSS customizado
-st.set_page_config(page_title="Painel de Controle e Monitoramento", layout="wide")
-
-st.markdown(f"""
+# ============================================================
+# ESTILO CORPORATIVO - TEMA ESCURO
+# ============================================================
+st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap');
+    /* IMPORTAÇÕES E FONTES */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
-    :root {{
-        --bg: #f8fafc;
-        --card-bg: #ffffff;
-        --txt: #1e293b;
-        --txt-sub: #64748b;
-        --bdr: #e2e8f0;
-        --primary: #2563eb;
-        --acc: #3b82f6;
-    }}
+    /* VARIÁVEIS DE COR */
+    :root {
+        --bg_principal: #121417;
+        --bg_secundario: #1a1d21;
+        --bg_card: #212529;
+        --bg_hover: #2a2f35;
+        --borda: #32363e;
+        --borda_clara: #3d4248;
+        --texto_principal: #e8eaed;
+        --texto_secundario: #9aa0a6;
+        --texto_muted: #6b7280;
+        --azul_institucional: #3b82f6;
+        --azul_escuro: #1d4ed8;
+        --verde_sucesso: #10b981;
+        --amarelo_alerta: #f59e0b;
+        --vermelho_erro: #ef4444;
+        --branco: #ffffff;
+    }
     
-    html, body, [data-testid="stAppViewContainer"] {{
-        background-color: var(--bg);
-        font-family: 'Sora', sans-serif !important;
-        color: var(--txt);
-    }}
+    /* RESET GERAL */
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: var(--bg_principal) !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        color: var(--texto_principal) !important;
+    }
     
-    /* Painel Geral (Cards) */
-    .card {{
-        background: var(--card-bg);
-        border: 1px solid var(--bdr);
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        margin-bottom: 1.5rem;
-    }}
+    /* REMOVER ESPAÇAMENTOS PADRÃO */
+    .block-container {
+        padding: 0 !important;
+        padding-top: 0 !important;
+    }
     
-    .card-head {{
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid var(--bdr);
-        padding-bottom: 1rem;
-        margin-bottom: 1rem;
-    }}
+    /* ============================================================ */
+    /* SIDEBAR - MENU LATERAL */
+    /* ============================================================ */
+    section[data-testid="stSidebar"] {
+        background-color: var(--bg_secundario !important;
+        border-right: 1px solid var(--borda) !important;
+    }
     
-    .card-title {{
+    /* Logo no Sidebar */
+    .logo-container {
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid var(--borda);
+        margin-bottom: 0.5rem;
+    }
+    
+    .logo-titulo {
         font-size: 1.1rem;
         font-weight: 700;
-        color: var(--txt);
-    }}
+        color: var(--branco);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
     
-    .card-count {{
-        font-size: 0.85rem;
-        background: #f1f5f9;
-        padding: 4px 10px;
-        border-radius: 20px;
-        color: var(--txt-sub);
-        font-weight: 600;
-    }}
-    
-    /* Estilização de KPIs */
-    .kpi-mini {{
-        background: var(--card-bg);
-        border: 1px solid var(--bdr);
-        border-radius: 10px;
-        padding: 1rem;
-        text-align: center;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    }}
-    .kpi-mini-label {{
-        font-size: 0.8rem;
-        color: var(--txt-sub);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.25rem;
-    }}
-    .kpi-mini-value {{
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: var(--txt);
-    }}
-    .kpi-mini-sub {{
+    .logo-subtitulo {
         font-size: 0.75rem;
-        color: var(--txt-sub);
-        margin-top: 0.25rem;
-    }}
+        color: var(--texto_muted);
+        margin: 0.25rem 0 0 0;
+    }
     
-    /* Customização de Tabelas / Linhas */
-    td {{
-        font-family: 'Sora', sans-serif !important;
-        font-size: 0.8rem !important;
-        border-bottom: 1px solid var(--bdr) !important;
-        color: var(--txt) !important;
-        padding: 9px 12px !important;
-        background: transparent !important;
-    }}
+    /* Itens do Menu */
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin: 0.125rem 0.5rem;
+        border-radius: 6px;
+        color: var(--texto_secundario);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
     
-    /* Note card */
-    .nota-row {{
+    .menu-item:hover {
+        background-color: var(--bg_hover);
+        color: var(--texto_principal);
+    }
+    
+    .menu-item.active {
+        background-color: rgba(59, 130, 246, 0.15);
+        color: var(--azul_institucional);
+        border-left: 3px solid var(--azul_institucional);
+    }
+    
+    .menu-icon {
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+    }
+    
+    /* ============================================================ */
+    /* HEADER - TOPO DA PÁGINA */
+    /* ============================================================ */
+    .header-container {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid var(--bdr);
-    }}
-    .nota-row:last-child {{
-        border-bottom: none;
-    }}
-    .placa-chip {{
-        background: #eff6ff;
-        color: #1e40af;
-        padding: 2px 8px;
+        padding: 1rem 1.5rem;
+        background-color: var(--bg_secundario);
+        border-bottom: 1px solid var(--borda);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    
+    .header-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .header-titulo {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--branco);
+        margin: 0;
+    }
+    
+    .header-subtitulo {
+        font-size: 0.8rem;
+        color: var(--texto_secundario);
+        margin: 0.125rem 0 0 0;
+    }
+    
+    .header-user {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-data {
+        font-size: 0.875rem;
+        color: var(--texto_secundario);
+    }
+    
+    .header-user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--azul_institucional), var(--azul_escuro));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .user-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.25rem 0.625rem;
+        background-color: rgba(16, 185, 129, 0.15);
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--verde_sucesso);
+    }
+    
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--verde_sucesso);
+    }
+    
+    /* ============================================================ */
+    /* ÁREA PRINCIPAL */
+    /* ============================================================ */
+    .main-container {
+        padding: 1.5rem;
+        background-color: var(--bg_principal);
+        min-height: calc(100vh - 70px);
+    }
+    
+    /* BARRA DE FILTROS */
+    .filtros-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        background-color: var(--bg_card);
+        border-radius: 8px;
+        border: 1px solid var(--borda);
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+    }
+    
+    .filtro-grupo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .filtro-label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--texto_secundario);
+        white-space: nowrap;
+    }
+    
+    /* Inputs estilizados */
+    .filtros-container input[type="text"],
+    .filtros-container input[type="date"],
+    .filtros-container input[type="datetime-local"] {
+        background-color: var(--bg_secundario) !important;
+        border: 1px solid var(--borda_clara) !important;
+        border-radius: 6px !important;
+        color: var(--texto_principal) !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.875rem !important;
+    }
+    
+    .filtros-container input:focus {
+        border-color: var(--azul_institucional) !important;
+        outline: none !important;
+    }
+    
+    /* Checkbox estilizado */
+    .filtros-container .stCheckbox {
+        margin-top: 0;
+    }
+    
+    .filtros-container .stCheckbox > label {
+        color: var(--texto_secundario) !important;
+        font-size: 0.875rem !important;
+    }
+    
+    /* Botão Atualizar */
+    .btn-atualizar {
+        background-color: var(--azul_institucional);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-atualizar:hover {
+        background-color: var(--azul_escuro);
+    }
+    
+    /* ============================================================ */
+    /* INDICADORES (KPIs) */
+    /* ============================================================ */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 1200px) {
+        .kpi-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    .kpi-card {
+        background-color: var(--bg_card);
+        border: 1px solid var(--borda);
+        border-radius: 8px;
+        padding: 1.25rem;
+    }
+    
+    .kpi-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--texto_secundario);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kpi-valor {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--branco);
+        line-height: 1.2;
+    }
+    
+    .kpi-valor.azul { color: var(--azul_institucional); }
+    .kpi-valor.amarelo { color: var(--amarelo_alerta); }
+    .kpi-valor.verde { color: var(--verde_sucesso); }
+    
+    .kpi-sub {
+        font-size: 0.75rem;
+        color: var(--texto_muted);
+        margin-top: 0.25rem;
+    }
+    
+    /* ============================================================ */
+    /* TABELA PRINCIPAL */
+    /* ============================================================ */
+    .tabela-container {
+        background-color: var(--bg_card);
+        border: 1px solid var(--borda);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .tabela-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--borda);
+        background-color: var(--bg_secundario);
+    }
+    
+    .tabela-titulo {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--branco);
+    }
+    
+    .tabela-quantidade {
+        font-size: 0.875rem;
+        color: var(--texto_secundario);
+    }
+    
+    /* Filtros da Tabela */
+    .tabela-filtros {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--borda);
+        flex-wrap: wrap;
+    }
+    
+    .filtro-pesquisa {
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .filtro-pesquisa input {
+        width: 100%;
+        background-color: var(--bg_principal);
+        border: 1px solid var(--borda_clara);
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        color: var(--texto_principal);
+        font-size: 0.875rem;
+    }
+    
+    .filtro-pesquisa input::placeholder {
+        color: var(--texto_muted);
+    }
+    
+    .filtro-select {
+        min-width: 150px;
+    }
+    
+    /* DataFrame estilizado */
+    .tabela-wrapper {
+        padding: 0;
+    }
+    
+    /* Estilização das células da tabela */
+    .dataframe {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.875rem !important;
+    }
+    
+    .dataframe th {
+        background-color: var(--bg_secundario) !important;
+        color: var(--texto_secundario) !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.875rem 1rem !important;
+        border-bottom: 1px solid var(--borda) !important;
+    }
+    
+    .dataframe td {
+        background-color: transparent !important;
+        color: var(--texto_principal) !important;
+        padding: 0.75rem 1rem !important;
+        border-bottom: 1px solid var(--borda) !important;
+    }
+    
+    .dataframe tr:hover td {
+        background-color: var(--bg_hover) !important;
+    }
+    
+    /* Status na tabela */
+    .status-tag {
+        display: inline-block;
+        padding: 0.25rem 0.625rem;
         border-radius: 4px;
         font-size: 0.75rem;
         font-weight: 600;
-    }}
-    .al-i {{
-        font-style: italic;
-        color: var(--txt-sub);
-    }}
-</style>
-""", unsafe_allow_html=True)
-
-# Definição de escopos e credenciais do Google Sheets
-SCOPE = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-CREDS_DICT = st.secrets["gspread_creds"]
-credentials = Credentials.from_service_account_info(CREDS_DICT, scopes=SCOPE)
-gc = gspread.authorize(credentials)
-
-SPREADSHEET_ID = st.secrets["spreadsheet_id"]
-HIST_COLS = ["id", "dt_transferencia", "placa_veiculo", "status", "praca", "vltotal"]
-
-def get_sheet_data(sheet_name):
-    """Retorna os dados brutos de uma aba como DataFrame"""
-    try:
-        sh = gc.open_by_key(SPREADSHEET_ID)
-        worksheet = sh.worksheet(sheet_name)
-        data = worksheet.get_all_records()
-        return pd.DataFrame(data)
-    except Exception as e:
-        st.error(f"Erro ao conectar à aba {sheet_name}: {e}")
-        return pd.DataFrame()
-
-@st.cache_data(ttl=60)
-def load_transferencias():
-    df = get_sheet_data("transferencias")
-    return df
-
-@st.cache_data(ttl=60)
-def load_road():
-    return get_sheet_data("road")
-
-def dedup_columns(df):
-    """Garante que colunas duplicadas não causem conflito de índices"""
-    df = df.loc[:, ~df.columns.duplicated()]
-    return df
-
-def br(val):
-    """Formatação de moeda BRL simples"""
-    try:
-        return f"R$ {float(val):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    except:
-        return "R$ 0,00"
-
-# ─── Estrutura Principal da Interface (Filtros superiores) ───────────────────
-st.markdown("<h3>🚚 Gestão de Roteirização e Entregas</h3>", unsafe_allow_html=True)
-
-fc1, fc2, fc3, fc4 = st.columns([2, 2, 2, 4])
-with fc1:
-    data_filtro = st.date_input("Filtrar por data de transferência:", date.today())
-with fc2:
-    ver_todas = st.checkbox("Visualizar todas as datas", value=False)
-with fc3:
-    st.markdown("<div style='margin-top:28px'></div>", unsafe_allow_html=True)
-    if st.button("🔄 Atualizar", key="refresh_btn"):
-        load_transferencias.clear()
-        load_road.clear()
-        st.rerun()
-with fc4:
-    pass
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# ─── Carrega e Processa Dados ──────────────────────────────────────────────────
-data_str = data_filtro.isoformat()
-data_display = data_filtro.strftime("%d/%m/%Y")
-
-df_all = load_transferencias()
-df_road = load_road()
-
-if df_all.empty:
-    st.warning("Nenhum dado encontrado na aba 'transferencias'.")
-else:
-    # Filtra dados principais com base na coluna original 'dt_transferencia'
-    if ver_todas:
-        df_h = df_all.copy()
-    else:
-        if "dt_transferencia" in df_all.columns:
-            # Garante que a comparação é feita de forma textual segura com a string ISO
-            df_all["dt_transferencia"] = df_all["dt_transferencia"].astype(str).str.strip()
-            df_h = df_all[df_all["dt_transferencia"] == data_str].copy()
-        else:
-            df_h = df_all.copy()
-
-    # Base complementar para sincronizar registros vindos da aba de roteirização externa
-    rote_base = df_all[df_all["status"] == "roteirizado"].copy() if not df_all.empty else pd.DataFrame()
+        text-transform: uppercase;
+    }
     
-    if ver_todas or rote_base.empty:
-        rote = rote_base
-    else:
-        rote = rote_base[rote_base["dt_transferencia"] == data_str].copy()
-
-    # Processamento cruzado com os dados do 'road'
-    if not df_road.empty and not rote.empty:
-        try:
-            df_road_clean = df_road.dropna(subset=["id"]).copy()
-            df_road_clean["id"] = df_road_clean["id"].astype(str).str.strip()
-            rote["id"] = rote["id"].astype(str).str.strip()
-            
-            placa_v_idx = "placa_veiculo" if "placa_veiculo" in df_road_clean.columns else None
-            placa_r_idx = "placa_road" if "placa_road" in df_road_clean.columns else None
-            
-            if placa_v_idx and placa_r_idx:
-                map_placa_v = dict(zip(df_road_clean["id"], df_road_clean[placa_v_idx]))
-                map_placa_r = dict(zip(df_road_clean["id"], df_road_clean[placa_r_idx]))
-                map_dt_rot = dict(zip(df_road_clean["id"], df_road_clean.get("dt_roteirizacao", df_road_clean.index)))
-                
-                for idx, row in df_all.iterrows():
-                    r_id = str(row["id"]).strip()
-                    if r_id in map_placa_v:
-                        df_all.at[idx, "placa_veiculo"] = map_placa_v[r_id]
-                        df_all.at[idx, "status"] = "roteirizado"
-        except Exception as ex:
-            st.warning(f"Erro ao processar integração com a aba road: {ex}")
-
-    # Cálculos dos blocos de KPIs superiores salvaguardando erros de dicionários vazios
-    n_total = len(df_h)
-    n_pend = len(df_h[df_h["status"] != "roteirizado"]) if "status" in df_h.columns else 0
-    n_rot = len(df_h[df_h["status"] == "roteirizado"]) if "status" in df_h.columns else 0
-
-    # Renderização da linha de métricas estruturadas
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        st.markdown(f"""
-        <div class="kpi-mini">
-          <div class="kpi-mini-label">Total de Notas</div>
-          <div class="kpi-mini-value" style="color:#2563eb">{n_total}</div>
-          <div class="kpi-mini-sub">registradas na data</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with m2:
-        st.markdown(f"""
-        <div class="kpi-mini">
-          <div class="kpi-mini-label">Pendentes</div>
-          <div class="kpi-mini-value" style="color:#f59e0b">{n_pend}</div>
-          <div class="kpi-mini-sub">aguardando roteirização</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with m3:
-        st.markdown(f"""
-        <div class="kpi-mini">
-          <div class="kpi-mini-label">Roteirizadas</div>
-          <div class="kpi-mini-value" style="color:#10b981">{n_rot}</div>
-          <div class="kpi-mini-sub">com placa definida</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
+    .status-tag.pendente {
+        background-color: rgba(245, 158, 11, 0.15);
+        color: var(--amarelo_alerta);
+    }
     
-    # Bloco Inferior: Lista detalhada de registros
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="card-head">
-      <span class="card-title">📋 Registros</span>
-      <span class="card-count">{len(df_h)} resultados</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if df_h.empty:
-        st.markdown(f'<div style="padding:1.5rem"><div class="al-i">Nenhum registro encontrado para os filtros selecionados.</div></div>', unsafe_allow_html=True)
-    else:
-        # Filtra e higieniza colunas existentes para exibição em cartões
-        valid_cols = [c for c in HIST_COLS if c in df_h.columns]
-        df_hd = dedup_columns(df_h[valid_cols].copy())
-        
-        # Substituição de vazios para exibição limpa na tabela
-        for _c2 in ["placa_veiculo", "dt_transferencia"]:
-            if _c2 in df_hd.columns:
-                df_hd[_c2] = df_hd[_c2].fillna("—").astype(str).replace("", "—")
-        
-        # Loop de renderização visual dos cartões em HTML para cada linha de registro
-        for _, row_r in df_hd.iterrows():
-            pr = str(row_r.get("placa_veiculo", "—")).strip()
-            if pr == "" or pr == "nan" or pr == "None":
-                pr = "—"
-                
-            st.markdown(f"""
-            <div class="nota-row">
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <div style="font-weight:600;font-size:0.9rem;">ID Transf: {row_r.get("id","—")}</div>
-                    <div style="color:var(--txt-sub);font-size:0.75rem;">📅 Transferência: {row_r.get("dt_transferencia","—")} | 🏙️ {row_r.get("praca","—")}</div>
-                </div>
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <div style="font-weight:700;color:var(--acc);font-size:.85rem;min-width:90px">{br(row_r.get("vltotal", 0))}</div>
-                    {"<span class=\"placa-chip\">Base 🚛 Veículo: " + pr + "</span>" if pr != "—" else "<span class=\"placa-chip\" style=\"background:#fffbeb;color:#b45309;\">⏳ Pendente</span>"}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-    st.markdown('</div>', unsafe_allow_html=True)
+    .status-tag.roteirizado {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: var(--verde_sucesso);
+    }
+    
+    .status-tag.concluido {
+        background-color: rgba(59, 130, 246, 0.15);
+        color: var(--azul_institucional);
+    }
+    
+    /* ============================================================ */
+    /* BOTÕES E INTERAÇÕES */
+    /* ============================================================ */
+    .stButton > button {
+        background-color: var(--bg_card);
+        color: var(--texto_principal);
+        border: 1px solid var(--borda);
+        border-radius: 6px;
+    }
+    
+    .stButton > button:hover {
+        background-color: var(--bg_hover);
+        border-color: var(--borda_clara);
+    }
+    
+    /* ============================================================ */
+    /* SCROLLBAR PERSONALIZADA */
+    /* ============================================================ */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: var(--bg_secundario);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: var(--borda_clara);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--texto_muted);
+    }
+    
+    /* ============================================================ */
+    /* MENSAGENS E ALERTAS */
+    /* ============================================================ */
+    .stWarning {
+        background-color: rgba(245, 158, 11, 0.1);
+        border: 1px solid var(--amarelo_alerta);
+        color: var(--amarelo_alerta);
+    }
+    
+    .stSuccess {
+        background-color: rgba(16, 185, 129, 0.1);
+        border: 1px solid var(--verde_sucesso);
+        color: var(--verde_sucesso);
+    }
