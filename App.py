@@ -43,7 +43,7 @@ TCOLS = [
     "dt_liberado", "nomevend", "nomesup", "pesobrutotot", "vltotal",
     "praca", "numcarregamento", "destino", "placa_road",
     "placa_veiculo", "dt_saida", "dt_roteirizacao",
-    "status", "criado_em",
+    "status", "observacao", "criado_em",
 ]
 
 def ensure_header():
@@ -117,6 +117,7 @@ def append_transf(row):
     row.setdefault("placa_road", "")
     row.setdefault("dt_roteirizacao", "")
     row.setdefault("dt_saida", "")
+    row.setdefault("observacao", "")
     ws.append_row(
         [str(row.get(c, "")) for c in TCOLS],
         value_input_option="USER_ENTERED",
@@ -1245,7 +1246,7 @@ periodo_txt = "Todas as datas" if ver_todas else data_display
 STD_COLS = [
     "numnota", "numped", "nomecliente", "dt_liberado",
     "nomevend", "nomesup", "pesobrutotot", "vltotal",
-    "praca", "numcarregamento", "destino", "placa_road",
+    "praca", "numcarregamento", "destino", "placa_road", "observacao",
 ]
 STD_CONFIG = {
     "numnota":         st.column_config.TextColumn("Nota Fiscal",    width=105),
@@ -1260,6 +1261,7 @@ STD_CONFIG = {
     "numcarregamento": st.column_config.TextColumn("Carregamento",   width=115),
     "destino":         st.column_config.TextColumn("Destino",        width=160),
     "placa_road":      st.column_config.TextColumn("Placa Antiga",   width=110),
+    "observacao":      st.column_config.TextColumn("Observação",     width=220),
 }
 
 st.markdown('<div class="page-body">', unsafe_allow_html=True)
@@ -1580,6 +1582,21 @@ if pagina == "📝  Registro":
 
             st.markdown('<div class="al-i">ℹ️ A nova placa e data de saída serão informadas pela <strong>Roteirização</strong>.</div>', unsafe_allow_html=True)
 
+            st.markdown("""
+            <div class="sec-div" style="margin-top:1.1rem">
+              <div class="sec-div-line"></div>
+              <div class="sec-div-txt">💬 Observação (opcional)</div>
+              <div class="sec-div-line"></div>
+            </div>
+            """, unsafe_allow_html=True)
+            obs_input = st.text_area(
+                "Observação",
+                placeholder="Ex: Entrega fracionada, cliente solicitou reagendamento, carga especial...",
+                key="obs_input",
+                height=80,
+                label_visibility="collapsed",
+            )
+
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🚛 Confirmar Transferência", type="primary", use_container_width=True, key="confirm_btn"):
                 dt_s = dt_t.isoformat()
@@ -1601,6 +1618,7 @@ if pagina == "📝  Registro":
                             "numcarregamento": cur["numcarregamento"],
                             "destino":         cur["destino"],
                             "placa_road":      cur.get("placa_road", ""),
+                            "observacao":      obs_input.strip() if obs_input else "",
                         })
                     st.success(f"✅ Transferência registrada! Nota {cur['numnota']} aguarda roteirização.")
                     st.session_state.cur = None
@@ -1656,11 +1674,14 @@ if pagina == "📝  Registro":
                     if pl
                     else '<span style="color:var(--txt3);font-size:.68rem;font-family:JetBrains Mono,monospace">⏳ Pendente</span>'
                 )
+                _obs_side = str(rr.get("observacao","")).strip()
+                _obs_html = f'<div style="font-size:.63rem;color:var(--ylw);margin-top:2px;font-style:italic">📝 {_obs_side[:30]}{"…" if len(_obs_side)>30 else ""}</div>' if _obs_side else ""
                 st.markdown(f"""
                 <div class="nota-row">
                   <div>
                     <div class="nota-num">{rr['numnota']}</div>
                     <div class="nota-cli">{str(rr.get('nomecliente',''))[:22]}</div>
+                    {_obs_html}
                   </div>
                   <div style="text-align:right">
                     <div class="nota-val">{br(rr['vltotal'])}</div>
@@ -1806,8 +1827,10 @@ elif pagina == "🗺️  Roteirização":
             for idx_r, row_r in df_p_sorted.iterrows():
                 rid = str(row_r["id"])
                 pr = str(row_r.get("placa_road", "") or "")
+                _obs_rot = str(row_r.get("observacao","")).strip()
+                _obs_rot_html = f'<div style="margin-top:5px;padding:4px 8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.20);border-radius:6px;font-size:.65rem;color:var(--ylw);font-style:italic">📝 {_obs_rot}</div>' if _obs_rot else ""
                 st.markdown(f"""
-                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--bdr);border-radius:10px;padding:.85rem 1.25rem;margin:.5rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--bdr);border-radius:10px;padding:.85rem 1.25rem;margin:.5rem 1.25rem;display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
                   <div style="min-width:90px">
                     <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.88rem;color:var(--txt)">{row_r["numnota"]}</div>
                     <div style="font-size:.68rem;color:var(--txt3)">ID {rid}</div>
@@ -1815,6 +1838,7 @@ elif pagina == "🗺️  Roteirização":
                   <div style="flex:1;min-width:140px">
                     <div style="font-size:.8rem;color:var(--txt);font-weight:500">{str(row_r.get("nomecliente",""))[:28]}</div>
                     <div style="font-size:.68rem;color:var(--txt2)">📍 {row_r.get("destino","—")} · 🏙️ {row_r.get("praca","—")}</div>
+                    {_obs_rot_html}
                   </div>
                   <div style="font-weight:700;color:var(--acc);font-size:.85rem;min-width:90px">{br(row_r["vltotal"])}</div>
                   {"<span class=\"placa-chip\">🚛 Ant: " + pr + "</span>" if pr else ""}
@@ -1912,11 +1936,12 @@ elif pagina == "🗺️  Roteirização":
         for _c in ["placa_veiculo", "dt_saida"]:
             if _c not in df_r.columns:
                 df_r[_c] = ""
-        ROT_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida"] if c in df_r.columns]
+        ROT_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "observacao"] if c in df_r.columns]
         ROT_CONFIG = {
             **STD_CONFIG,
-            "placa_veiculo": st.column_config.TextColumn("Nova Placa", width=120),
-            "dt_saida":      st.column_config.TextColumn("Dt. Saída",  width=110),
+            "placa_veiculo": st.column_config.TextColumn("Nova Placa",  width=120),
+            "dt_saida":      st.column_config.TextColumn("Dt. Saída",   width=110),
+            "observacao":    st.column_config.TextColumn("Observação",  width=220),
         }
         df_rd = dedup_columns(df_r[ROT_COLS].copy())
         if "dt_saida" in df_rd.columns:
@@ -2005,12 +2030,13 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    HIST_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status"] if c in df_h.columns]
+    HIST_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status", "observacao"] if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
-        "placa_veiculo": st.column_config.TextColumn("Nova Placa", width=110),
-        "dt_saida":      st.column_config.TextColumn("Dt. Saída",  width=100),
-        "status":        st.column_config.TextColumn("Status",     width=110),
+        "placa_veiculo": st.column_config.TextColumn("Nova Placa",  width=110),
+        "dt_saida":      st.column_config.TextColumn("Dt. Saída",   width=100),
+        "status":        st.column_config.TextColumn("Status",      width=110),
+        "observacao":    st.column_config.TextColumn("Observação",  width=220),
     }
 
     n_pend = int((df_h["status"] == "pendente").sum()) if not df_h.empty else 0
