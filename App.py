@@ -1396,36 +1396,7 @@ def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
         </div>'''
     return f'<div style="display:flex;gap:4px;align-items:flex-end;padding:.5rem .25rem 0">{cols_html}</div>'
 
-# ── KPI strip ─────────────────────────────────────────────────────────────────
-st.markdown(f"""
-<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
-  <div class="kpi-mini" style="border-left:3px solid #f97316">
-    <div class="kpi-mini-label">📦 Total de Notas</div>
-    <div class="kpi-mini-value" style="color:#f97316">{_n_total}</div>
-    <div class="kpi-mini-sub">{br(_vl_total)}</div>
-  </div>
-  <div class="kpi-mini" style="border-left:3px solid #f97316">
-    <div class="kpi-mini-label">📅 Hoje</div>
-    <div class="kpi-mini-value" style="color:#f97316">{_n_today}</div>
-    <div class="kpi-mini-sub">{br(_vl_today)} · {_peso_today:.0f} kg</div>
-  </div>
-  <div class="kpi-mini" style="border-left:3px solid var(--ylw)">
-    <div class="kpi-mini-label">⏳ Pendentes</div>
-    <div class="kpi-mini-value" style="color:var(--ylw)">{_n_pend}</div>
-    <div class="kpi-mini-sub">aguardando roteirização</div>
-  </div>
-  <div class="kpi-mini" style="border-left:3px solid var(--grn)">
-    <div class="kpi-mini-label">✅ Roteirizadas</div>
-    <div class="kpi-mini-value" style="color:var(--grn)">{_n_rot}</div>
-    <div class="kpi-mini-sub">{_pct_rot}% do total</div>
-  </div>
-  <div class="kpi-mini" style="border-left:3px solid var(--red)">
-    <div class="kpi-mini-label">💰 Valor Pendente</div>
-    <div class="kpi-mini-value" style="color:var(--red);font-size:1.05rem">{br(_vl_pend)}</div>
-    <div class="kpi-mini-sub">em aguardo de saída</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+
 
 # ── Helper: gera SVG de colunas verticais com linha de qtd ────────────────────
 def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#fbbf24", fmt_val=None):
