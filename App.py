@@ -1234,7 +1234,7 @@ else:
 STD_COLS = [
     "numnota", "numped", "nomecliente", "dt_liberado",
     "nomevend", "nomesup", "pesobrutotot", "vltotal",
-    "placa_road", "observacao", "praca", "numcarregamento", "destino",
+    "praca", "numcarregamento", "destino", "placa_road", "observacao",
 ]
 STD_CONFIG = {
     "numnota":         st.column_config.TextColumn("Nota Fiscal",    width=105),
@@ -1819,9 +1819,10 @@ elif pagina == "🗺️  Roteirização":
 
         # ── Tabela nativa (st.dataframe) + painel de roteirização ───────────
         PEND_COLS = [c for c in [
+            "placa_road", "observacao",
             "numnota", "numped", "nomecliente", "dt_liberado",
             "nomevend", "nomesup", "pesobrutotot", "vltotal",
-            "praca", "numcarregamento", "destino", "placa_road", "observacao",
+            "praca", "numcarregamento", "destino",
         ] if c in df_p.columns]
 
         PEND_CONFIG = {
@@ -2177,9 +2178,7 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    _hist_front = ["placa_road", "observacao"]
-    _hist_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status", "observacao"] if c not in _hist_front]
-    HIST_COLS = [c for c in _hist_front + _hist_rest if c in df_h.columns]
+    HIST_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status", "observacao"] if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
         "placa_veiculo": st.column_config.TextColumn("Nova Placa",  width=110),
