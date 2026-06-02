@@ -2143,7 +2143,8 @@ elif pagina == "📋  Histórico":
     # ── Linha 3 de filtros: nova placa ───────────────────────────────────────
     hf7, _hf_spacer2 = st.columns([1.3, 5.3])
     with hf7:
-        filtro_nova_placa = st.text_input("Nova Placa", key="h_nova_placa", placeholder="🔍 Nova Placa...")
+        _placas_opts = ["Todos"] + sorted(df_all["placa_veiculo"].dropna().unique().tolist()) if not df_all.empty and "placa_veiculo" in df_all.columns else ["Todos"]
+        filtro_nova_placa = st.selectbox("Nova Placa", _placas_opts, key="h_nova_placa", label_visibility="visible")
 
     df_h = df_all.copy() if not df_all.empty else pd.DataFrame(columns=TCOLS)
     if not df_h.empty:
@@ -2158,8 +2159,8 @@ elif pagina == "📋  Histórico":
         if fsup != "Todos":
             df_h = df_h[df_h["nomesup"] == fsup]
         # Filtro por nova placa
-        if filtro_nova_placa and "placa_veiculo" in df_h.columns:
-            df_h = df_h[df_h["placa_veiculo"].astype(str).str.upper().str.contains(filtro_nova_placa.upper(), na=False)]
+        if filtro_nova_placa != "Todos" and "placa_veiculo" in df_h.columns:
+            df_h = df_h[df_h["placa_veiculo"] == filtro_nova_placa]
         # Filtro por data de saída
         if (dt_saida_de is not None or dt_saida_ate is not None) and "dt_saida" in df_h.columns:
             def _parse_dt_saida(s):
