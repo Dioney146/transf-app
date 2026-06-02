@@ -2140,6 +2140,11 @@ elif pagina == "📋  Histórico":
             label_visibility="visible",
         )
 
+    # ── Linha 3 de filtros: nova placa ───────────────────────────────────────
+    hf7, _hf_spacer2 = st.columns([1.3, 5.3])
+    with hf7:
+        filtro_nova_placa = st.text_input("Nova Placa", key="h_nova_placa", placeholder="🔍 Nova Placa...")
+
     df_h = df_all.copy() if not df_all.empty else pd.DataFrame(columns=TCOLS)
     if not df_h.empty:
         if not ver_todas:
@@ -2152,6 +2157,9 @@ elif pagina == "📋  Histórico":
             df_h = df_h[df_h["status"] == fst]
         if fsup != "Todos":
             df_h = df_h[df_h["nomesup"] == fsup]
+        # Filtro por nova placa
+        if filtro_nova_placa and "placa_veiculo" in df_h.columns:
+            df_h = df_h[df_h["placa_veiculo"].astype(str).str.upper().str.contains(filtro_nova_placa.upper(), na=False)]
         # Filtro por data de saída
         if (dt_saida_de is not None or dt_saida_ate is not None) and "dt_saida" in df_h.columns:
             def _parse_dt_saida(s):
@@ -2179,8 +2187,8 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    _hist_front = ["placa_road", "observacao"]
-    _hist_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status", "observacao"] if c not in _hist_front]
+    _hist_front = ["placa_road", "placa_veiculo", "observacao"]
+    _hist_rest  = [c for c in STD_COLS + ["dt_saida", "status", "observacao"] if c not in _hist_front]
     HIST_COLS = [c for c in _hist_front + _hist_rest if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
