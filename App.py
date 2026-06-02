@@ -2052,34 +2052,6 @@ elif pagina == "📋  Histórico":
     n_rot  = int((df_h["status"] == "roteirizado").sum()) if not df_h.empty else 0
     vt_h   = df_h["vltotal"].sum() if not df_h.empty else 0
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        st.markdown(f"""
-        <div class="kpi-mini">
-          <div class="kpi-mini-label">Total de Notas</div>
-          <div class="kpi-mini-value">{len(df_h)}</div>
-          <div class="kpi-mini-sub">{br(vt_h)}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with m2:
-        st.markdown(f"""
-        <div class="kpi-mini">
-          <div class="kpi-mini-label">Pendentes</div>
-          <div class="kpi-mini-value" style="color:#f87171">{n_pend}</div>
-          <div class="kpi-mini-sub">aguardando roteirização</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with m3:
-        st.markdown(f"""
-        <div class="kpi-mini">
-          <div class="kpi-mini-label">Roteirizadas</div>
-          <div class="kpi-mini-value" style="color:#10b981">{n_rot}</div>
-          <div class="kpi-mini-sub">com placa definida</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="card-head">
