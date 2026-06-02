@@ -2119,6 +2119,7 @@ elif pagina == "📋  Histórico":
 
     st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
+    # ── Linha 1 de filtros: busca + status + supervisor + excel ──────────────
     hf1, hf2, hf3, hf4 = st.columns([3, 1.2, 1.5, 1])
     with hf1:
         busca_h = st.text_input("Buscar", key="hb", label_visibility="collapsed", placeholder="🔍 Nota, cliente, placa, destino...")
@@ -2140,6 +2141,32 @@ elif pagina == "📋  Histórico":
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
 
+    # ── Linha 2 de filtros: data de saída ────────────────────────────────────
+    st.markdown(
+        '<div style="margin-top:10px;margin-bottom:2px;display:flex;align-items:center;gap:8px">'
+        '<span style="font-size:.68rem;font-weight:600;color:#7d95b5;text-transform:uppercase;letter-spacing:.08em">&#128197; Filtrar por Data de Sa&#237;da</span>'
+        '<div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    hf5, hf6, _hf_spacer = st.columns([1.3, 1.3, 4])
+    with hf5:
+        dt_saida_de = st.date_input(
+            "Dt. Saída — De",
+            value=None,
+            key="h_dt_saida_de",
+            format="DD/MM/YYYY",
+            label_visibility="visible",
+        )
+    with hf6:
+        dt_saida_ate = st.date_input(
+            "Dt. Saída — Até",
+            value=None,
+            key="h_dt_saida_ate",
+            format="DD/MM/YYYY",
+            label_visibility="visible",
+        )
+
     df_h = df_all.copy() if not df_all.empty else pd.DataFrame(columns=TCOLS)
     if not df_h.empty:
         if not ver_todas:
@@ -2148,6 +2175,25 @@ elif pagina == "📋  Histórico":
             df_h = df_h[df_h["status"] == fst]
         if fsup != "Todos":
             df_h = df_h[df_h["nomesup"] == fsup]
+        # Filtro por data de saída
+        if (dt_saida_de is not None or dt_saida_ate is not None) and "dt_saida" in df_h.columns:
+            def _parse_dt_saida(s):
+                s = str(s).strip()
+                try:
+                    if len(s) == 10 and s[4] == "-" and s[7] == "-":
+                        return date.fromisoformat(s)
+                    if len(s) == 10 and s[2] == "/" and s[5] == "/":
+                        d, m, y = s.split("/")
+                        return date(int(y), int(m), int(d))
+                except Exception:
+                    pass
+                return None
+            _parsed = df_h["dt_saida"].apply(_parse_dt_saida)
+            if dt_saida_de is not None:
+                df_h = df_h[_parsed.apply(lambda d: d is not None and d >= dt_saida_de)]
+                _parsed = _parsed[df_h.index]
+            if dt_saida_ate is not None:
+                df_h = df_h[_parsed.apply(lambda d: d is not None and d <= dt_saida_ate)]
         if busca_h:
             m = df_h.apply(lambda r: busca_h.lower() in " ".join(str(v) for v in r).lower(), axis=1)
             df_h = df_h[m]
