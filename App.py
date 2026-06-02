@@ -1284,34 +1284,94 @@ _peso_today  = _df_today["pesobrutotot"].sum() if not _df_today.empty else 0
 _pct_rot     = int((_n_rot / _n_total * 100) if _n_total > 0 else 0)
 _pct_pend    = 100 - _pct_rot
 
+# ── Agregações para os gráficos ───────────────────────────────────────────────
 # Top supervisores por valor
 _top_sup = pd.DataFrame()
 if not _df_all_dash.empty and "nomesup" in _df_all_dash.columns:
-    _top_sup = _df_all_dash.groupby("nomesup")["vltotal"].sum().sort_values(ascending=False).head(5).reset_index()
+    _top_sup = _df_all_dash.groupby("nomesup")["vltotal"].sum().sort_values(ascending=False).head(7).reset_index()
     _top_sup.columns = ["supervisor", "valor"]
 
-# Top praças por volume
+# Top praças por qtd de NFs
 _top_praca = pd.DataFrame()
 if not _df_all_dash.empty and "praca" in _df_all_dash.columns:
-    _top_praca = _df_all_dash.groupby("praca")["numnota"].count().sort_values(ascending=False).head(5).reset_index()
+    _top_praca = _df_all_dash.groupby("praca")["numnota"].count().sort_values(ascending=False).head(7).reset_index()
     _top_praca.columns = ["praca", "qtd"]
+
+# Top veículos (placa_road) por qtd de transferências
+_top_veiculo = pd.DataFrame()
+if not _df_all_dash.empty and "placa_road" in _df_all_dash.columns:
+    _df_veic = _df_all_dash[_df_all_dash["placa_road"].notna() & (_df_all_dash["placa_road"].astype(str).str.strip() != "")]
+    if not _df_veic.empty:
+        _top_veiculo = _df_veic.groupby("placa_road")["numnota"].count().sort_values(ascending=False).head(7).reset_index()
+        _top_veiculo.columns = ["placa", "qtd"]
+
+# Top vendedores por qtd de NFs
+_top_vend = pd.DataFrame()
+if not _df_all_dash.empty and "nomevend" in _df_all_dash.columns:
+    _top_vend = _df_all_dash.groupby("nomevend")["numnota"].count().sort_values(ascending=False).head(7).reset_index()
+    _top_vend.columns = ["vendedor", "qtd"]
 
 # Last 5 notas
 _last5 = _df_all_dash.tail(5)[::-1] if not _df_all_dash.empty else pd.DataFrame()
 
 _vl_pend = _df_pend_all["vltotal"].sum() if not _df_pend_all.empty else 0
 
-# ── Dashboard compacto: KPIs em linha + rankings lado a lado ──────────────────
+# ── Helper: gráfico de barras horizontal em HTML puro ─────────────────────────
+def _bar_chart_html(rows, label_key, value_key, color, fmt_val=None):
+    if not rows:
+        return '<div style="padding:.75rem;color:#3d5068;font-size:.78rem;text-align:center">Sem dados</div>'
+    max_v = max(r[value_key] for r in rows) or 1
+    bars = ""
+    for i, r in enumerate(rows):
+        lbl   = str(r[label_key])[:20] or "—"
+        val   = r[value_key]
+        pct   = int(val / max_v * 100)
+        shown = fmt_val(val) if fmt_val else str(val)
+        bars += f'''
+        <div style="display:grid;grid-template-columns:140px 1fr 70px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div style="font-size:.75rem;color:#7d95b5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{lbl}">{lbl}</div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
+            <div style="width:{pct}%;height:100%;background:{color};border-radius:4px;transition:width .4s ease"></div>
+          </div>
+          <div style="font-size:.75rem;font-weight:700;color:#f0f6ff;text-align:right;white-space:nowrap">{shown}</div>
+        </div>'''
+    return bars
+
+# ── Helper: gráfico de colunas verticais em HTML puro ─────────────────────────
+def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
+    if not rows:
+        return '<div style="padding:.75rem;color:#3d5068;font-size:.78rem;text-align:center">Sem dados</div>'
+    max_v = max(r[value_key] for r in rows) or 1
+    cols_html = ""
+    for r in rows:
+        lbl   = str(r[label_key])
+        # shorten label
+        short = lbl[:8] + "…" if len(lbl) > 9 else lbl
+        val   = r[value_key]
+        pct   = int(val / max_v * 100)
+        bar_h = max(4, int(pct / 100 * height))
+        shown = fmt_val(val) if fmt_val else str(val)
+        cols_html += f'''
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:0">
+          <div style="font-size:.68rem;font-weight:700;color:#f0f6ff">{shown}</div>
+          <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;height:{height}px">
+            <div style="width:70%;background:{color};border-radius:4px 4px 0 0;height:{bar_h}px;min-height:4px;box-shadow:0 0 8px {color}55"></div>
+          </div>
+          <div style="font-size:.62rem;color:#7d95b5;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px" title="{lbl}">{short}</div>
+        </div>'''
+    return f'<div style="display:flex;gap:4px;align-items:flex-end;padding:.5rem .25rem 0">{cols_html}</div>'
+
+# ── KPI strip ─────────────────────────────────────────────────────────────────
 st.markdown(f"""
-<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
-  <div class="kpi-mini" style="border-left:3px solid var(--acc)">
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+  <div class="kpi-mini" style="border-left:3px solid #f97316">
     <div class="kpi-mini-label">📦 Total de Notas</div>
-    <div class="kpi-mini-value">{_n_total}</div>
+    <div class="kpi-mini-value" style="color:#f97316">{_n_total}</div>
     <div class="kpi-mini-sub">{br(_vl_total)}</div>
   </div>
-  <div class="kpi-mini" style="border-left:3px solid var(--acc)">
+  <div class="kpi-mini" style="border-left:3px solid #f97316">
     <div class="kpi-mini-label">📅 Hoje</div>
-    <div class="kpi-mini-value">{_n_today}</div>
+    <div class="kpi-mini-value" style="color:#f97316">{_n_today}</div>
     <div class="kpi-mini-sub">{br(_vl_today)} · {_peso_today:.0f} kg</div>
   </div>
   <div class="kpi-mini" style="border-left:3px solid var(--ylw)">
@@ -1332,49 +1392,45 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-_drow1, _drow2, _drow3 = st.columns([1.4, 1.4, 1.2])
+# ── Linha 1 de gráficos: Supervisores (barras) + Praça (colunas) + Veículo (barras) ──
+_g1, _g2, _g3 = st.columns(3)
 
-with _drow1:
+with _g1:
     st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown('<div class="chart-head"><span class="chart-title">🏆 Top Supervisores · valor</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="chart-head"><span class="chart-title" style="color:#f97316">🏆 Transferências por Supervisor · valor</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-    if not _top_sup.empty:
-        _max_v = _top_sup["valor"].max()
-        for _i, _row in _top_sup.iterrows():
-            _pct_v = int(_row["valor"] / _max_v * 100) if _max_v > 0 else 0
-            _sup_name = str(_row["supervisor"])[:22] if _row["supervisor"] else "—"
-            st.markdown(f'''
-            <div class="rank-item">
-              <span class="rank-num">#{_i+1}</span>
-              <span class="rank-name">{_sup_name}</span>
-              <div class="rank-bar-wrap"><div class="rank-bar" style="width:{_pct_v}%"></div></div>
-              <span class="rank-val">{br(_row['valor'])}</span>
-            </div>''', unsafe_allow_html=True)
-    else:
-        st.markdown('<div style="padding:.5rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados</div>', unsafe_allow_html=True)
+    _rows_sup = _top_sup.to_dict("records") if not _top_sup.empty else []
+    st.markdown(_bar_chart_html(_rows_sup, "supervisor", "valor", "linear-gradient(90deg,#f97316,#fb923c)", fmt_val=br), unsafe_allow_html=True)
     st.markdown("</div></div>", unsafe_allow_html=True)
 
-with _drow2:
+with _g2:
     st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown('<div class="chart-head"><span class="chart-title">📍 Top Praças · volume</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="chart-head"><span class="chart-title" style="color:#3b82f6">📍 Transferências por Praça · qtd NFs</span></div>', unsafe_allow_html=True)
     st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-    if not _top_praca.empty:
-        _max_q = _top_praca["qtd"].max()
-        for _i, _row in _top_praca.iterrows():
-            _pct_q = int(_row["qtd"] / _max_q * 100) if _max_q > 0 else 0
-            _prc_name = str(_row["praca"])[:22] if _row["praca"] else "—"
-            st.markdown(f'''
-            <div class="rank-item">
-              <span class="rank-num">#{_i+1}</span>
-              <span class="rank-name">{_prc_name}</span>
-              <div class="rank-bar-wrap"><div class="rank-bar" style="width:{_pct_q}%;background:linear-gradient(90deg,var(--grn),var(--acc))"></div></div>
-              <span class="rank-val" style="color:var(--grn)">{_row['qtd']} NFs</span>
-            </div>''', unsafe_allow_html=True)
-    else:
-        st.markdown('<div style="padding:.5rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados</div>', unsafe_allow_html=True)
+    _rows_praca = _top_praca.to_dict("records") if not _top_praca.empty else []
+    st.markdown(_col_chart_html(_rows_praca, "praca", "qtd", "linear-gradient(180deg,#3b82f6,#60a5fa)", fmt_val=lambda v: str(int(v))), unsafe_allow_html=True)
     st.markdown("</div></div>", unsafe_allow_html=True)
 
-with _drow3:
+with _g3:
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown('<div class="chart-head"><span class="chart-title" style="color:#34d399">🚛 Transferências por Veículo (Placa Ant.) · qtd</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+    _rows_veic = _top_veiculo.to_dict("records") if not _top_veiculo.empty else []
+    st.markdown(_bar_chart_html(_rows_veic, "placa", "qtd", "linear-gradient(90deg,#34d399,#10b981)", fmt_val=lambda v: f"{int(v)} NFs"), unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+# ── Linha 2: Vendedor (colunas) + Últimas notas ───────────────────────────────
+_g4, _g5 = st.columns([2, 1])
+
+with _g4:
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown('<div class="chart-head"><span class="chart-title" style="color:#a78bfa">👤 Transferências por Vendedor · qtd NFs</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+    _rows_vend = _top_vend.to_dict("records") if not _top_vend.empty else []
+    st.markdown(_col_chart_html(_rows_vend, "vendedor", "qtd", "linear-gradient(180deg,#a78bfa,#7c3aed)", fmt_val=lambda v: str(int(v)), height=80), unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+with _g5:
     st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
     st.markdown('<div class="chart-head"><span class="chart-title">🕐 Últimas Notas</span></div>', unsafe_allow_html=True)
     if not _last5.empty:
@@ -1386,7 +1442,7 @@ with _drow3:
               <div class="activity-dot" style="background:{_dot_color};box-shadow:0 0 8px {_dot_color}55"></div>
               <div class="activity-content">
                 <div class="activity-title">NF {str(_rr.get("numnota",""))[:12]}</div>
-                <div class="activity-meta">{str(_rr.get("nomecliente",""))[:20]}</div>
+                <div class="activity-meta">{str(_rr.get("nomecliente",""))[:22]}</div>
               </div>
               <div class="activity-value">{br(_rr['vltotal'])}</div>
             </div>''', unsafe_allow_html=True)
