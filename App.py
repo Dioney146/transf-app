@@ -1460,64 +1460,115 @@ with _g5:
         st.markdown('<div style="padding:1rem;color:var(--txt3);font-size:.78rem;text-align:center">Nenhum registro ainda.</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ── Linha 3: Top Clientes por Valor (gráfico de barras verticais + linha de qtd) ──
+# ── Linha 3: Top Clientes por Valor (SVG chart — barras verticais + linha de qtd) ──
 st.markdown('<div class="chart-wrap" style="margin-top:12px">', unsafe_allow_html=True)
 st.markdown('<div class="chart-head"><span class="chart-title" style="color:#f97316">📊 Top Clientes por Valor (R$) · com linha de quantidade</span></div>', unsafe_allow_html=True)
 st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
 if not _top_cli.empty:
-    _cli_rows = _top_cli.to_dict("records")
-    _n_rows   = len(_cli_rows)
-    _max_val  = max(r["valor"] for r in _cli_rows) or 1
-    _max_qtd  = max(r["qtd"]   for r in _cli_rows) or 1
-    _chart_h  = 160  # altura da área de barras em px
+    _cli_rows  = _top_cli.to_dict("records")
+    _n_cli     = len(_cli_rows)
+    _max_val   = max(r["valor"] for r in _cli_rows) or 1
+    _max_qtd   = max(r["qtd"]   for r in _cli_rows) or 1
 
-    # Gera os pontos da linha de quantidade
-    # Cada barra ocupa 1/_n_rows de largura, centrada em (i+0.5)/_n_rows
-    _line_pts = " ".join(
-        f"{round((i + 0.5) / _n_rows * 100, 2)}%,{round((1 - r['qtd'] / _max_qtd) * _chart_h, 1)}px"
-        for i, r in enumerate(_cli_rows)
-    )
-    # SVG polyline pontos em coordenadas relativas (usaremos HTML/CSS)
-    _dots_html = ""
-    _bars_html = ""
+    # SVG viewport fixo
+    _SVG_W     = 900
+    _SVG_H     = 260        # altura total do SVG
+    _BAR_AREA  = 160        # altura disponível para as barras
+    _TOP_PAD   = 36         # espaço no topo (rótulos de valor)
+    _LABEL_H   = 18         # altura dos rótulos de nome abaixo
+    _bar_w     = _SVG_W / _n_cli
+    _bar_inner = _bar_w * 0.55   # largura real da barra (55% do slot)
+
+    # Cores por posição
+    def _bar_color(idx):
+        if idx < 5:  return ("#ef4444", "#dc2626")
+        if idx < 10: return ("#f97316", "#ea580c")
+        return ("#3b82f6", "#2563eb")
+
+    # Monta elementos SVG
+    _defs  = "<defs>"
+    _rects = ""
+    _texts = ""
+    _line_pts_list = []
+
     for i, r in enumerate(_cli_rows):
         _lbl   = str(r["cliente"])
-        _short = (_lbl[:10] + "…") if len(_lbl) > 11 else _lbl
+        _short = (_lbl[:11] + "…") if len(_lbl) > 12 else _lbl
         _val   = r["valor"]
-        _qtd   = r["qtd"]
-        _bar_h = max(6, int(_val / _max_val * _chart_h))
-        _dot_y = round((1 - _qtd / _max_qtd) * _chart_h)
-        # cor: vermelho top5, laranja 6-10, azul demais
-        if i < 5:
-            _color = "linear-gradient(180deg,#ef4444,#dc2626)"
-            _leg   = "top5"
-        elif i < 10:
-            _color = "linear-gradient(180deg,#f97316,#ea580c)"
-            _leg   = "atencao"
-        else:
-            _color = "linear-gradient(180deg,#3b82f6,#2563eb)"
-            _leg   = "demais"
+        _qtd   = int(r["qtd"])
+        _ratio = _val / _max_val
+        _bh    = max(4, int(_ratio * _BAR_AREA))
+        _cx    = _bar_w * i + _bar_w / 2          # centro x do slot
+        _bx    = _cx - _bar_inner / 2             # x esquerdo da barra
+        _by    = _TOP_PAD + _BAR_AREA - _bh        # y topo da barra
 
-        _val_fmt = br(_val)
-        _bars_html += f'''
-        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0;position:relative">
-          <div style="font-size:.62rem;font-weight:700;color:#f0f6ff;white-space:nowrap">{_val_fmt}</div>
-          <div style="font-size:.58rem;color:#fbbf24;font-weight:600;white-space:nowrap">{_qtd}</div>
-          <div data-cli-dot="{i}" style="width:8px;height:8px;border-radius:50%;background:#fbbf24;border:2px solid #1e2d3d;position:absolute;bottom:{_chart_h - _dot_y - 4}px;left:50%;transform:translateX(-50%);z-index:5"></div>
-          <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;height:{_chart_h}px">
-            <div style="width:75%;background:{_color};border-radius:4px 4px 0 0;height:{_bar_h}px;min-height:6px;box-shadow:0 0 10px rgba(249,115,22,0.3)"></div>
-          </div>
-          <div style="font-size:.58rem;color:#7d95b5;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;padding:0 1px" title="{_lbl}">{_short}</div>
-        </div>'''
+        # Gradiente único por barra
+        _c1, _c2 = _bar_color(i)
+        _gid = f"bg{i}"
+        _defs += (
+            f'<linearGradient id="{_gid}" x1="0" y1="0" x2="0" y2="1">'
+            f'<stop offset="0%" stop-color="{_c1}"/>'
+            f'<stop offset="100%" stop-color="{_c2}"/>'
+            f'</linearGradient>'
+        )
 
-    st.markdown(f'''
-    <div style="position:relative">
-      <div style="display:flex;gap:3px;align-items:flex-end;padding:.25rem .25rem 0">
-        {_bars_html}
-      </div>
-    </div>
-    <div style="display:flex;gap:16px;align-items:center;margin-top:10px;padding:0 .5rem;flex-wrap:wrap">
+        # Barra
+        _rects += (
+            f'<rect x="{_bx:.1f}" y="{_by}" width="{_bar_inner:.1f}" height="{_bh}" '
+            f'rx="3" fill="url(#{_gid})" opacity="0.92"/>'
+        )
+
+        # Rótulo valor acima da barra
+        _val_txt = br(_val)
+        _rects += (
+            f'<text x="{_cx:.1f}" y="{_by - 4}" text-anchor="middle" '
+            f'font-size="9" font-weight="700" fill="#f0f6ff">{_val_txt}</text>'
+        )
+
+        # Rótulo nome abaixo
+        _label_y = _TOP_PAD + _BAR_AREA + 13
+        _texts += (
+            f'<text x="{_cx:.1f}" y="{_label_y}" text-anchor="middle" '
+            f'font-size="8.5" fill="#7d95b5">{_short}</text>'
+        )
+
+        # Ponto da linha (quantidade normalizada)
+        _qtd_ratio = _qtd / _max_qtd
+        _dot_y = _TOP_PAD + _BAR_AREA - int(_qtd_ratio * _BAR_AREA)
+        _line_pts_list.append((_cx, _dot_y, _qtd))
+
+    _defs += "</defs>"
+
+    # Polilinha da quantidade
+    _poly_pts = " ".join(f"{x:.1f},{y}" for x, y, _ in _line_pts_list)
+    _polyline = (
+        f'<polyline points="{_poly_pts}" fill="none" stroke="#fbbf24" '
+        f'stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
+    )
+
+    # Dots + rótulo qtd da linha
+    _dot_els = ""
+    for x, y, qtd in _line_pts_list:
+        _dot_els += (
+            f'<circle cx="{x:.1f}" cy="{y}" r="4" fill="#fbbf24" stroke="#1e2d3d" stroke-width="1.5"/>'
+            f'<text x="{x:.1f}" y="{y - 7}" text-anchor="middle" '
+            f'font-size="8" font-weight="700" fill="#fbbf24">{qtd}</text>'
+        )
+
+    _svg = f'''
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W} {_SVG_H}"
+         style="width:100%;height:auto;display:block">
+      {_defs}
+      {_rects}
+      {_texts}
+      {_polyline}
+      {_dot_els}
+    </svg>'''
+
+    # Legenda
+    _legend = '''
+    <div style="display:flex;gap:16px;align-items:center;margin-top:6px;padding:0 .5rem;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:5px">
         <div style="width:12px;height:12px;border-radius:2px;background:#ef4444"></div>
         <span style="font-size:.7rem;color:#7d95b5">Top 5 – crítico</span>
@@ -1531,12 +1582,14 @@ if not _top_cli.empty:
         <span style="font-size:.7rem;color:#7d95b5">Demais</span>
       </div>
       <div style="display:flex;align-items:center;gap:5px;margin-left:auto">
-        <div style="width:20px;height:2px;background:#fbbf24"></div>
-        <div style="width:8px;height:8px;border-radius:50%;background:#fbbf24"></div>
+        <svg width="24" height="10"><line x1="0" y1="5" x2="16" y2="5" stroke="#fbbf24" stroke-width="2"/>
+        <circle cx="20" cy="5" r="4" fill="#fbbf24"/></svg>
         <span style="font-size:.7rem;color:#7d95b5">Linha = quantidade</span>
       </div>
-    </div>
-    ''', unsafe_allow_html=True)
+    </div>'''
+
+    st.markdown(_svg + _legend, unsafe_allow_html=True)
+
 else:
     st.markdown('<div style="padding:1rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados de clientes.</div>', unsafe_allow_html=True)
 
