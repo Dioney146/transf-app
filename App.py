@@ -1494,21 +1494,14 @@ if pagina == "📝  Registro":
         <div class="card-body">
         """, unsafe_allow_html=True)
 
-        ca, cb, cc = st.columns([1.2, 2, 1])
+        ca, cb = st.columns([2, 1])
         with ca:
-            dt_t = st.date_input(
-                "Data da Transferência",
-                value=data_filtro,
-                format="DD/MM/YYYY",
-                key="dt_transf_input",
-            )
-        with cb:
             nota_inp = st.text_input(
                 "Número da Nota Fiscal",
                 placeholder="Ex: 398234",
                 key="nota_inp",
             )
-        with cc:
+        with cb:
             st.markdown("<br>", unsafe_allow_html=True)
             buscar_btn = st.button("🔍 Buscar", use_container_width=True, key="buscar_btn")
 
@@ -1622,7 +1615,7 @@ if pagina == "📝  Registro":
 
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🚛 Confirmar Transferência", type="primary", use_container_width=True, key="confirm_btn"):
-                dt_s = dt_t.isoformat()
+                dt_s = date.today().isoformat()  # data de registro gerada automaticamente pelo sistema
                 if check_dup(cur["numnota"], dt_s):
                     st.markdown(f'<div class="al-e">❌ Nota {cur["numnota"]} já registrada em {fmt_date(dt_s)}.</div>', unsafe_allow_html=True)
                 else:
