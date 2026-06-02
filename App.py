@@ -486,9 +486,11 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 }}
 .topbar-logo {{
   height: 72px;
-  width: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 18px rgba(0,0,0,0.45));
+  width: 72px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.50);
 }}
 
 /* ── Nav tabs — centralizado ── */
@@ -499,10 +501,20 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   border-bottom: 1px solid var(--bdr);
   padding: 0;
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  display: flex;
-  justify-content: center;
+  display: flex !important;
+  justify-content: center !important;
+}}
+.nav-wrap > div {{
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
 }}
 .nav-wrap div[data-testid="stRadio"] > label {{ display: none !important; }}
+.nav-wrap div[data-testid="stRadio"] {{
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}}
 .nav-wrap div[data-testid="stRadio"] > div {{
   display: flex !important;
   flex-direction: row !important;
