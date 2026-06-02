@@ -1394,12 +1394,18 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         shown = fmt_val(val) if fmt_val else str(int(val))
 
         rects += f'<rect x="{bx:.1f}" y="{by}" width="{bar_w:.1f}" height="{bh}" rx="3" fill="url(#gcol)" opacity="0.9"/>'
-        rects += f'<text x="{cx:.1f}" y="{by - 4}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
+        # valor dentro da barra (10px abaixo do topo), só mostra fora se barra for muito pequena
+        val_ty = by + 12
+        if bh >= 16:
+            rects += f'<text x="{cx:.1f}" y="{val_ty}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
+        else:
+            rects += f'<text x="{cx:.1f}" y="{by - 3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
         labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 14}" text-anchor="middle" font-size="8" fill="#7d95b5">{short}</text>'
 
         if qtd_key:
             qtd    = int(r[qtd_key])
-            dot_y  = TOP_PAD + BAR_AREA - int(qtd / max_qtd * BAR_AREA)
+            # linha amarela flutua 18px acima do topo de cada barra
+            dot_y  = by - 18
             pts.append((cx, dot_y, qtd))
 
     poly = ""
