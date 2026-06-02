@@ -2048,11 +2048,19 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
         _rows_vend2 = _top_vend.to_dict("records") if not _top_vend.empty else []
-        if not _df_all_dash.empty and "nomevend" in _df_all_dash.columns:
-            _vend_val = _df_all_dash.groupby("nomevend")["vltotal"].sum().reset_index()
-            _vend_val.columns = ["vendedor", "valor"]
-            _tv2 = _top_vend.merge(_vend_val, on="vendedor", how="left").fillna(0)
+        if not df_all.empty and "nomevend" in df_all.columns:
+            _vend_qtd2 = df_all.groupby("nomevend")["numnota"].count().reset_index()
+            _vend_qtd2.columns = ["vendedor", "qtd"]
+            _vend_val2 = df_all.groupby("nomevend")["vltotal"].sum().reset_index()
+            _vend_val2.columns = ["vendedor", "valor"]
+            _tv2 = _vend_qtd2.merge(_vend_val2, on="vendedor", how="left").fillna(0)
+            _tv2 = _tv2.sort_values("valor", ascending=False).head(7)
             _rows_vend2 = _tv2.to_dict("records")
+
+        def _fmt_brl(v):
+            # formata sem $ para evitar quebra no SVG; usa R antes do valor
+            s = f"{int(round(v)):,}".replace(",", ".")
+            return f"R {s}"
 
         st.markdown(
             _svg_col_line(
@@ -2060,7 +2068,7 @@ elif pagina == "📋  Histórico":
                 label_key="vendedor", val_key="valor", qtd_key="qtd",
                 bar_color_1="#ef4444", bar_color_2="#b91c1c",
                 line_color="#fbbf24",
-                fmt_val=lambda v: f"R$ {v:,.0f}".replace(",", "."),
+                fmt_val=_fmt_brl,
             ),
             unsafe_allow_html=True,
         )
