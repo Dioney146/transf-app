@@ -484,16 +484,34 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 .nav-logo-wrap {{
   display: flex;
   align-items: center;
-  padding: 6px 16px 6px 20px;
+  gap: 18px;
+  padding: 12px 32px;
   flex-shrink: 0;
 }}
 .nav-logo {{
-  height: 40px;
-  width: 40px;
+  height: 60px;
+  width: 60px;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.15);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.50);
+  border: 2px solid rgba(59,130,246,0.6);
+  box-shadow: 0 0 18px rgba(59,130,246,0.4), 0 2px 10px rgba(0,0,0,0.50);
+  flex-shrink: 0;
+}}
+.nav-brand {{
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}}
+.nav-brand-main {{
+  font-family: 'Sora', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #f0f6ff;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}}
+.nav-brand-main span {{
+  color: #3b82f6;
 }}
 .nav-wrap > div {{
   display: flex !important;
@@ -1141,6 +1159,9 @@ input[type="date"] {{ color-scheme: dark !important; }}
 st.markdown(f'''<div class="nav-wrap">
   <div class="nav-logo-wrap">
     <img src="data:image/webp;base64,{LOGO_B64}" class="nav-logo" alt="Delly's Logo"/>
+    <div class="nav-brand">
+      <div class="nav-brand-main">Registro de Transferência&nbsp;<span>Delly's</span></div>
+    </div>
   </div>''', unsafe_allow_html=True)
 pagina = st.radio(
     "nav",
