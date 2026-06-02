@@ -2014,45 +2014,39 @@ elif pagina == "🗺️  Roteirização":
         df_rd_sorted = df_rd.sort_values("dt_liberado", ascending=False).reset_index(drop=True) if not df_rd.empty else df_rd
         df_r_sorted  = df_r.sort_values("dt_liberado", ascending=False).reset_index(drop=True) if not df_r.empty else df_r
 
-        # Cabeçalho da tabela manual
-        all_rot_cols = [c for c in df_rd_sorted.columns]
-        col_labels = {**{c: c for c in all_rot_cols}, **{k: v.label if hasattr(v, "label") else k for k, v in ROT_CONFIG.items()}}
-        friendly = {
-            "placa_road": "Placa Antiga", "observacao": "Observação",
-            "placa_veiculo": "Nova Placa", "dt_saida": "Dt. Saída",
-            "numnota": "Nota Fiscal", "numped": "Pedido", "nomecliente": "Cliente",
-            "dt_liberado": "Dt. Liberado", "nomevend": "Vendedor", "nomesup": "Supervisor",
-            "pesobrutotot": "Peso (kg)", "vltotal": "Valor (R$)",
-            "praca": "Praça", "numcarregamento": "Carregamento", "destino": "Destino",
-        }
-
-        if not df_rd_sorted.empty:
-            hdr_cols = st.columns([*[3]*len(all_rot_cols), 1])
-            for i, col in enumerate(all_rot_cols):
-                hdr_cols[i].markdown(f"<div style='font-size:.72rem;font-weight:700;color:var(--txt-muted);text-transform:uppercase;padding:.25rem 0'>{friendly.get(col, col)}</div>", unsafe_allow_html=True)
-            hdr_cols[-1].markdown("<div style='font-size:.72rem;font-weight:700;color:var(--txt-muted);text-transform:uppercase;padding:.25rem 0'></div>", unsafe_allow_html=True)
-            st.markdown("<hr style='margin:.1rem 0 .4rem;border-color:var(--bdr)'>", unsafe_allow_html=True)
-
-            for idx, row_d in df_rd_sorted.iterrows():
-                row_id = df_r_sorted.iloc[idx]["id"] if idx < len(df_r_sorted) else None
-                row_cols = st.columns([*[3]*len(all_rot_cols), 1])
-                for i, col in enumerate(all_rot_cols):
-                    val = row_d[col]
-                    row_cols[i].markdown(f"<div style='font-size:.82rem;padding:.3rem 0;color:var(--txt)'>{val}</div>", unsafe_allow_html=True)
-                if row_id is not None:
-                    with row_cols[-1]:
-                        if st.button("🗑️", key=f"del_rot_{row_id}", help="Devolver para pendente"):
-                            update_transf(int(row_id), {
-                                "placa_veiculo": "",
-                                "dt_roteirizacao": "",
-                                "dt_saida": "",
-                                "status": "pendente",
-                            })
-                            st.success(f"↩️ Nota devolvida para pendentes.")
-                            st.rerun()
-                st.markdown("<hr style='margin:.1rem 0;border-color:var(--bdr);opacity:.4'>", unsafe_allow_html=True)
-
+        # ── Tabela nativa (planilha bonita) ──────────────────────────────────
+        st.dataframe(
+            df_rd_sorted,
+            use_container_width=True,
+            hide_index=True,
+            column_config={k: v for k, v in ROT_CONFIG.items() if k in df_rd_sorted.columns},
+        )
         st.caption(f"{len(df_r)} nota(s)")
+
+        # ── Lixeira por linha: selectbox de nota + botão devolver ────────────
+        if not df_r_sorted.empty:
+            st.markdown('<div class="sec-div" style="margin:.6rem 0 .4rem"><div class="sec-div-line"></div><div class="sec-div-txt">↩️ Devolver para pendente</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
+            _nota_opts = [
+                f"🗑️  {str(row['numnota'])} — {str(row.get('nomecliente', ''))[:28]}"
+                for _, row in df_r_sorted.iterrows()
+            ]
+            _nota_ids = df_r_sorted["id"].tolist()
+            _dv_col1, _dv_col2, _ = st.columns([3, 1, 2])
+            with _dv_col1:
+                _sel_idx = st.selectbox("Nota para devolver", range(len(_nota_opts)),
+                                        format_func=lambda i: _nota_opts[i],
+                                        key="rdv2", label_visibility="collapsed")
+            with _dv_col2:
+                if st.button("↩️ Devolver", key="devolver_btn2", use_container_width=True):
+                    update_transf(int(_nota_ids[_sel_idx]), {
+                        "placa_veiculo": "",
+                        "dt_roteirizacao": "",
+                        "dt_saida": "",
+                        "status": "pendente",
+                    })
+                    st.success("↩️ Devolvida para pendentes.")
+                    st.rerun()
+
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
