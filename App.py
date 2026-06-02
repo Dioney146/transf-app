@@ -2049,10 +2049,10 @@ elif pagina == "📋  Histórico":
         st.markdown(
             _svg_col_line(
                 _rows_vend2,
-                label_key="vendedor", val_key="qtd", qtd_key="qtd",
+                label_key="vendedor", val_key="valor", qtd_key="qtd",
                 bar_color_1="#ef4444", bar_color_2="#b91c1c",
                 line_color="#fbbf24",
-                fmt_val=lambda v: str(int(v)),
+                fmt_val=lambda v: f"R${v/1000:.0f}k" if v >= 1000 else f"R${v:.0f}",
             ),
             unsafe_allow_html=True,
         )
@@ -2090,13 +2090,10 @@ elif pagina == "📋  Histórico":
 
     st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
-    # ── Linha 1 de filtros: busca + nova placa + status + supervisor + excel ───────
-    hf1, hf1b, hf2, hf3, hf4 = st.columns([2.5, 1.3, 1.2, 1.5, 1])
+    # ── Linha 1 de filtros: busca + status + supervisor + excel ──────────────
+    hf1, hf2, hf3, hf4 = st.columns([3, 1.2, 1.5, 1])
     with hf1:
         busca_h = st.text_input("Buscar", key="hb", label_visibility="collapsed", placeholder="🔍 Nota, cliente, placa, destino...")
-    with hf1b:
-        placas_h = ["Todas"] + (sorted([p for p in df_all["placa_veiculo"].dropna().replace("", None).dropna().unique().tolist()]) if not df_all.empty and "placa_veiculo" in df_all.columns else [])
-        f_nova_placa = st.selectbox("🚗 Nova Placa", placas_h, key="h_nova_placa", label_visibility="collapsed")
     with hf2:
         fst = st.selectbox("Status", ["Todos", "pendente", "roteirizado"], key="hst", label_visibility="collapsed")
     with hf3:
@@ -2172,8 +2169,6 @@ elif pagina == "📋  Histórico":
                 _parsed = _parsed[df_h.index]
             if dt_saida_ate is not None:
                 df_h = df_h[_parsed.apply(lambda d: d is not None and d <= dt_saida_ate)]
-        if f_nova_placa != "Todas" and "placa_veiculo" in df_h.columns:
-            df_h = df_h[df_h["placa_veiculo"].astype(str).str.strip() == f_nova_placa]
         if busca_h:
             m = df_h.apply(lambda r: busca_h.lower() in " ".join(str(v) for v in r).lower(), axis=1)
             df_h = df_h[m]
