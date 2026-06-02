@@ -1373,8 +1373,8 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
     BAR_AREA = 160  # altura da área de barras
     BOT_PAD  = 20   # espaço abaixo para rótulos de nome
     SVG_H    = TOP_PAD + BAR_AREA + BOT_PAD
-    slot_w   = SVG_W / n
-    bar_w    = slot_w * 0.55
+    slot_w   = SVG_W / max(n, 1)
+    bar_w    = min(slot_w * 0.55, 80)  # máx 80px para não estourar com poucos itens
     max_val  = max(r[val_key] for r in rows) or 1
     max_qtd  = max(r[qtd_key] for r in rows) if qtd_key else 1
 
@@ -2057,10 +2057,10 @@ elif pagina == "📋  Histórico":
         st.markdown(
             _svg_col_line(
                 _rows_vend2,
-                label_key="vendedor", val_key="qtd", qtd_key="qtd",
+                label_key="vendedor", val_key="valor", qtd_key="qtd",
                 bar_color_1="#ef4444", bar_color_2="#b91c1c",
                 line_color="#fbbf24",
-                fmt_val=lambda v: str(int(v)),
+                fmt_val=lambda v: f"R$ {v:,.0f}".replace(",", "."),
             ),
             unsafe_allow_html=True,
         )
