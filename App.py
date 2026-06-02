@@ -1409,8 +1409,8 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         return '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
     SVG_W    = 560
-    TOP_PAD  = 32   # espaço acima das barras (rótulos de valor)
-    BAR_AREA = 140  # altura da área de barras
+    TOP_PAD  = 52   # espaço acima das barras (rótulos de valor)
+    BAR_AREA = 160  # altura da área de barras
     BOT_PAD  = 20   # espaço abaixo para rótulos de nome
     SVG_H    = TOP_PAD + BAR_AREA + BOT_PAD
     slot_w   = SVG_W / n
@@ -1501,69 +1501,7 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
     )
 
 
-# ── Gráfico 1 (colunas) + Gráfico 2 (barras horiz) lado a lado ───────────────
-_gc1, _gc2 = st.columns([3, 2])
-
-with _gc1:
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="chart-head">'
-        '<span class="chart-title" style="color:#a78bfa">👤 Notas Fiscais por Vendedor · Qtd + Valor</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-
-    _rows_vend2 = _top_vend.to_dict("records") if not _top_vend.empty else []
-    # merge valor no top_vend se existir
-    if not _df_all_dash.empty and "nomevend" in _df_all_dash.columns:
-        _vend_val = _df_all_dash.groupby("nomevend")["vltotal"].sum().reset_index()
-        _vend_val.columns = ["vendedor", "valor"]
-        _tv2 = _top_vend.merge(_vend_val, on="vendedor", how="left").fillna(0)
-        _rows_vend2 = _tv2.to_dict("records")
-
-    st.markdown(
-        _svg_col_line(
-            _rows_vend2,
-            label_key="vendedor", val_key="qtd", qtd_key="qtd",
-            bar_color_1="#a78bfa", bar_color_2="#7c3aed",
-            line_color="#fbbf24",
-            fmt_val=lambda v: str(int(v)),
-        ),
-        unsafe_allow_html=True,
-    )
-    # legenda linha
-    st.markdown(
-        '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;padding:0 .25rem">'
-        '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
-        '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
-        '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown("</div></div>", unsafe_allow_html=True)
-
-with _gc2:
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="chart-head">'
-        '<span class="chart-title" style="color:#34d399">🚛 Notas Fiscais por Veículo · Qtd</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-
-    _rows_veic2 = _top_veiculo.to_dict("records") if not _top_veiculo.empty else []
-    st.markdown(
-        _svg_bar_horiz(
-            _rows_veic2,
-            label_key="placa", val_key="qtd",
-            bar_color_1="#34d399", bar_color_2="#10b981",
-            fmt_val=lambda v: f"{int(v)} NFs",
-        ),
-        unsafe_allow_html=True,
-    )
-    st.markdown("</div></div>", unsafe_allow_html=True)
+# ── Gráficos movidos para a aba Histórico (ver abaixo) ────────────────────────
 
 st.markdown('<div class="sec-div" style="margin:.75rem 0"><div class="sec-div-line"></div><div class="sec-div-txt">Navegação por seção</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
@@ -2117,6 +2055,70 @@ elif pagina == "📋  Histórico":
     </div>
     """, unsafe_allow_html=True)
 
+    # ── Gráficos: Vendedor (colunas+linha) + Veículo (barras horiz) ──────────
+    _gc1, _gc2 = st.columns([3, 2])
+
+    with _gc1:
+        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="chart-head">'
+            '<span class="chart-title" style="color:#ef4444">👤 Notas Fiscais por Vendedor · Qtd + Valor</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+        _rows_vend2 = _top_vend.to_dict("records") if not _top_vend.empty else []
+        if not _df_all_dash.empty and "nomevend" in _df_all_dash.columns:
+            _vend_val = _df_all_dash.groupby("nomevend")["vltotal"].sum().reset_index()
+            _vend_val.columns = ["vendedor", "valor"]
+            _tv2 = _top_vend.merge(_vend_val, on="vendedor", how="left").fillna(0)
+            _rows_vend2 = _tv2.to_dict("records")
+
+        st.markdown(
+            _svg_col_line(
+                _rows_vend2,
+                label_key="vendedor", val_key="qtd", qtd_key="qtd",
+                bar_color_1="#ef4444", bar_color_2="#b91c1c",
+                line_color="#fbbf24",
+                fmt_val=lambda v: str(int(v)),
+            ),
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
+            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
+            '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
+            '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown("</div></div>", unsafe_allow_html=True)
+
+    with _gc2:
+        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="chart-head">'
+            '<span class="chart-title" style="color:#34d399">🚛 Notas Fiscais por Veículo · Qtd</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+        _rows_veic2 = _top_veiculo.to_dict("records") if not _top_veiculo.empty else []
+        st.markdown(
+            _svg_bar_horiz(
+                _rows_veic2,
+                label_key="placa", val_key="qtd",
+                bar_color_1="#34d399", bar_color_2="#10b981",
+                fmt_val=lambda v: f"{int(v)} NFs",
+            ),
+            unsafe_allow_html=True,
+        )
+        st.markdown("</div></div>", unsafe_allow_html=True)
+
+    st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
+    # ── Tabela do histórico ───────────────────────────────────────────────────
     hf1, hf2, hf3, hf4 = st.columns([3, 1.2, 1.5, 1])
     with hf1:
         busca_h = st.text_input("Buscar", key="hb", label_visibility="collapsed", placeholder="🔍 Nota, cliente, placa, destino...")
