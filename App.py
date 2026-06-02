@@ -2092,7 +2092,13 @@ elif pagina == "📋  Histórico":
         )
         st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
-        _rows_veic2 = _top_veiculo.to_dict("records") if not _top_veiculo.empty else []
+        _rows_veic2 = []
+        if not df_all.empty and "placa_road" in df_all.columns:
+            _df_veic2 = df_all[df_all["placa_road"].notna() & (df_all["placa_road"].astype(str).str.strip() != "")]
+            if not _df_veic2.empty:
+                _top_veic2 = _df_veic2.groupby("placa_road")["numnota"].count().sort_values(ascending=False).head(7).reset_index()
+                _top_veic2.columns = ["placa", "qtd"]
+                _rows_veic2 = _top_veic2.to_dict("records")
         st.markdown(
             _svg_bar_horiz(
                 _rows_veic2,
