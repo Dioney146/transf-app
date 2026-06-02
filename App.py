@@ -1232,9 +1232,10 @@ else:
 
 # ─── Colunas padrão de exibição ───────────────────────────────────────────────
 STD_COLS = [
+    "placa_road", "observacao",
     "numnota", "numped", "nomecliente", "dt_liberado",
     "nomevend", "nomesup", "pesobrutotot", "vltotal",
-    "praca", "numcarregamento", "destino", "placa_road", "observacao",
+    "praca", "numcarregamento", "destino",
 ]
 STD_CONFIG = {
     "numnota":         st.column_config.TextColumn("Nota Fiscal",    width=105),
@@ -1361,19 +1362,19 @@ def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
 
 
 
-# ── Helper: gera SVG de colunas verticais com linha de qtd ────────────
+# ── Helper: gera SVG de colunas verticais com linha de qtd ────────────────────
 def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#fbbf24", fmt_val=None):
-    """Barras verticais com valor dentro + linha de qtd bem acima."""
+    """Retorna string SVG: barras verticais + polyline de quantidade."""
     if not rows:
         return '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
     SVG_W    = 560
-    TOP_PAD  = 50   # espaço generoso acima para linha+rótulos
-    BAR_AREA = 140
-    BOT_PAD  = 22
+    TOP_PAD  = 52   # espaço acima das barras (rótulos de valor)
+    BAR_AREA = 160  # altura da área de barras
+    BOT_PAD  = 20   # espaço abaixo para rótulos de nome
     SVG_H    = TOP_PAD + BAR_AREA + BOT_PAD
     slot_w   = SVG_W / n
-    bar_w    = slot_w * 0.60
+    bar_w    = slot_w * 0.55
     max_val  = max(r[val_key] for r in rows) or 1
     max_qtd  = max(r[qtd_key] for r in rows) if qtd_key else 1
 
@@ -1386,38 +1387,36 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         lbl   = str(r[label_key])
         short = (lbl[:9] + "…") if len(lbl) > 10 else lbl
         val   = r[val_key]
-        bh    = max(24, int(val / max_val * BAR_AREA))
+        bh    = max(4, int(val / max_val * BAR_AREA))
         cx    = slot_w * i + slot_w / 2
         bx    = cx - bar_w / 2
         by    = TOP_PAD + BAR_AREA - bh
         shown = fmt_val(val) if fmt_val else str(int(val))
-        # valor centralizado verticalmente dentro da barra
-        text_y = by + bh / 2 + 3.5
 
-        rects += f'<rect x="{bx:.1f}" y="{by:.1f}" width="{bar_w:.1f}" height="{bh:.1f}" rx="3" fill="url(#gcol)" opacity="0.9"/>'
-        rects += f'<text x="{cx:.1f}" y="{text_y:.1f}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">{shown}</text>'
-        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 15}" text-anchor="middle" font-size="8" fill="#7d95b5">{short}</text>'
+        rects += f'<rect x="{bx:.1f}" y="{by}" width="{bar_w:.1f}" height="{bh}" rx="3" fill="url(#gcol)" opacity="0.9"/>'
+        rects += f'<text x="{cx:.1f}" y="{by - 4}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
+        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 14}" text-anchor="middle" font-size="8" fill="#7d95b5">{short}</text>'
 
         if qtd_key:
-            qtd   = int(r[qtd_key])
-            # linha mapeada nos primeiros 30px do TOP_PAD (zona exclusiva acima das barras)
-            dot_y = 8 + int((1 - qtd / max_qtd) * 28)
+            qtd    = int(r[qtd_key])
+            dot_y  = TOP_PAD + BAR_AREA - int(qtd / max_qtd * BAR_AREA)
             pts.append((cx, dot_y, qtd))
 
     poly = ""
     dots = ""
     if pts:
-        poly_str = " ".join(f"{x:.1f},{y:.1f}" for x, y, _ in pts)
+        poly_str = " ".join(f"{x:.1f},{y}" for x, y, _ in pts)
         poly = f'<polyline points="{poly_str}" fill="none" stroke="{line_color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
         for x, y, q in pts:
-            dots += f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{line_color}" stroke="#141e2b" stroke-width="1.5"/>'
-            dots += f'<text x="{x:.1f}" y="{max(10, y-6):.1f}" text-anchor="middle" font-size="8.5" font-weight="700" fill="{line_color}">{q}</text>'
+            dots += f'<circle cx="{x:.1f}" cy="{y}" r="4" fill="{line_color}" stroke="#141e2b" stroke-width="1.5"/>'
+            dots += f'<text x="{x:.1f}" y="{y - 7}" text-anchor="middle" font-size="8" font-weight="700" fill="{line_color}">{q}</text>'
 
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}" '
         f'style="width:100%;height:auto;display:block">'
         f'{defs}{rects}{labels}{poly}{dots}</svg>'
     )
+
 
 # ── Helper: gera SVG de barras horizontais ────────────────────────────────────
 def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=None):
@@ -1821,9 +1820,10 @@ elif pagina == "🗺️  Roteirização":
 
         # ── Tabela nativa (st.dataframe) + painel de roteirização ───────────
         PEND_COLS = [c for c in [
+            "placa_road", "observacao",
             "numnota", "numped", "nomecliente", "dt_liberado",
             "nomevend", "nomesup", "pesobrutotot", "vltotal",
-            "praca", "numcarregamento", "destino", "placa_road", "observacao",
+            "praca", "numcarregamento", "destino",
         ] if c in df_p.columns]
 
         PEND_CONFIG = {
@@ -2051,10 +2051,10 @@ elif pagina == "📋  Histórico":
         st.markdown(
             _svg_col_line(
                 _rows_vend2,
-                label_key="vendedor", val_key="valor", qtd_key="qtd",
+                label_key="vendedor", val_key="qtd", qtd_key="qtd",
                 bar_color_1="#ef4444", bar_color_2="#b91c1c",
                 line_color="#fbbf24",
-                fmt_val=lambda v: f"R${v/1000:.1f}k" if v >= 1000 else f"R${v:.0f}",
+                fmt_val=lambda v: str(int(v)),
             ),
             unsafe_allow_html=True,
         )
@@ -2179,7 +2179,9 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    HIST_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status", "observacao"] if c in df_h.columns]
+    _hist_front = ["placa_road", "observacao"]
+    _hist_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status", "observacao"] if c not in _hist_front]
+    HIST_COLS = [c for c in _hist_front + _hist_rest if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
         "placa_veiculo": st.column_config.TextColumn("Nova Placa",  width=110),
