@@ -1994,7 +1994,10 @@ elif pagina == "🗺️  Roteirização":
         for _c in ["placa_veiculo", "dt_saida"]:
             if _c not in df_r.columns:
                 df_r[_c] = ""
-        ROT_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "observacao"] if c in df_r.columns]
+        _rot_extra = ["placa_veiculo", "dt_saida", "observacao"]
+        _rot_all   = STD_COLS + _rot_extra
+        _rot_order = ["observacao"] + [c for c in _rot_all if c != "observacao"]
+        ROT_COLS = [c for c in _rot_order if c in df_r.columns]
         ROT_CONFIG = {
             **STD_CONFIG,
             "placa_veiculo": st.column_config.TextColumn("Nova Placa",  width=120),
@@ -2202,7 +2205,12 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    HIST_COLS = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "status", "observacao"] if c in df_h.columns]
+    _hist_extra = ["placa_veiculo", "dt_saida", "status", "observacao"]
+    _hist_all   = STD_COLS + _hist_extra
+    _hist_front = ["placa_road", "observacao", "placa_veiculo", "dt_saida"]
+    _hist_rest  = [c for c in _hist_all if c not in _hist_front]
+    _hist_order = _hist_front + _hist_rest
+    HIST_COLS = [c for c in _hist_order if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
         "placa_veiculo": st.column_config.TextColumn("Nova Placa",  width=110),
