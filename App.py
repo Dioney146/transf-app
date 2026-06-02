@@ -1311,6 +1311,16 @@ if not _df_all_dash.empty and "nomevend" in _df_all_dash.columns:
     _top_vend = _df_all_dash.groupby("nomevend")["numnota"].count().sort_values(ascending=False).head(7).reset_index()
     _top_vend.columns = ["vendedor", "qtd"]
 
+# Top clientes por valor (para gráfico de barras estilo imagem)
+_top_cli = pd.DataFrame()
+if not _df_all_dash.empty and "nomecliente" in _df_all_dash.columns:
+    _grp_cli = _df_all_dash.groupby("nomecliente").agg(
+        valor=("vltotal", "sum"),
+        qtd=("numnota", "count")
+    ).sort_values("valor", ascending=False).head(12).reset_index()
+    _grp_cli.columns = ["cliente", "valor", "qtd"]
+    _top_cli = _grp_cli
+
 # Last 5 notas
 _last5 = _df_all_dash.tail(5)[::-1] if not _df_all_dash.empty else pd.DataFrame()
 
@@ -1449,6 +1459,88 @@ with _g5:
     else:
         st.markdown('<div style="padding:1rem;color:var(--txt3);font-size:.78rem;text-align:center">Nenhum registro ainda.</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
+
+# ── Linha 3: Top Clientes por Valor (gráfico de barras verticais + linha de qtd) ──
+st.markdown('<div class="chart-wrap" style="margin-top:12px">', unsafe_allow_html=True)
+st.markdown('<div class="chart-head"><span class="chart-title" style="color:#f97316">📊 Top Clientes por Valor (R$) · com linha de quantidade</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+if not _top_cli.empty:
+    _cli_rows = _top_cli.to_dict("records")
+    _n_rows   = len(_cli_rows)
+    _max_val  = max(r["valor"] for r in _cli_rows) or 1
+    _max_qtd  = max(r["qtd"]   for r in _cli_rows) or 1
+    _chart_h  = 160  # altura da área de barras em px
+
+    # Gera os pontos da linha de quantidade
+    # Cada barra ocupa 1/_n_rows de largura, centrada em (i+0.5)/_n_rows
+    _line_pts = " ".join(
+        f"{round((i + 0.5) / _n_rows * 100, 2)}%,{round((1 - r['qtd'] / _max_qtd) * _chart_h, 1)}px"
+        for i, r in enumerate(_cli_rows)
+    )
+    # SVG polyline pontos em coordenadas relativas (usaremos HTML/CSS)
+    _dots_html = ""
+    _bars_html = ""
+    for i, r in enumerate(_cli_rows):
+        _lbl   = str(r["cliente"])
+        _short = (_lbl[:10] + "…") if len(_lbl) > 11 else _lbl
+        _val   = r["valor"]
+        _qtd   = r["qtd"]
+        _bar_h = max(6, int(_val / _max_val * _chart_h))
+        _dot_y = round((1 - _qtd / _max_qtd) * _chart_h)
+        # cor: vermelho top5, laranja 6-10, azul demais
+        if i < 5:
+            _color = "linear-gradient(180deg,#ef4444,#dc2626)"
+            _leg   = "top5"
+        elif i < 10:
+            _color = "linear-gradient(180deg,#f97316,#ea580c)"
+            _leg   = "atencao"
+        else:
+            _color = "linear-gradient(180deg,#3b82f6,#2563eb)"
+            _leg   = "demais"
+
+        _val_fmt = br(_val)
+        _bars_html += f'''
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0;position:relative">
+          <div style="font-size:.62rem;font-weight:700;color:#f0f6ff;white-space:nowrap">{_val_fmt}</div>
+          <div style="font-size:.58rem;color:#fbbf24;font-weight:600;white-space:nowrap">{_qtd}</div>
+          <div data-cli-dot="{i}" style="width:8px;height:8px;border-radius:50%;background:#fbbf24;border:2px solid #1e2d3d;position:absolute;bottom:{_chart_h - _dot_y - 4}px;left:50%;transform:translateX(-50%);z-index:5"></div>
+          <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;height:{_chart_h}px">
+            <div style="width:75%;background:{_color};border-radius:4px 4px 0 0;height:{_bar_h}px;min-height:6px;box-shadow:0 0 10px rgba(249,115,22,0.3)"></div>
+          </div>
+          <div style="font-size:.58rem;color:#7d95b5;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;padding:0 1px" title="{_lbl}">{_short}</div>
+        </div>'''
+
+    st.markdown(f'''
+    <div style="position:relative">
+      <div style="display:flex;gap:3px;align-items:flex-end;padding:.25rem .25rem 0">
+        {_bars_html}
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center;margin-top:10px;padding:0 .5rem;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px">
+        <div style="width:12px;height:12px;border-radius:2px;background:#ef4444"></div>
+        <span style="font-size:.7rem;color:#7d95b5">Top 5 – crítico</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <div style="width:12px;height:12px;border-radius:2px;background:#f97316"></div>
+        <span style="font-size:.7rem;color:#7d95b5">6–10 – atenção</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <div style="width:12px;height:12px;border-radius:2px;background:#3b82f6"></div>
+        <span style="font-size:.7rem;color:#7d95b5">Demais</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;margin-left:auto">
+        <div style="width:20px;height:2px;background:#fbbf24"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#fbbf24"></div>
+        <span style="font-size:.7rem;color:#7d95b5">Linha = quantidade</span>
+      </div>
+    </div>
+    ''', unsafe_allow_html=True)
+else:
+    st.markdown('<div style="padding:1rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados de clientes.</div>', unsafe_allow_html=True)
+
+st.markdown("</div></div>", unsafe_allow_html=True)
 
 st.markdown('<div class="sec-div" style="margin:.75rem 0"><div class="sec-div-line"></div><div class="sec-div-txt">Navegação por seção</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
