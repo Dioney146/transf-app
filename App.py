@@ -1206,12 +1206,19 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-fc1, fc2, fc3, fc4 = st.columns([1.6, 1.4, 1.4, 4])
+fc1, fc1b, fc2, fc3, fc4 = st.columns([1.4, 1.4, 1.2, 1.2, 3])
 with fc1:
     data_filtro = st.date_input(
-        "📅 Filtrar por data",
+        "📅 De",
         value=date.today(),
         key="data_global",
+        format="DD/MM/YYYY",
+    )
+with fc1b:
+    data_filtro_ate = st.date_input(
+        "📅 Até",
+        value=None,
+        key="data_global_ate",
         format="DD/MM/YYYY",
     )
 with fc2:
@@ -1230,17 +1237,35 @@ st.markdown("</div>", unsafe_allow_html=True)
 data_str = data_filtro.isoformat()
 data_display = data_filtro.strftime("%d/%m/%Y")
 
+# Determina se está usando intervalo (De → Até)
+usar_intervalo = (data_filtro_ate is not None) and not ver_todas
+
 df_all = load_transferencias()
-df = (
-    df_all.copy()
-    if ver_todas
-    else (
+if ver_todas:
+    df = df_all.copy()
+elif usar_intervalo:
+    data_ate_str = data_filtro_ate.isoformat()
+    if not df_all.empty:
+        mask = (
+            (df_all["dt_transferencia"] >= data_str) &
+            (df_all["dt_transferencia"] <= data_ate_str)
+        )
+        df = df_all[mask].copy()
+    else:
+        df = pd.DataFrame(columns=TCOLS)
+else:
+    df = (
         df_all[df_all["dt_transferencia"] == data_str].copy()
         if not df_all.empty
         else pd.DataFrame(columns=TCOLS)
     )
-)
-periodo_txt = "Todas as datas" if ver_todas else data_display
+
+if usar_intervalo:
+    periodo_txt = f"{data_display} → {data_filtro_ate.strftime('%d/%m/%Y')}"
+elif ver_todas:
+    periodo_txt = "Todas as datas"
+else:
+    periodo_txt = data_display
 
 # ─── Colunas padrão de exibição ───────────────────────────────────────────────
 STD_COLS = [
@@ -2170,7 +2195,11 @@ elif pagina == "📋  Histórico":
     df_h = df_all.copy() if not df_all.empty else pd.DataFrame(columns=TCOLS)
     if not df_h.empty:
         if not ver_todas:
-            df_h = df_h[df_h["dt_transferencia"] == data_str]
+            if usar_intervalo:
+                _ate_h = data_filtro_ate.isoformat()
+                df_h = df_h[(df_h["dt_transferencia"] >= data_str) & (df_h["dt_transferencia"] <= _ate_h)]
+            else:
+                df_h = df_h[df_h["dt_transferencia"] == data_str]
         if fst != "Todos":
             df_h = df_h[df_h["status"] == fst]
         if fsup != "Todos":
