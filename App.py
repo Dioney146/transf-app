@@ -1402,198 +1402,168 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Linha 1 de gráficos: Supervisores (barras) + Praça (colunas) + Veículo (barras) ──
-_g1, _g2, _g3 = st.columns(3)
+# ── Helper: gera SVG de colunas verticais com linha de qtd ────────────────────
+def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#fbbf24", fmt_val=None):
+    """Retorna string SVG: barras verticais + polyline de quantidade."""
+    if not rows:
+        return '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
+    n        = len(rows)
+    SVG_W    = 560
+    TOP_PAD  = 32   # espaço acima das barras (rótulos de valor)
+    BAR_AREA = 140  # altura da área de barras
+    BOT_PAD  = 20   # espaço abaixo para rótulos de nome
+    SVG_H    = TOP_PAD + BAR_AREA + BOT_PAD
+    slot_w   = SVG_W / n
+    bar_w    = slot_w * 0.55
+    max_val  = max(r[val_key] for r in rows) or 1
+    max_qtd  = max(r[qtd_key] for r in rows) if qtd_key else 1
 
-with _g1:
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown('<div class="chart-head"><span class="chart-title" style="color:#f97316">🏆 Transferências por Supervisor · valor</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-    _rows_sup = _top_sup.to_dict("records") if not _top_sup.empty else []
-    st.markdown(_bar_chart_html(_rows_sup, "supervisor", "valor", "linear-gradient(90deg,#f97316,#fb923c)", fmt_val=br), unsafe_allow_html=True)
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    defs  = f'<defs><linearGradient id="gcol" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{bar_color_1}"/><stop offset="100%" stop-color="{bar_color_2}"/></linearGradient></defs>'
+    rects = ""
+    labels= ""
+    pts   = []
 
-with _g2:
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown('<div class="chart-head"><span class="chart-title" style="color:#3b82f6">📍 Transferências por Praça · qtd NFs</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-    _rows_praca = _top_praca.to_dict("records") if not _top_praca.empty else []
-    st.markdown(_col_chart_html(_rows_praca, "praca", "qtd", "linear-gradient(180deg,#3b82f6,#60a5fa)", fmt_val=lambda v: str(int(v))), unsafe_allow_html=True)
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    for i, r in enumerate(rows):
+        lbl   = str(r[label_key])
+        short = (lbl[:9] + "…") if len(lbl) > 10 else lbl
+        val   = r[val_key]
+        bh    = max(4, int(val / max_val * BAR_AREA))
+        cx    = slot_w * i + slot_w / 2
+        bx    = cx - bar_w / 2
+        by    = TOP_PAD + BAR_AREA - bh
+        shown = fmt_val(val) if fmt_val else str(int(val))
 
-with _g3:
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown('<div class="chart-head"><span class="chart-title" style="color:#34d399">🚛 Transferências por Veículo (Placa Ant.) · qtd</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-    _rows_veic = _top_veiculo.to_dict("records") if not _top_veiculo.empty else []
-    st.markdown(_bar_chart_html(_rows_veic, "placa", "qtd", "linear-gradient(90deg,#34d399,#10b981)", fmt_val=lambda v: f"{int(v)} NFs"), unsafe_allow_html=True)
-    st.markdown("</div></div>", unsafe_allow_html=True)
+        rects += f'<rect x="{bx:.1f}" y="{by}" width="{bar_w:.1f}" height="{bh}" rx="3" fill="url(#gcol)" opacity="0.9"/>'
+        rects += f'<text x="{cx:.1f}" y="{by - 4}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
+        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 14}" text-anchor="middle" font-size="8" fill="#7d95b5">{short}</text>'
 
-# ── Linha 2: Vendedor (colunas) + Últimas notas ───────────────────────────────
-_g4, _g5 = st.columns([2, 1])
+        if qtd_key:
+            qtd    = int(r[qtd_key])
+            dot_y  = TOP_PAD + BAR_AREA - int(qtd / max_qtd * BAR_AREA)
+            pts.append((cx, dot_y, qtd))
 
-with _g4:
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown('<div class="chart-head"><span class="chart-title" style="color:#a78bfa">👤 Transferências por Vendedor · qtd NFs</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-    _rows_vend = _top_vend.to_dict("records") if not _top_vend.empty else []
-    st.markdown(_col_chart_html(_rows_vend, "vendedor", "qtd", "linear-gradient(180deg,#a78bfa,#7c3aed)", fmt_val=lambda v: str(int(v)), height=80), unsafe_allow_html=True)
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    poly = ""
+    dots = ""
+    if pts:
+        poly_str = " ".join(f"{x:.1f},{y}" for x, y, _ in pts)
+        poly = f'<polyline points="{poly_str}" fill="none" stroke="{line_color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
+        for x, y, q in pts:
+            dots += f'<circle cx="{x:.1f}" cy="{y}" r="4" fill="{line_color}" stroke="#141e2b" stroke-width="1.5"/>'
+            dots += f'<text x="{x:.1f}" y="{y - 7}" text-anchor="middle" font-size="8" font-weight="700" fill="{line_color}">{q}</text>'
 
-with _g5:
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown('<div class="chart-head"><span class="chart-title">🕐 Últimas Notas</span></div>', unsafe_allow_html=True)
-    if not _last5.empty:
-        for _, _rr in _last5.iterrows():
-            _st2 = str(_rr.get("status","")).strip()
-            _dot_color = "#34d399" if _st2 == "roteirizado" else "#fbbf24"
-            st.markdown(f'''
-            <div class="activity-item">
-              <div class="activity-dot" style="background:{_dot_color};box-shadow:0 0 8px {_dot_color}55"></div>
-              <div class="activity-content">
-                <div class="activity-title">NF {str(_rr.get("numnota",""))[:12]}</div>
-                <div class="activity-meta">{str(_rr.get("nomecliente",""))[:22]}</div>
-              </div>
-              <div class="activity-value">{br(_rr['vltotal'])}</div>
-            </div>''', unsafe_allow_html=True)
-    else:
-        st.markdown('<div style="padding:1rem;color:var(--txt3);font-size:.78rem;text-align:center">Nenhum registro ainda.</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# ── Linha 3: Top Clientes por Valor (SVG chart — barras verticais + linha de qtd) ──
-st.markdown('<div class="chart-wrap" style="margin-top:12px">', unsafe_allow_html=True)
-st.markdown('<div class="chart-head"><span class="chart-title" style="color:#f97316">📊 Top Clientes por Valor (R$) · com linha de quantidade</span></div>', unsafe_allow_html=True)
-st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-
-if not _top_cli.empty:
-    _cli_rows  = _top_cli.to_dict("records")
-    _n_cli     = len(_cli_rows)
-    _max_val   = max(r["valor"] for r in _cli_rows) or 1
-    _max_qtd   = max(r["qtd"]   for r in _cli_rows) or 1
-
-    # SVG viewport fixo
-    _SVG_W     = 900
-    _SVG_H     = 260        # altura total do SVG
-    _BAR_AREA  = 160        # altura disponível para as barras
-    _TOP_PAD   = 36         # espaço no topo (rótulos de valor)
-    _LABEL_H   = 18         # altura dos rótulos de nome abaixo
-    _bar_w     = _SVG_W / _n_cli
-    _bar_inner = _bar_w * 0.55   # largura real da barra (55% do slot)
-
-    # Cores por posição
-    def _bar_color(idx):
-        if idx < 5:  return ("#ef4444", "#dc2626")
-        if idx < 10: return ("#f97316", "#ea580c")
-        return ("#3b82f6", "#2563eb")
-
-    # Monta elementos SVG
-    _defs  = "<defs>"
-    _rects = ""
-    _texts = ""
-    _line_pts_list = []
-
-    for i, r in enumerate(_cli_rows):
-        _lbl   = str(r["cliente"])
-        _short = (_lbl[:11] + "…") if len(_lbl) > 12 else _lbl
-        _val   = r["valor"]
-        _qtd   = int(r["qtd"])
-        _ratio = _val / _max_val
-        _bh    = max(4, int(_ratio * _BAR_AREA))
-        _cx    = _bar_w * i + _bar_w / 2          # centro x do slot
-        _bx    = _cx - _bar_inner / 2             # x esquerdo da barra
-        _by    = _TOP_PAD + _BAR_AREA - _bh        # y topo da barra
-
-        # Gradiente único por barra
-        _c1, _c2 = _bar_color(i)
-        _gid = f"bg{i}"
-        _defs += (
-            f'<linearGradient id="{_gid}" x1="0" y1="0" x2="0" y2="1">'
-            f'<stop offset="0%" stop-color="{_c1}"/>'
-            f'<stop offset="100%" stop-color="{_c2}"/>'
-            f'</linearGradient>'
-        )
-
-        # Barra
-        _rects += (
-            f'<rect x="{_bx:.1f}" y="{_by}" width="{_bar_inner:.1f}" height="{_bh}" '
-            f'rx="3" fill="url(#{_gid})" opacity="0.92"/>'
-        )
-
-        # Rótulo valor acima da barra
-        _val_txt = br(_val)
-        _rects += (
-            f'<text x="{_cx:.1f}" y="{_by - 4}" text-anchor="middle" '
-            f'font-size="9" font-weight="700" fill="#f0f6ff">{_val_txt}</text>'
-        )
-
-        # Rótulo nome abaixo
-        _label_y = _TOP_PAD + _BAR_AREA + 13
-        _texts += (
-            f'<text x="{_cx:.1f}" y="{_label_y}" text-anchor="middle" '
-            f'font-size="8.5" fill="#7d95b5">{_short}</text>'
-        )
-
-        # Ponto da linha (quantidade normalizada)
-        _qtd_ratio = _qtd / _max_qtd
-        _dot_y = _TOP_PAD + _BAR_AREA - int(_qtd_ratio * _BAR_AREA)
-        _line_pts_list.append((_cx, _dot_y, _qtd))
-
-    _defs += "</defs>"
-
-    # Polilinha da quantidade
-    _poly_pts = " ".join(f"{x:.1f},{y}" for x, y, _ in _line_pts_list)
-    _polyline = (
-        f'<polyline points="{_poly_pts}" fill="none" stroke="#fbbf24" '
-        f'stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}" '
+        f'style="width:100%;height:auto;display:block">'
+        f'{defs}{rects}{labels}{poly}{dots}</svg>'
     )
 
-    # Dots + rótulo qtd da linha
-    _dot_els = ""
-    for x, y, qtd in _line_pts_list:
-        _dot_els += (
-            f'<circle cx="{x:.1f}" cy="{y}" r="4" fill="#fbbf24" stroke="#1e2d3d" stroke-width="1.5"/>'
-            f'<text x="{x:.1f}" y="{y - 7}" text-anchor="middle" '
-            f'font-size="8" font-weight="700" fill="#fbbf24">{qtd}</text>'
-        )
 
-    _svg = f'''
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W} {_SVG_H}"
-         style="width:100%;height:auto;display:block">
-      {_defs}
-      {_rects}
-      {_texts}
-      {_polyline}
-      {_dot_els}
-    </svg>'''
+# ── Helper: gera SVG de barras horizontais ────────────────────────────────────
+def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=None):
+    """Retorna string SVG: barras horizontais."""
+    if not rows:
+        return '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
+    n        = len(rows)
+    LABEL_W  = 70   # largura da coluna de rótulos
+    BAR_H    = 10   # altura de cada barra
+    ROW_H    = 28   # altura por linha
+    VAL_W    = 55   # largura coluna de valores
+    SVG_W    = 400
+    SVG_H    = n * ROW_H + 8
+    BAR_AREA = SVG_W - LABEL_W - VAL_W - 8
+    max_val  = max(r[val_key] for r in rows) or 1
 
-    # Legenda
-    _legend = '''
-    <div style="display:flex;gap:16px;align-items:center;margin-top:6px;padding:0 .5rem;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:5px">
-        <div style="width:12px;height:12px;border-radius:2px;background:#ef4444"></div>
-        <span style="font-size:.7rem;color:#7d95b5">Top 5 – crítico</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px">
-        <div style="width:12px;height:12px;border-radius:2px;background:#f97316"></div>
-        <span style="font-size:.7rem;color:#7d95b5">6–10 – atenção</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px">
-        <div style="width:12px;height:12px;border-radius:2px;background:#3b82f6"></div>
-        <span style="font-size:.7rem;color:#7d95b5">Demais</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;margin-left:auto">
-        <svg width="24" height="10"><line x1="0" y1="5" x2="16" y2="5" stroke="#fbbf24" stroke-width="2"/>
-        <circle cx="20" cy="5" r="4" fill="#fbbf24"/></svg>
-        <span style="font-size:.7rem;color:#7d95b5">Linha = quantidade</span>
-      </div>
-    </div>'''
+    defs = f'<defs><linearGradient id="gbar" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="{bar_color_1}"/><stop offset="100%" stop-color="{bar_color_2}"/></linearGradient></defs>'
+    els  = ""
 
-    st.markdown(_svg + _legend, unsafe_allow_html=True)
+    for i, r in enumerate(rows):
+        lbl   = str(r[label_key])
+        short = (lbl[:9] + "…") if len(lbl) > 10 else lbl
+        val   = r[val_key]
+        bw    = max(4, int(val / max_val * BAR_AREA))
+        y_mid = i * ROW_H + ROW_H / 2 + 4
+        bar_y = y_mid - BAR_H / 2
+        shown = fmt_val(val) if fmt_val else str(int(val))
 
-else:
-    st.markdown('<div style="padding:1rem;color:var(--txt3);font-size:.78rem;text-align:center">Sem dados de clientes.</div>', unsafe_allow_html=True)
+        # linha de fundo
+        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{BAR_AREA}" height="{BAR_H}" rx="3" fill="rgba(255,255,255,0.05)"/>'
+        # barra colorida
+        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{bw}" height="{BAR_H}" rx="3" fill="url(#gbar)" opacity="0.9"/>'
+        # rótulo esquerdo
+        els += f'<text x="{LABEL_W - 4}" y="{y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="8.5" fill="#7d95b5">{short}</text>'
+        # valor direito
+        els += f'<text x="{LABEL_W + BAR_AREA + 4}" y="{y_mid:.1f}" dominant-baseline="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
 
-st.markdown("</div></div>", unsafe_allow_html=True)
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}" '
+        f'style="width:100%;height:auto;display:block">'
+        f'{defs}{els}</svg>'
+    )
+
+
+# ── Gráfico 1 (colunas) + Gráfico 2 (barras horiz) lado a lado ───────────────
+_gc1, _gc2 = st.columns([3, 2])
+
+with _gc1:
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="chart-head">'
+        '<span class="chart-title" style="color:#a78bfa">👤 Notas Fiscais por Vendedor · Qtd + Valor</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+    _rows_vend2 = _top_vend.to_dict("records") if not _top_vend.empty else []
+    # merge valor no top_vend se existir
+    if not _df_all_dash.empty and "nomevend" in _df_all_dash.columns:
+        _vend_val = _df_all_dash.groupby("nomevend")["vltotal"].sum().reset_index()
+        _vend_val.columns = ["vendedor", "valor"]
+        _tv2 = _top_vend.merge(_vend_val, on="vendedor", how="left").fillna(0)
+        _rows_vend2 = _tv2.to_dict("records")
+
+    st.markdown(
+        _svg_col_line(
+            _rows_vend2,
+            label_key="vendedor", val_key="qtd", qtd_key="qtd",
+            bar_color_1="#a78bfa", bar_color_2="#7c3aed",
+            line_color="#fbbf24",
+            fmt_val=lambda v: str(int(v)),
+        ),
+        unsafe_allow_html=True,
+    )
+    # legenda linha
+    st.markdown(
+        '<div style="display:flex;align-items:center;gap:6px;margin-top:4px;padding:0 .25rem">'
+        '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
+        '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
+        '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+with _gc2:
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="chart-head">'
+        '<span class="chart-title" style="color:#34d399">🚛 Notas Fiscais por Veículo · Qtd</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+    _rows_veic2 = _top_veiculo.to_dict("records") if not _top_veiculo.empty else []
+    st.markdown(
+        _svg_bar_horiz(
+            _rows_veic2,
+            label_key="placa", val_key="qtd",
+            bar_color_1="#34d399", bar_color_2="#10b981",
+            fmt_val=lambda v: f"{int(v)} NFs",
+        ),
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
 st.markdown('<div class="sec-div" style="margin:.75rem 0"><div class="sec-div-line"></div><div class="sec-div-txt">Navegação por seção</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
