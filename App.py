@@ -484,43 +484,16 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 .nav-logo-wrap {{
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px 24px 10px 20px;
+  padding: 6px 16px 6px 20px;
   flex-shrink: 0;
-  border-right: 1px solid rgba(255,255,255,0.08);
 }}
 .nav-logo {{
-  height: 52px;
-  width: 52px;
+  height: 40px;
+  width: 40px;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid rgba(59,130,246,0.55);
-  box-shadow: 0 0 14px rgba(59,130,246,0.35), 0 2px 10px rgba(0,0,0,0.50);
-  flex-shrink: 0;
-}}
-.nav-title-block {{
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-}}
-.nav-title-main {{
-  font-family: 'Sora', sans-serif;
-  font-size: 1.08rem;
-  font-weight: 800;
-  color: #f0f6ff;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}}
-.nav-title-main span {{
-  color: #3b82f6;
-}}
-.nav-title-sub {{
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
-  font-weight: 600;
-  color: #5a7a9e;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  border: 2px solid rgba(255,255,255,0.15);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.50);
 }}
 .nav-wrap > div {{
   display: flex !important;
@@ -1168,10 +1141,6 @@ input[type="date"] {{ color-scheme: dark !important; }}
 st.markdown(f'''<div class="nav-wrap">
   <div class="nav-logo-wrap">
     <img src="data:image/webp;base64,{LOGO_B64}" class="nav-logo" alt="Delly's Logo"/>
-    <div class="nav-title-block">
-      <div class="nav-title-main">Registro de Transferência&nbsp;<span>Delly's</span></div>
-      <div class="nav-title-sub">Sistema de gestão de entregas</div>
-    </div>
   </div>''', unsafe_allow_html=True)
 pagina = st.radio(
     "nav",
@@ -1184,7 +1153,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-fc1, fc1b, fc2, fc3, fc4 = st.columns([1.4, 1.4, 1.2, 1.2, 3])
+fc1, fc1b, fc4 = st.columns([1.4, 1.4, 5])
 with fc1:
     data_filtro = st.date_input(
         "📅 De",
@@ -1199,14 +1168,7 @@ with fc1b:
         key="data_global_ate",
         format="DD/MM/YYYY",
     )
-with fc2:
-    ver_todas = st.checkbox("Todas as datas", value=False, key="ver_todas_cb")
-with fc3:
-    st.markdown("<br style='line-height:.8'>", unsafe_allow_html=True)
-    if st.button("🔄 Atualizar", key="refresh_btn"):
-        load_transferencias.clear()
-        load_road.clear()
-        st.rerun()
+ver_todas = False
 with fc4:
     pass
 st.markdown("</div>", unsafe_allow_html=True)
