@@ -1232,9 +1232,10 @@ else:
 
 # ─── Colunas padrão de exibição ───────────────────────────────────────────────
 STD_COLS = [
+    "placa_road", "observacao",
     "numnota", "numped", "nomecliente", "dt_liberado",
     "nomevend", "nomesup", "pesobrutotot", "vltotal",
-    "praca", "numcarregamento", "destino", "placa_road", "observacao",
+    "praca", "numcarregamento", "destino",
 ]
 STD_CONFIG = {
     "numnota":         st.column_config.TextColumn("Nota Fiscal",    width=105),
@@ -1819,9 +1820,10 @@ elif pagina == "🗺️  Roteirização":
 
         # ── Tabela nativa (st.dataframe) + painel de roteirização ───────────
         PEND_COLS = [c for c in [
+            "placa_road", "observacao",
             "numnota", "numped", "nomecliente", "dt_liberado",
             "nomevend", "nomesup", "pesobrutotot", "vltotal",
-            "praca", "numcarregamento", "destino", "placa_road", "observacao",
+            "praca", "numcarregamento", "destino",
         ] if c in df_p.columns]
 
         PEND_CONFIG = {
