@@ -467,16 +467,17 @@ html, body, [class*="css"], .stApp {{
 section[data-testid="stSidebar"] {{ display: none !important; }}
 .main .block-container {{ padding: 0 !important; max-width: 100% !important; }}
 
-/* ── Top bar — linha de comando refinada ── */
+/* ── Top bar — logo centralizada ── */
 .topbar {{
   background: var(--nav-bg);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  height: 60px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 0 2rem;
-  gap: 1rem;
+  justify-content: center;
+  padding: 1.25rem 2rem 1rem;
+  gap: 0;
   border-bottom: 1px solid var(--bdr);
   box-shadow: 0 1px 0 rgba(255,255,255,0.04), var(--shadow-sm);
   position: sticky;
@@ -484,72 +485,28 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   z-index: 100;
 }}
 .topbar-logo {{
-  height: 38px;
+  height: 72px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 10px rgba(59,130,246,0.25));
-}}
-.topbar-sep {{
-  width: 1px; height: 26px;
-  background: linear-gradient(180deg, transparent, var(--bdr2) 50%, transparent);
-  margin: 0 .15rem;
-}}
-.topbar-brand {{
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--txt);
-  letter-spacing: -0.02em;
-}}
-.topbar-sub {{
-  font-size: 0.65rem;
-  color: var(--nav-txt);
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}}
-.topbar-right {{
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-}}
-.topbar-tag {{
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
-  font-weight: 700;
-  color: var(--acc);
-  background: var(--acc-lt);
-  border: 1px solid rgba(59,130,246,0.25);
-  border-radius: 4px;
-  padding: 2px 8px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}}
-.topbar-dot {{
-  width: 7px; height: 7px;
-  background: var(--grn);
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(52,211,153,0.20), 0 0 10px rgba(52,211,153,0.50);
-  animation: pulse-dot 2.5s ease-in-out infinite;
-}}
-@keyframes pulse-dot {{
-  0%, 100% {{ box-shadow: 0 0 0 2px rgba(52,211,153,0.20), 0 0 10px rgba(52,211,153,0.50); }}
-  50% {{ box-shadow: 0 0 0 4px rgba(52,211,153,0.10), 0 0 18px rgba(52,211,153,0.70); }}
+  filter: drop-shadow(0 4px 18px rgba(0,0,0,0.45));
 }}
 
-/* ── Nav tabs — estilo moderno com indicador deslizante ── */
+/* ── Nav tabs — centralizado ── */
 .nav-wrap {{
   background: var(--nav-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--bdr);
-  padding: 0 2rem;
+  padding: 0;
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  display: flex;
+  justify-content: center;
 }}
 .nav-wrap div[data-testid="stRadio"] > label {{ display: none !important; }}
 .nav-wrap div[data-testid="stRadio"] > div {{
   display: flex !important;
   flex-direction: row !important;
+  justify-content: center !important;
   gap: 0 !important;
   padding: 0 !important;
   background: transparent !important;
@@ -558,7 +515,7 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   display: flex !important;
   align-items: center !important;
   gap: 7px !important;
-  padding: 16px 24px !important;
+  padding: 16px 36px !important;
   font-size: 0.68rem !important;
   font-weight: 700 !important;
   cursor: pointer !important;
@@ -1181,15 +1138,6 @@ input[type="date"] {{ color-scheme: dark !important; }}
 st.markdown(f"""
 <div class="topbar">
   <img src="data:image/webp;base64,{LOGO_B64}" class="topbar-logo" alt="Delly's Logo"/>
-  <div class="topbar-sep"></div>
-  <div>
-    <div class="topbar-brand">Sistema de Transferências</div>
-    <div class="topbar-sub">Delly's Food Service · Logística</div>
-  </div>
-  <div class="topbar-right">
-    <span class="topbar-tag">v2.0</span>
-    <div class="topbar-dot"></div>
-  </div>
 </div>
 """, unsafe_allow_html=True)
 
