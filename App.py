@@ -1451,19 +1451,13 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
 
 # ── Gráficos movidos para a aba Histórico (ver abaixo) ────────────────────────
 
-st.markdown('<div class="sec-div" style="margin:.75rem 0"><div class="sec-div-line"></div><div class="sec-div-txt">Navegação por seção</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # REGISTRO
 # ═══════════════════════════════════════════════════════════════════════════════
 if pagina == "📝  Registro":
-    st.markdown(f"""
-    <div class="page-title-block">
-      <div class="page-eyebrow">Faturamento</div>
-      <div class="page-title">Registro de Transferência</div>
-      <div class="page-sub">Data: {data_display} — Registre a nota fiscal e envie para roteirização</div>
-    </div>
-    """, unsafe_allow_html=True)
+
 
     col_form, col_side = st.columns([1.5, 0.7])
 
@@ -1760,13 +1754,7 @@ elif pagina == "🗺️  Roteirização":
         if not rote.empty and _c not in rote.columns:
             rote[_c] = ""
 
-    st.markdown(f"""
-    <div class="page-title-block">
-      <div class="page-eyebrow">Roteirização</div>
-      <div class="page-title">Roteirizar Notas</div>
-      <div class="page-sub">Período: {periodo_txt}</div>
-    </div>
-    """, unsafe_allow_html=True)
+
 
     st.markdown('<div class="card" style="border-top:3px solid #f87171">', unsafe_allow_html=True)
     st.markdown(f"""
@@ -2022,13 +2010,7 @@ elif pagina == "🗺️  Roteirização":
 # HISTÓRICO
 # ═══════════════════════════════════════════════════════════════════════════════
 elif pagina == "📋  Histórico":
-    st.markdown(f"""
-    <div class="page-title-block">
-      <div class="page-eyebrow">Faturamento</div>
-      <div class="page-title">Histórico de Transferências</div>
-      <div class="page-sub">Período: {periodo_txt} — {len(df)} registro(s)</div>
-    </div>
-    """, unsafe_allow_html=True)
+
 
     # ── Gráficos: Vendedor (colunas+linha) + Veículo (barras horiz) ──────────
     _gc1, _gc2 = st.columns([3, 2])
