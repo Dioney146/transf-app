@@ -1176,7 +1176,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-fc1, fc4 = st.columns([1.4, 6.8])
+fc1, fc2, fc4 = st.columns([1.4, 1.1, 5.7])
 with fc1:
     data_filtro = st.date_input(
         "📅 Data",
@@ -1184,6 +1184,9 @@ with fc1:
         key="data_global",
         format="DD/MM/YYYY",
     )
+with fc2:
+    st.markdown("<br>", unsafe_allow_html=True)
+    ver_todas = st.checkbox("Todas as datas", key="ver_todas_chk", value=st.session_state.get("_ver_todas", False))
 with fc4:
     pass
 st.markdown("</div>", unsafe_allow_html=True)
@@ -1192,8 +1195,15 @@ st.markdown("</div>", unsafe_allow_html=True)
 if "_ultima_data_filtro" not in st.session_state:
     st.session_state["_ultima_data_filtro"] = data_filtro
 
-if data_filtro != st.session_state["_ultima_data_filtro"]:
+if "_ver_todas" not in st.session_state:
+    st.session_state["_ver_todas"] = False
+
+_ver_todas_changed = ver_todas != st.session_state["_ver_todas"]
+_data_changed      = data_filtro != st.session_state["_ultima_data_filtro"]
+
+if _data_changed or _ver_todas_changed:
     st.session_state["_ultima_data_filtro"] = data_filtro
+    st.session_state["_ver_todas"] = ver_todas
     load_transferencias.clear()
     st.rerun()
 
@@ -1201,16 +1211,18 @@ if data_filtro != st.session_state["_ultima_data_filtro"]:
 data_str     = data_filtro.isoformat()
 data_display = data_filtro.strftime("%d/%m/%Y")
 usar_intervalo = False
-ver_todas      = False
 
-df_all = load_transferencias(_cache_key=data_str)
-df = (
-    df_all[df_all["dt_transferencia"] == data_str].copy()
-    if not df_all.empty
-    else pd.DataFrame(columns=TCOLS)
-)
-
-periodo_txt = data_display
+df_all = load_transferencias(_cache_key="all" if ver_todas else data_str)
+if ver_todas:
+    df = df_all.copy() if not df_all.empty else pd.DataFrame(columns=TCOLS)
+    periodo_txt = "Todas as datas"
+else:
+    df = (
+        df_all[df_all["dt_transferencia"] == data_str].copy()
+        if not df_all.empty
+        else pd.DataFrame(columns=TCOLS)
+    )
+    periodo_txt = data_display
 
 # ─── Colunas padrão de exibição ───────────────────────────────────────────────
 STD_COLS = [
