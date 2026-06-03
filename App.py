@@ -2170,15 +2170,16 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    _hist_front = ["placa_road", "placa_veiculo", "observacao"]
+    _hist_front = ["placa_road", "placa_veiculo", "observacao", "numcarregamento"]
     _hist_rest  = [c for c in STD_COLS + ["dt_saida", "status", "observacao"] if c not in _hist_front]
     HIST_COLS = [c for c in _hist_front + _hist_rest if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
-        "placa_veiculo": st.column_config.TextColumn("Nova Placa",  width=110),
-        "dt_saida":      st.column_config.TextColumn("Dt. Saída",   width=100),
-        "status":        st.column_config.TextColumn("Status",      width=110),
-        "observacao":    st.column_config.TextColumn("Observação",  width=220),
+        "placa_veiculo":   st.column_config.TextColumn("Nova Placa",   width=110),
+        "observacao":      st.column_config.TextColumn("Observação",   width=220),
+        "numcarregamento": st.column_config.TextColumn("Carregamento", width=115),
+        "dt_saida":        st.column_config.TextColumn("Dt. Saída",    width=100),
+        "status":          st.column_config.TextColumn("Status",       width=110),
     }
 
     n_pend = int((df_h["status"] == "pendente").sum()) if not df_h.empty else 0
