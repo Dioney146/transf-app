@@ -1845,12 +1845,25 @@ elif pagina == "🗺️  Roteirização":
                 _cli   = str(row.get("nomecliente", ""))[:30]
                 _placa = str(row.get("placa_road", "")).strip()
                 _obs   = str(row.get("observacao", "")).strip()
-                _extra = ""
+                try:
+                    _peso = f"{float(row.get('pesobrutotot', 0)):,.0f} kg".replace(",", ".")
+                except Exception:
+                    _peso = ""
+                try:
+                    _vl = float(row.get("vltotal", 0))
+                    _valor = f"R$ {_vl:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                except Exception:
+                    _valor = ""
+                _parts = [_cli]
                 if _placa and _placa not in ("", "nan", "None"):
-                    _extra += f" | {_placa}"
+                    _parts.append(f"Placa: {_placa}")
                 if _obs and _obs not in ("", "nan", "None"):
-                    _extra += f" | {_obs}"
-                notas_label.append(f"{row['numnota']} — {_cli}{_extra}")
+                    _parts.append(f"Obs: {_obs}")
+                if _peso:
+                    _parts.append(f"Peso: {_peso}")
+                if _valor:
+                    _parts.append(f"Valor: {_valor}")
+                notas_label.append(f"{row['numnota']} — " + "  |  ".join(_parts))
             sel_idx = st.selectbox(
                 "Selecione a nota para roteirizar",
                 options=range(len(notas_label)),
