@@ -783,23 +783,46 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 }}
 
 /* ── Checkbox ── */
-.stCheckbox > label > span:first-child {{
-  border-color: var(--bdr2) !important;
-  background: rgba(255,255,255,0.05) !important;
+/* ── Checkbox: esconde o input nativo e usa pseudo-elemento customizado ── */
+[data-testid="stCheckbox"] input[type="checkbox"] {{
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 17px !important;
+  height: 17px !important;
+  min-width: 17px !important;
+  border: 1.5px solid var(--bdr2) !important;
   border-radius: 5px !important;
-}}
-[data-testid="stCheckbox"] > label > div:first-child {{
-  border-radius: 5px !important;
-  border-color: var(--bdr2) !important;
   background: rgba(255,255,255,0.05) !important;
+  cursor: pointer !important;
+  position: relative !important;
   transition: background .15s, border-color .15s !important;
+  flex-shrink: 0 !important;
 }}
-[data-testid="stCheckbox"] > label > div[data-checked="true"]:first-child,
-[data-testid="stCheckbox"] input:checked ~ div {{
+[data-testid="stCheckbox"] input[type="checkbox"]:checked {{
   background: var(--acc) !important;
   border-color: var(--acc) !important;
 }}
-[data-testid="stCheckbox"] svg {{ color: #fff !important; fill: #fff !important; }}
+[data-testid="stCheckbox"] input[type="checkbox"]:checked::after {{
+  content: "" !important;
+  position: absolute !important;
+  left: 4px !important;
+  top: 1px !important;
+  width: 5px !important;
+  height: 9px !important;
+  border: 2px solid #fff !important;
+  border-top: none !important;
+  border-left: none !important;
+  transform: rotate(45deg) !important;
+  display: block !important;
+}}
+[data-testid="stCheckbox"] input[type="checkbox"]:hover:not(:checked) {{
+  border-color: var(--bdr-hover) !important;
+  background: rgba(255,255,255,0.09) !important;
+}}
+[data-testid="stCheckbox"] > label > span:first-child,
+[data-testid="stCheckbox"] > label > div:first-child {{
+  display: none !important;
+}}
 
 /* ── Buttons ── */
 .stButton > button {{
@@ -1199,6 +1222,42 @@ with fc1:
 with fc2:
     st.markdown("<br>", unsafe_allow_html=True)
     ver_todas = st.checkbox("Todas as datas", key="ver_todas_chk", value=st.session_state.get("_ver_todas", False))
+    st.markdown("""
+    <style>
+    div[data-testid="stCheckbox"] input[type="checkbox"] {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        border: 2px solid rgba(255,255,255,0.35) !important;
+        border-radius: 4px !important;
+        background: rgba(255,255,255,0.05) !important;
+        cursor: pointer !important;
+        position: relative !important;
+        display: inline-block !important;
+        vertical-align: middle !important;
+        transition: all .15s ease !important;
+    }
+    div[data-testid="stCheckbox"] input[type="checkbox"]:checked {
+        background: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+    }
+    div[data-testid="stCheckbox"] input[type="checkbox"]:checked::after {
+        content: "" !important;
+        position: absolute !important;
+        left: 3px !important;
+        top: 0px !important;
+        width: 5px !important;
+        height: 9px !important;
+        border: 2px solid white !important;
+        border-top: none !important;
+        border-left: none !important;
+        transform: rotate(45deg) !important;
+        display: block !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 with fc4:
     pass
 st.markdown("</div>", unsafe_allow_html=True)
