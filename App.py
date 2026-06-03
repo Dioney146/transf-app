@@ -1840,10 +1840,17 @@ elif pagina == "🗺️  Roteirização":
 
             # Selectbox para escolher qual nota roteirizar
             notas_opcoes = df_p_sorted["numnota"].astype(str).tolist()
-            notas_label  = [
-                f"{row['numnota']} — {str(row.get('nomecliente',''))[:30]}"
-                for _, row in df_p_sorted.iterrows()
-            ]
+            notas_label  = []
+            for _, row in df_p_sorted.iterrows():
+                _cli   = str(row.get("nomecliente", ""))[:30]
+                _placa = str(row.get("placa_road", "")).strip()
+                _obs   = str(row.get("observacao", "")).strip()
+                _extra = ""
+                if _placa and _placa not in ("", "nan", "None"):
+                    _extra += f" | {_placa}"
+                if _obs and _obs not in ("", "nan", "None"):
+                    _extra += f" | {_obs}"
+                notas_label.append(f"{row['numnota']} — {_cli}{_extra}")
             sel_idx = st.selectbox(
                 "Selecione a nota para roteirizar",
                 options=range(len(notas_label)),
