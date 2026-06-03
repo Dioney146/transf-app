@@ -2023,11 +2023,11 @@ elif pagina == "📋  Histórico":
         )
         st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
-        _rows_vend2 = _top_vend.to_dict("records") if not _top_vend.empty else []
-        if not df_all.empty and "nomevend" in df_all.columns:
-            _vend_qtd2 = df_all.groupby("nomevend")["numnota"].count().reset_index()
+        _rows_vend2 = []
+        if not df.empty and "nomevend" in df.columns:
+            _vend_qtd2 = df.groupby("nomevend")["numnota"].count().reset_index()
             _vend_qtd2.columns = ["vendedor", "qtd"]
-            _vend_val2 = df_all.groupby("nomevend")["vltotal"].sum().reset_index()
+            _vend_val2 = df.groupby("nomevend")["vltotal"].sum().reset_index()
             _vend_val2.columns = ["vendedor", "valor"]
             _tv2 = _vend_qtd2.merge(_vend_val2, on="vendedor", how="left").fillna(0)
             _tv2 = _tv2.sort_values("valor", ascending=False).head(7)
@@ -2069,8 +2069,8 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
         _rows_veic2 = []
-        if not df_all.empty and "placa_road" in df_all.columns:
-            _df_veic2 = df_all[df_all["placa_road"].notna() & (df_all["placa_road"].astype(str).str.strip() != "")]
+        if not df.empty and "placa_road" in df.columns:
+            _df_veic2 = df[df["placa_road"].notna() & (df["placa_road"].astype(str).str.strip() != "")]
             if not _df_veic2.empty:
                 _top_veic2 = _df_veic2.groupby("placa_road")["numnota"].count().sort_values(ascending=False).head(7).reset_index()
                 _top_veic2.columns = ["placa", "qtd"]
@@ -2139,12 +2139,11 @@ elif pagina == "📋  Histórico":
     # ── Linha 3 de filtros: nova placa ───────────────────────────────────────
     hf7, _hf_spacer2 = st.columns([1.3, 5.3])
     with hf7:
-        _placas_opts = ["Todos"] + sorted(df_all["placa_veiculo"].dropna().unique().tolist()) if not df_all.empty and "placa_veiculo" in df_all.columns else ["Todos"]
+        _placas_opts = ["Todos"] + sorted(df["placa_veiculo"].dropna().unique().tolist()) if not df.empty and "placa_veiculo" in df.columns else ["Todos"]
         filtro_nova_placa = st.selectbox("Nova Placa", _placas_opts, key="h_nova_placa", label_visibility="visible")
 
-    df_h = df_all.copy() if not df_all.empty else pd.DataFrame(columns=TCOLS)
+    df_h = df.copy() if not df.empty else pd.DataFrame(columns=TCOLS)
     if not df_h.empty:
-        df_h = df_h[df_h["dt_transferencia"] == data_str]
         if fst != "Todos":
             df_h = df_h[df_h["status"] == fst]
         if fsup != "Todos":
