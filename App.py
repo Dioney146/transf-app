@@ -1221,43 +1221,13 @@ with fc1:
     )
 with fc2:
     st.markdown("<br>", unsafe_allow_html=True)
-    ver_todas = st.checkbox("Todas as datas", key="ver_todas_chk", value=st.session_state.get("_ver_todas", False))
-    st.markdown("""
-    <style>
-    div[data-testid="stCheckbox"] input[type="checkbox"] {
-        appearance: none !important;
-        -webkit-appearance: none !important;
-        width: 16px !important;
-        height: 16px !important;
-        min-width: 16px !important;
-        border: 2px solid rgba(255,255,255,0.35) !important;
-        border-radius: 4px !important;
-        background: rgba(255,255,255,0.05) !important;
-        cursor: pointer !important;
-        position: relative !important;
-        display: inline-block !important;
-        vertical-align: middle !important;
-        transition: all .15s ease !important;
-    }
-    div[data-testid="stCheckbox"] input[type="checkbox"]:checked {
-        background: #3b82f6 !important;
-        border-color: #3b82f6 !important;
-    }
-    div[data-testid="stCheckbox"] input[type="checkbox"]:checked::after {
-        content: "" !important;
-        position: absolute !important;
-        left: 3px !important;
-        top: 0px !important;
-        width: 5px !important;
-        height: 9px !important;
-        border: 2px solid white !important;
-        border-top: none !important;
-        border-left: none !important;
-        transform: rotate(45deg) !important;
-        display: block !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    _vt_ativo = st.session_state.get("_ver_todas", False)
+    _label_toggle = "✅ Todas as datas" if _vt_ativo else "⬜ Todas as datas"
+    if st.button(_label_toggle, key="btn_ver_todas"):
+        st.session_state["_ver_todas"] = not _vt_ativo
+        load_transferencias.clear()
+        st.rerun()
+    ver_todas = st.session_state.get("_ver_todas", False)
 with fc4:
     pass
 st.markdown("</div>", unsafe_allow_html=True)
@@ -1269,12 +1239,10 @@ if "_ultima_data_filtro" not in st.session_state:
 if "_ver_todas" not in st.session_state:
     st.session_state["_ver_todas"] = False
 
-_ver_todas_changed = ver_todas != st.session_state["_ver_todas"]
-_data_changed      = data_filtro != st.session_state["_ultima_data_filtro"]
+_data_changed = data_filtro != st.session_state["_ultima_data_filtro"]
 
-if _data_changed or _ver_todas_changed:
+if _data_changed:
     st.session_state["_ultima_data_filtro"] = data_filtro
-    st.session_state["_ver_todas"] = ver_todas
     load_transferencias.clear()
     st.rerun()
 
