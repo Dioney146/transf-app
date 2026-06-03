@@ -1222,7 +1222,27 @@ with fc1:
 with fc2:
     st.markdown("<br>", unsafe_allow_html=True)
     _vt_ativo = st.session_state.get("_ver_todas", False)
-    _label_toggle = "✅ Todas as datas" if _vt_ativo else "⬜ Todas as datas"
+    _label_toggle = ("✓ Todas as datas") if _vt_ativo else "Todas as datas"
+    _bg    = "rgba(59,130,246,0.2)"  if _vt_ativo else "rgba(255,255,255,0.05)"
+    _borda = "#3b82f6"               if _vt_ativo else "rgba(255,255,255,0.12)"
+    _color = "#93c5fd"               if _vt_ativo else "rgba(255,255,255,0.38)"
+    st.markdown(f"""<style>
+    div[data-testid="stButton"] button[kind="secondary"]#btn_ver_todas,
+    div[data-testid="column"]:nth-child(2) div[data-testid="stButton"] > button {{
+        background: {_bg} !important;
+        border: 1px solid {_borda} !important;
+        color: {_color} !important;
+        font-size: 0.7rem !important;
+        font-weight: 500 !important;
+        padding: 3px 10px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        border-radius: 6px !important;
+        margin-top: 20px !important;
+        box-shadow: none !important;
+        letter-spacing: .04em !important;
+    }}
+    </style>""", unsafe_allow_html=True)
     if st.button(_label_toggle, key="btn_ver_todas"):
         st.session_state["_ver_todas"] = not _vt_ativo
         load_transferencias.clear()
