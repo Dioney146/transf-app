@@ -1483,35 +1483,6 @@ if pagina == "📝  Registro":
 
         st.markdown("</div></div>", unsafe_allow_html=True)
 
-        with st.expander("🔧 Debug — Diagnóstico da base ROAD", expanded=False):
-            df_dbg = load_road()
-            if df_dbg.empty:
-                st.error("Aba ROAD não encontrada ou vazia.")
-            else:
-                cols_list = df_dbg.columns.tolist()
-                st.write(f"**Total de colunas:** {len(cols_list)} | **Linhas:** {len(df_dbg)}")
-                cols_numbered = " | ".join([f"{i+1}:{c}" for i, c in enumerate(cols_list)])
-                st.code(cols_numbered)
-                if len(cols_list) >= 18:
-                    col18 = cols_list[17]
-                    st.write(f"**Coluna 18 (posição):** `{col18}`")
-                    amostra18 = df_dbg[col18].dropna().astype(str)
-                    amostra18 = amostra18[amostra18.str.strip().isin(["","nan","None"]) == False].head(5).tolist()
-                    st.write(f"**Amostra col.18:** {amostra18}")
-                placa_cols_dbg = [f"{i+1}:{c}" for i, c in enumerate(cols_list) if "PLACA" in c]
-                st.write(f"**Colunas contendo 'PLACA':** {placa_cols_dbg if placa_cols_dbg else 'nenhuma encontrada'}")
-                st.divider()
-                st.write("**Cabeçalho da aba `transferencias`:**")
-                try:
-                    ws_t = get_sheet("transferencias")
-                    hdr_t = ws_t.row_values(1)
-                    hdr_t_numbered = " | ".join([f"{i+1}:{c}" for i, c in enumerate(hdr_t)])
-                    st.code(hdr_t_numbered)
-                    placa_v_idx = next((i+1 for i,c in enumerate(hdr_t) if c=="placa_veiculo"), None)
-                    placa_r_idx = next((i+1 for i,c in enumerate(hdr_t) if c=="placa_road"), None)
-                    st.write(f"**placa_veiculo na coluna:** {placa_v_idx} | **placa_road na coluna:** {placa_r_idx}")
-                except Exception as ex:
-                    st.warning(f"Erro ao ler aba transferencias: {ex}")
 
         if "cur" not in st.session_state:
             st.session_state.cur = None
