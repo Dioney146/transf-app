@@ -1982,6 +1982,46 @@ elif pagina == "🗺️  Roteirização":
 # ═══════════════════════════════════════════════════════════════════════════════
 elif pagina == "📋  Histórico":
 
+    # ── KPI Cards ─────────────────────────────────────────────────────────────
+    _total_nfs   = len(df)
+    _total_valor = df["vltotal"].sum() if not df.empty else 0
+    _total_peso  = df["pesobrutotot"].sum() if not df.empty else 0
+    _total_rot   = len(df[df["status"] == "roteirizado"]) if not df.empty else 0
+    _total_pend  = len(df[df["status"].isin(["pendente", ""]) | df["status"].isna()]) if not df.empty else 0
+
+    def _fmt_brl_kpi(v):
+        return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    def _fmt_kg(v):
+        return f"{v:,.0f} kg".replace(",", ".")
+
+    st.markdown(f"""
+    <div class="dash-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem">
+      <div class="kpi-card kpi-card-accent">
+        <span class="kpi-card-icon">🧾</span>
+        <div class="kpi-card-label">Total de Notas</div>
+        <div class="kpi-card-value">{_total_nfs}</div>
+        <div class="kpi-card-sub">{periodo_txt}</div>
+      </div>
+      <div class="kpi-card kpi-card-green">
+        <span class="kpi-card-icon">💰</span>
+        <div class="kpi-card-label">Valor Total</div>
+        <div class="kpi-card-value" style="font-size:1.35rem">{_fmt_brl_kpi(_total_valor)}</div>
+        <div class="kpi-card-sub">{periodo_txt}</div>
+      </div>
+      <div class="kpi-card kpi-card-yellow">
+        <span class="kpi-card-icon">⚖️</span>
+        <div class="kpi-card-label">Peso Total</div>
+        <div class="kpi-card-value" style="font-size:1.35rem">{_fmt_kg(_total_peso)}</div>
+        <div class="kpi-card-sub">{periodo_txt}</div>
+      </div>
+      <div class="kpi-card kpi-card-red">
+        <span class="kpi-card-icon">🗺️</span>
+        <div class="kpi-card-label">Roteirizadas / Pendentes</div>
+        <div class="kpi-card-value">{_total_rot} <span style="font-size:1rem;color:var(--txt2)">/ {_total_pend}</span></div>
+        <div class="kpi-card-sub">{periodo_txt}</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ── Gráficos: Vendedor (colunas+linha) + Veículo (barras horiz) ──────────
     _gc1, _gc2 = st.columns([3, 2])
