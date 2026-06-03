@@ -788,6 +788,18 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   background: rgba(255,255,255,0.05) !important;
   border-radius: 5px !important;
 }}
+[data-testid="stCheckbox"] > label > div:first-child {{
+  border-radius: 5px !important;
+  border-color: var(--bdr2) !important;
+  background: rgba(255,255,255,0.05) !important;
+  transition: background .15s, border-color .15s !important;
+}}
+[data-testid="stCheckbox"] > label > div[data-checked="true"]:first-child,
+[data-testid="stCheckbox"] input:checked ~ div {{
+  background: var(--acc) !important;
+  border-color: var(--acc) !important;
+}}
+[data-testid="stCheckbox"] svg {{ color: #fff !important; fill: #fff !important; }}
 
 /* ── Buttons ── */
 .stButton > button {{
