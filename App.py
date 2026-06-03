@@ -2088,15 +2088,12 @@ elif pagina == "📋  Histórico":
 
     st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
-    # ── Linha 1 de filtros: busca + status + supervisor + excel ──────────────
-    hf1, hf2, hf3, hf4 = st.columns([3, 1.2, 1.5, 1])
+    # ── Linha 1 de filtros: busca + excel ────────────────────────────────────
+    fst  = "Todos"
+    fsup = "Todos"
+    hf1, hf4 = st.columns([6.7, 1])
     with hf1:
         busca_h = st.text_input("Buscar", key="hb", label_visibility="collapsed", placeholder="🔍 Nota, cliente, placa, destino...")
-    with hf2:
-        fst = st.selectbox("Status", ["Todos", "pendente", "roteirizado"], key="hst", label_visibility="collapsed")
-    with hf3:
-        sups = ["Todos"] + (sorted(df["nomesup"].dropna().unique().tolist()) if not df.empty else [])
-        fsup = st.selectbox("Supervisor", sups, key="hsup", label_visibility="collapsed")
     with hf4:
         if not df.empty:
             out = io.BytesIO()
