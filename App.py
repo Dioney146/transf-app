@@ -1931,14 +1931,15 @@ elif pagina == "🗺️  Roteirização":
         for _c in ["placa_veiculo", "dt_saida"]:
             if _c not in df_r.columns:
                 df_r[_c] = ""
-        _rot_front = ["placa_road", "observacao", "placa_veiculo", "dt_saida"]
+        _rot_front = ["placa_road", "observacao", "placa_veiculo", "numcarregamento", "dt_saida"]
         _rot_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "observacao"] if c not in _rot_front]
         ROT_COLS   = [c for c in _rot_front + _rot_rest if c in df_r.columns]
         ROT_CONFIG = {
             **STD_CONFIG,
-            "placa_veiculo": st.column_config.TextColumn("Nova Placa",  width=120),
-            "dt_saida":      st.column_config.TextColumn("Dt. Saída",   width=110),
-            "observacao":    st.column_config.TextColumn("Observação",  width=220),
+            "placa_veiculo":   st.column_config.TextColumn("Nova Placa",    width=120),
+            "numcarregamento": st.column_config.TextColumn("Carregamento",  width=115),
+            "dt_saida":        st.column_config.TextColumn("Dt. Saída",     width=110),
+            "observacao":      st.column_config.TextColumn("Observação",    width=220),
         }
         df_rd = dedup_columns(df_r[ROT_COLS].copy())
         if "dt_saida" in df_rd.columns:
