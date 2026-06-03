@@ -77,7 +77,7 @@ def dedup_columns(df):
     return df
 
 @st.cache_data(ttl=15, show_spinner=False)
-def load_transferencias():
+def load_transferencias(_cache_key=None):
     ws = ensure_header()
     vals = ws.get_all_values()
     if not vals or len(vals) < 2:
@@ -1180,7 +1180,7 @@ fc1, fc4 = st.columns([1.4, 6.8])
 with fc1:
     data_filtro = st.date_input(
         "📅 Data",
-        value=date.today(),
+        value=st.session_state.get("_ultima_data_filtro", date.today()),
         key="data_global",
         format="DD/MM/YYYY",
     )
@@ -1188,13 +1188,22 @@ with fc4:
     pass
 st.markdown("</div>", unsafe_allow_html=True)
 
+# ─── Detecta mudança de data e recarrega dashboard ────────────────────────────
+if "_ultima_data_filtro" not in st.session_state:
+    st.session_state["_ultima_data_filtro"] = data_filtro
+
+if data_filtro != st.session_state["_ultima_data_filtro"]:
+    st.session_state["_ultima_data_filtro"] = data_filtro
+    load_transferencias.clear()
+    st.rerun()
+
 # ─── Carrega dados ────────────────────────────────────────────────────────────
 data_str     = data_filtro.isoformat()
 data_display = data_filtro.strftime("%d/%m/%Y")
 usar_intervalo = False
 ver_todas      = False
 
-df_all = load_transferencias()
+df_all = load_transferencias(_cache_key=data_str)
 df = (
     df_all[df_all["dt_transferencia"] == data_str].copy()
     if not df_all.empty
@@ -1231,7 +1240,7 @@ st.markdown('<div class="page-body">', unsafe_allow_html=True)
 # ═══════════════════════════════════════════════════════════════════════════════
 # DASHBOARD OVERVIEW (topo sempre visível)
 # ═══════════════════════════════════════════════════════════════════════════════
-_df_all_dash = load_transferencias()
+_df_all_dash = load_transferencias(_cache_key=data_str)
 _today_str   = date.today().isoformat()
 _df_today    = _df_all_dash[_df_all_dash["dt_transferencia"] == _today_str] if not _df_all_dash.empty else pd.DataFrame()
 _df_pend_all = _df_all_dash[_df_all_dash["status"].isin(["pendente",""])  | _df_all_dash["status"].isna()] if not _df_all_dash.empty else pd.DataFrame()
