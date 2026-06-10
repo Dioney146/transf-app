@@ -1065,8 +1065,8 @@ input[type="date"] {{ color-scheme: dark !important; }}
 
 /* ── Chart container ── */
 .chart-wrap {{
-  background: #1e2d42;
-  border: 1px solid rgba(255,255,255,0.15);
+  background: #2a2a2a;
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 14px;
   padding: 0;
   overflow: hidden;
@@ -1074,9 +1074,9 @@ input[type="date"] {{ color-scheme: dark !important; }}
 }}
 .chart-head {{
   padding: .9rem 1.35rem;
-  border-bottom: 1px solid rgba(255,255,255,0.10);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
   display: flex; align-items: center; justify-content: space-between;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.04);
 }}
 .chart-title {{
   font-size: .68rem; font-weight: 800;
