@@ -1870,15 +1870,18 @@ elif pagina == "🗺️  Roteirização":
             st.markdown('<div class="sec-div" style="margin-top:.5rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar notas</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
             # ── Monta tabela de seleção com checkbox ─────────────────────────
-            df_sel = df_p_sorted[["numnota", "nomecliente", "praca", "pesobrutotot", "vltotal", "id"]].copy()
+            df_sel = df_p_sorted[["numnota", "numped", "nomecliente", "numcarregamento", "placa_road", "pesobrutotot", "vltotal", "praca", "id"]].copy()
             df_sel.insert(0, "✓", False)
             df_sel = df_sel.rename(columns={
-                "numnota":      "Nota",
-                "nomecliente":  "Cliente",
-                "praca":        "Praça",
-                "pesobrutotot": "Peso (kg)",
-                "vltotal":      "Valor (R$)",
-                "id":           "_id",
+                "numnota":        "Nota",
+                "numped":         "Pedido",
+                "nomecliente":    "Cliente",
+                "numcarregamento":"Carregamento",
+                "placa_road":     "Placa Antiga",
+                "pesobrutotot":   "Peso (kg)",
+                "vltotal":        "Valor (R$)",
+                "praca":          "Praça",
+                "id":             "_id",
             })
 
             df_edited = st.data_editor(
@@ -1886,15 +1889,18 @@ elif pagina == "🗺️  Roteirização":
                 use_container_width=True,
                 hide_index=True,
                 column_config={
-                    "✓":         st.column_config.CheckboxColumn("✓",           width=40),
-                    "Nota":      st.column_config.TextColumn("Nota Fiscal",     width=110),
-                    "Cliente":   st.column_config.TextColumn("Cliente",         width=220),
-                    "Praça":     st.column_config.TextColumn("Praça",           width=130),
-                    "Peso (kg)": st.column_config.NumberColumn("Peso (kg)",     format="%.0f kg", width=90),
-                    "Valor (R$)":st.column_config.NumberColumn("Valor (R$)",    format="R$ %.2f", width=120),
-                    "_id":       st.column_config.TextColumn("ID",              width=50),
+                    "✓":            st.column_config.CheckboxColumn("✓",              width=40),
+                    "Nota":         st.column_config.TextColumn("Nota Fiscal",        width=110),
+                    "Pedido":       st.column_config.TextColumn("Pedido",             width=110),
+                    "Cliente":      st.column_config.TextColumn("Cliente",            width=210),
+                    "Carregamento": st.column_config.TextColumn("Carregamento",       width=115),
+                    "Placa Antiga": st.column_config.TextColumn("Placa Antiga",       width=110),
+                    "Peso (kg)":    st.column_config.NumberColumn("Peso (kg)",        format="%.0f kg", width=90),
+                    "Valor (R$)":   st.column_config.NumberColumn("Valor (R$)",       format="R$ %.2f", width=120),
+                    "Praça":        st.column_config.TextColumn("Praça",              width=130),
+                    "_id":          st.column_config.TextColumn("ID",                 width=50),
                 },
-                disabled=["Nota","Cliente","Praça","Peso (kg)","Valor (R$)","_id"],
+                disabled=["Nota","Pedido","Cliente","Carregamento","Placa Antiga","Peso (kg)","Valor (R$)","Praça","_id"],
                 key="rot_editor",
             )
 
