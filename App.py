@@ -1640,13 +1640,23 @@ if pagina == "📝  Registro":
                 "Preço incorreto",
                 "Pedido duplicado",
                 "Cliente cancelou/Desistiu",
+                "✏️ Outro (digitar)",
             ]
-            motivo_input = st.selectbox(
+            motivo_sel = st.selectbox(
                 "Motivo",
                 options=MOTIVOS,
                 key="motivo_input",
                 label_visibility="collapsed",
             )
+            if motivo_sel == "✏️ Outro (digitar)":
+                motivo_outro = st.text_input(
+                    "Descreva o motivo",
+                    placeholder="Digite o motivo da transferência...",
+                    key="motivo_outro_input",
+                )
+                motivo_input = motivo_outro.strip() if motivo_outro else ""
+            else:
+                motivo_input = motivo_sel
 
             st.markdown("""
             <div class="sec-div" style="margin-top:1.1rem">
@@ -1666,7 +1676,10 @@ if pagina == "📝  Registro":
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🚛 Confirmar Transferência", type="primary", use_container_width=True, key="confirm_btn"):
                 if not motivo_input or motivo_input == "— Selecione um motivo —":
-                    st.markdown('<div class="al-e">❌ Selecione um <strong>Motivo</strong> antes de confirmar.</div>', unsafe_allow_html=True)
+                    if motivo_sel == "✏️ Outro (digitar)":
+                        st.markdown('<div class="al-e">❌ Digite o <strong>Motivo</strong> no campo acima antes de confirmar.</div>', unsafe_allow_html=True)
+                    else:
+                        st.markdown('<div class="al-e">❌ Selecione um <strong>Motivo</strong> antes de confirmar.</div>', unsafe_allow_html=True)
                 else:
                     dt_s = date.today().isoformat()  # data de registro gerada automaticamente pelo sistema
                     if check_dup(cur["numnota"], dt_s):
