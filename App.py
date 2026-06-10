@@ -1531,7 +1531,6 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
 # ═══════════════════════════════════════════════════════════════════════════════
 if pagina == "📝  Registro":
 
-
     col_form, col_side = st.columns([1.5, 0.7])
 
     with col_form:
@@ -1725,73 +1724,6 @@ if pagina == "📝  Registro":
             else pd.DataFrame()
         )
         n_hj = len(df_hj)
-        tv_hj = df_hj["vltotal"].sum() if not df_hj.empty else 0
-
-        st.markdown(f"""
-        <div class="kpi-mini" style="margin-bottom:1rem">
-          <div class="kpi-mini-label">Notas registradas — {data_display}</div>
-          <div style="display:flex;justify-content:space-between;align-items:flex-end">
-            <div class="kpi-mini-value">{n_hj}</div>
-            <div style="font-weight:800;font-size:.9rem;color:var(--acc)">{br(tv_hj)}</div>
-          </div>
-          <div class="kpi-mini-sub">transferências na data selecionada</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown(f"""
-        <div class="card-head">
-          <span class="card-title">📋 Notas do dia</span>
-          <span class="card-count">{n_hj}</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if df_hj.empty:
-            st.markdown('<div style="padding:1.25rem;text-align:center;color:var(--txt3);font-size:.82rem">Nenhuma nota registrada.</div>', unsafe_allow_html=True)
-        else:
-            _notas_html = ""
-            for _, rr in df_hj.iterrows():
-                pl = rr.get("placa_veiculo", "")
-                pl_h = (
-                    f'<span class="placa-chip">&#x1F697; {pl}</span>'
-                    if pl
-                    else '<span style="color:var(--txt3);font-size:.68rem;font-family:JetBrains Mono,monospace">&#x23F3; Pendente</span>'
-                )
-                _notas_html += f"""
-                <div class="nota-row">
-                  <div>
-                    <div class="nota-num">{rr['numnota']}</div>
-                    <div class="nota-cli">{str(rr.get('nomecliente',''))[:22]}</div>
-                  </div>
-                  <div style="text-align:right">
-                    <div class="nota-val">{br(rr['vltotal'])}</div>
-                    <div style="margin-top:3px">{pl_h}</div>
-                  </div>
-                </div>
-                """
-            st.markdown(_notas_html, unsafe_allow_html=True)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown("""
-        <div class="card" style="margin-top:1rem">
-          <div class="card-head"><span class="card-title">💡 Fluxo do Processo</span></div>
-          <div style="padding:.85rem 1rem">
-            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:.65rem;font-size:.76rem;color:var(--txt2)">
-              <div style="min-width:20px;height:20px;background:var(--acc-lt);border:1px solid rgba(59,130,246,.3);border-radius:50%;font-size:.65rem;font-weight:800;color:var(--acc);display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
-              <span><strong style="color:var(--txt)">Faturamento</strong> busca a nota e registra a transferência</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:.65rem;font-size:.76rem;color:var(--txt2)">
-              <div style="min-width:20px;height:20px;background:var(--acc-lt);border:1px solid rgba(59,130,246,.3);border-radius:50%;font-size:.65rem;font-weight:800;color:var(--acc);display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
-              <span><strong style="color:var(--txt)">Roteirização</strong> informa a nova placa e data de saída</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;font-size:.76rem;color:var(--txt2)">
-              <div style="min-width:20px;height:20px;background:var(--acc-lt);border:1px solid rgba(59,130,246,.3);border-radius:50%;font-size:.65rem;font-weight:800;color:var(--acc);display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
-              <span><strong style="color:var(--txt)">Histórico</strong> registra o ciclo completo da transferência</span>
-            </div>
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
 
     if not df_hj.empty:
         st.markdown('<div class="sec-div"><div class="sec-div-line"></div><div class="sec-div-txt">Notas registradas na data selecionada</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
