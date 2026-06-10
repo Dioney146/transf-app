@@ -2030,7 +2030,7 @@ elif pagina == "🗺️  Roteirização":
         for _c in ["placa_veiculo", "dt_saida"]:
             if _c not in df_r.columns:
                 df_r[_c] = ""
-        _rot_front = ["placa_road", "motivo", "observacao", "placa_veiculo", "numcarregamento", "dt_saida"]
+        _rot_front = ["placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento", "dt_saida"]
         _rot_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "motivo", "observacao"] if c not in _rot_front]
         ROT_COLS   = [c for c in _rot_front + _rot_rest if c in df_r.columns]
         ROT_CONFIG = {
