@@ -1757,23 +1757,11 @@ if pagina == "📝  Registro":
                     if pl
                     else '<span style="color:var(--txt3);font-size:.68rem;font-family:JetBrains Mono,monospace">&#x23F3; Pendente</span>'
                 )
-                _obs_side = str(rr.get("observacao","")).strip()
-                _obs_html = (
-                    f'<div style="font-size:.63rem;color:var(--ylw);margin-top:2px;font-style:italic">'
-                    f'&#x1F4DD; {_obs_side[:30]}{"&hellip;" if len(_obs_side)>30 else ""}</div>'
-                ) if _obs_side else ""
-                _mot_side = str(rr.get("motivo","")).strip()
-                _mot_html = (
-                    f'<div style="font-size:.63rem;color:var(--acc);margin-top:2px">'
-                    f'&#x1F4CB; {_mot_side[:30]}{"&hellip;" if len(_mot_side)>30 else ""}</div>'
-                ) if _mot_side else ""
                 _notas_html += f"""
                 <div class="nota-row">
                   <div>
                     <div class="nota-num">{rr['numnota']}</div>
                     <div class="nota-cli">{str(rr.get('nomecliente',''))[:22]}</div>
-                    {_mot_html}
-                    {_obs_html}
                   </div>
                   <div style="text-align:right">
                     <div class="nota-val">{br(rr['vltotal'])}</div>
