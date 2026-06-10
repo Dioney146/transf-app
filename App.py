@@ -100,13 +100,6 @@ def load_transferencias(_cache_key=None):
     for c in TCOLS:
         if c not in df.columns:
             df[c] = ""
-    # Sanitiza campos de texto que possam ter HTML salvo por engano
-    import re as _re_load
-    for _c in ["observacao", "motivo"]:
-        if _c in df.columns:
-            df[_c] = df[_c].astype(str).apply(
-                lambda x: _re_load.sub(r"<[^>]+>", "", x).strip()
-            )
     return df
 
 def next_id(df):
@@ -1756,23 +1749,25 @@ if pagina == "📝  Registro":
         if df_hj.empty:
             st.markdown('<div style="padding:1.25rem;text-align:center;color:var(--txt3);font-size:.82rem">Nenhuma nota registrada.</div>', unsafe_allow_html=True)
         else:
+            _notas_html = ""
             for _, rr in df_hj.iterrows():
                 pl = rr.get("placa_veiculo", "")
                 pl_h = (
-                    f'<span class="placa-chip">🚗 {pl}</span>'
+                    f'<span class="placa-chip">&#x1F697; {pl}</span>'
                     if pl
-                    else '<span style="color:var(--txt3);font-size:.68rem;font-family:JetBrains Mono,monospace">⏳ Pendente</span>'
+                    else '<span style="color:var(--txt3);font-size:.68rem;font-family:JetBrains Mono,monospace">&#x23F3; Pendente</span>'
                 )
-                import re as _re
-                def _strip_html(txt):
-                    """Remove qualquer tag HTML que tenha sido salva acidentalmente no campo."""
-                    return _re.sub(r'<[^>]+>', '', str(txt)).strip()
-
-                _obs_side = _strip_html(rr.get("observacao", ""))
-                _obs_html = f'<div style="font-size:.63rem;color:var(--ylw);margin-top:2px;font-style:italic">📝 {_obs_side[:30]}{"…" if len(_obs_side)>30 else ""}</div>' if _obs_side else ""
-                _mot_side = _strip_html(rr.get("motivo", ""))
-                _mot_html = f'<div style="font-size:.63rem;color:var(--acc);margin-top:2px">📋 {_mot_side[:30]}{"…" if len(_mot_side)>30 else ""}</div>' if _mot_side else ""
-                st.markdown(f"""
+                _obs_side = str(rr.get("observacao","")).strip()
+                _obs_html = (
+                    f'<div style="font-size:.63rem;color:var(--ylw);margin-top:2px;font-style:italic">'
+                    f'&#x1F4DD; {_obs_side[:30]}{"&hellip;" if len(_obs_side)>30 else ""}</div>'
+                ) if _obs_side else ""
+                _mot_side = str(rr.get("motivo","")).strip()
+                _mot_html = (
+                    f'<div style="font-size:.63rem;color:var(--acc);margin-top:2px">'
+                    f'&#x1F4CB; {_mot_side[:30]}{"&hellip;" if len(_mot_side)>30 else ""}</div>'
+                ) if _mot_side else ""
+                _notas_html += f"""
                 <div class="nota-row">
                   <div>
                     <div class="nota-num">{rr['numnota']}</div>
@@ -1785,7 +1780,8 @@ if pagina == "📝  Registro":
                     <div style="margin-top:3px">{pl_h}</div>
                   </div>
                 </div>
-                """, unsafe_allow_html=True)
+                """
+            st.markdown(_notas_html, unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1934,14 +1930,11 @@ elif pagina == "🗺️  Roteirização":
 
             # Selectbox para escolher qual nota roteirizar
             notas_opcoes = df_p_sorted["numnota"].astype(str).tolist()
-            import re as _re2
-            def _strip_html2(txt):
-                return _re2.sub(r'<[^>]+>', '', str(txt)).strip()
             notas_label  = []
             for _, row in df_p_sorted.iterrows():
                 _cli   = str(row.get("nomecliente", ""))[:30]
                 _placa = str(row.get("placa_road", "")).strip()
-                _obs   = _strip_html2(row.get("observacao", ""))
+                _obs   = str(row.get("observacao", "")).strip()
                 try:
                     _peso = f"{float(row.get('pesobrutotot', 0)):,.0f} kg".replace(",", ".")
                 except Exception:
