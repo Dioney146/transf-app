@@ -1870,12 +1870,13 @@ elif pagina == "🗺️  Roteirização":
             st.markdown('<div class="sec-div" style="margin-top:.5rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar notas</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
             # ── Monta tabela de seleção com checkbox ─────────────────────────
-            df_sel = df_p_sorted[["numnota", "numped", "nomecliente", "numcarregamento", "placa_road", "pesobrutotot", "vltotal", "praca", "id"]].copy()
+            df_sel = df_p_sorted[["numnota", "numped", "nomecliente", "observacao", "numcarregamento", "placa_road", "pesobrutotot", "vltotal", "praca", "id"]].copy()
             df_sel.insert(0, "✓", False)
             df_sel = df_sel.rename(columns={
                 "numnota":        "Nota",
                 "numped":         "Pedido",
                 "nomecliente":    "Cliente",
+                "observacao":     "Observação",
                 "numcarregamento":"Carregamento",
                 "placa_road":     "Placa Antiga",
                 "pesobrutotot":   "Peso (kg)",
@@ -1893,6 +1894,7 @@ elif pagina == "🗺️  Roteirização":
                     "Nota":         st.column_config.TextColumn("Nota Fiscal",        width=110),
                     "Pedido":       st.column_config.TextColumn("Pedido",             width=110),
                     "Cliente":      st.column_config.TextColumn("Cliente",            width=210),
+                    "Observação":   st.column_config.TextColumn("Observação",         width=200),
                     "Carregamento": st.column_config.TextColumn("Carregamento",       width=115),
                     "Placa Antiga": st.column_config.TextColumn("Placa Antiga",       width=110),
                     "Peso (kg)":    st.column_config.NumberColumn("Peso (kg)",        format="%.0f kg", width=90),
@@ -1900,7 +1902,7 @@ elif pagina == "🗺️  Roteirização":
                     "Praça":        st.column_config.TextColumn("Praça",              width=130),
                     "_id":          st.column_config.TextColumn("ID",                 width=50),
                 },
-                disabled=["Nota","Pedido","Cliente","Carregamento","Placa Antiga","Peso (kg)","Valor (R$)","Praça","_id"],
+                disabled=["Nota","Pedido","Cliente","Observação","Carregamento","Placa Antiga","Peso (kg)","Valor (R$)","Praça","_id"],
                 key="rot_editor",
             )
 
