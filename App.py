@@ -2097,7 +2097,7 @@ elif pagina == "📋  Histórico":
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Gráficos lado a lado: Vendedor | Motivo ──────────────────────────────
+    # ── Gráficos lado a lado: Veículo | Motivo ───────────────────────────────
     _col_vend, _col_mot = st.columns(2)
 
     # — Gráfico Veículo Antigo —
@@ -2120,31 +2120,43 @@ elif pagina == "📋  Histórico":
                 _veic_val2 = _df_veic2.groupby("placa_road")["vltotal"].sum().reset_index()
                 _veic_val2.columns = ["veiculo", "valor"]
                 _tv2 = _veic_qtd2.merge(_veic_val2, on="veiculo", how="left").fillna(0)
-                _tv2 = _tv2.sort_values("valor", ascending=False).head(7)
+                _tv2 = _tv2.sort_values("valor", ascending=False).head(10)
                 _rows_vend2 = _tv2.to_dict("records")
 
         def _fmt_brl(v):
             s = f"{int(round(v)):,}".replace(",", ".")
-            return f"R {s}"
+            return f"R$ {s}"
 
-        st.markdown(
-            _svg_col_line(
-                _rows_vend2,
-                label_key="veiculo", val_key="valor", qtd_key="qtd",
-                bar_color_1="#ef4444", bar_color_2="#b91c1c",
-                line_color="#fbbf24",
-                fmt_val=_fmt_brl,
-            ),
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
-            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
-            '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
-            '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+        if _rows_vend2:
+            _max_v = max(r["valor"] for r in _rows_vend2) or 1
+            _ROW_H = 32
+            _LBL_W = 80
+            _VAL_W = 70
+            _PAD_L = 8
+            _PAD_R = 8
+            _SVG_W_V = 500
+            _BAR_AREA_V = _SVG_W_V - _LBL_W - _VAL_W - _PAD_L - _PAD_R
+            _SVG_H_V = len(_rows_vend2) * _ROW_H + 8
+            _defs_v = '<defs><linearGradient id="gvhbar" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient></defs>'
+            _els_v = ""
+            for _i, _r in enumerate(_rows_vend2):
+                _lbl  = str(_r["veiculo"])
+                _val  = _r["valor"]
+                _qtd  = int(_r["qtd"])
+                _bw   = max(4, int(_val / _max_v * _BAR_AREA_V))
+                _y_mid = _i * _ROW_H + _ROW_H / 2 + 4
+                _bar_y = _y_mid - 5
+                _shown = _fmt_brl(_val)
+                _els_v += f'<rect x="{_LBL_W + _PAD_L}" y="{_bar_y:.1f}" width="{_BAR_AREA_V}" height="10" rx="3" fill="rgba(255,255,255,0.05)"/>'
+                _els_v += f'<rect x="{_LBL_W + _PAD_L}" y="{_bar_y:.1f}" width="{_bw}" height="10" rx="3" fill="url(#gvhbar)" opacity="0.9"/>'
+                _els_v += f'<text x="{_LBL_W - 4}" y="{_y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="#a0b4cc">{_lbl}</text>'
+                _els_v += f'<text x="{_LBL_W + _PAD_L + _BAR_AREA_V + 5}" y="{_y_mid:.1f}" dominant-baseline="middle" font-size="9.5" font-weight="700" fill="#f0f6ff">{_shown} <tspan fill="#fbbf24">({_qtd})</tspan></text>'
+            _svg_v = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W_V} {_SVG_H_V}" style="width:100%;height:auto;display:block">{_defs_v}{_els_v}</svg>'
+            st.markdown(_svg_v, unsafe_allow_html=True)
+            st.markdown('<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem"><span style="font-size:.68rem;color:#7d95b5">Barras = valor (R$) · <span style="color:#fbbf24">número entre parênteses</span> = qtd de NFs</span></div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>', unsafe_allow_html=True)
+
         st.markdown("</div></div>", unsafe_allow_html=True)
 
     # — Gráfico Motivo —
@@ -2176,67 +2188,29 @@ elif pagina == "📋  Histórico":
                 _rows_motivo = _top_mot.to_dict("records")
 
         if _rows_motivo:
-            _nm_m      = len(_rows_motivo)
-            _SVG_W_M   = 560
-            _TOP_M     = 56
-            _BAR_M     = 160
-            _BOT_M     = 130
-            _SVG_H_M   = _TOP_M + _BAR_M + _BOT_M
-            _slot_m    = _SVG_W_M / max(_nm_m, 1)
-            _barw_m    = min(_slot_m * 0.55, 80)
-            _max_qtd_m = max(r["qtd"] for r in _rows_motivo) or 1
-
-            _defs_m = (
-                '<defs><linearGradient id="gmotv" x1="0" y1="0" x2="0" y2="1">'
-                '<stop offset="0%" stop-color="#ef4444"/>'
-                '<stop offset="100%" stop-color="#b91c1c"/>'
-                '</linearGradient></defs>'
-            )
-            _rects_m = ""
-            _lbls_m  = ""
-            _pts_m   = []
-
+            _max_q = max(r["qtd"] for r in _rows_motivo) or 1
+            _ROW_H_M = 32
+            _LBL_W_M = 165
+            _VAL_W_M = 30
+            _PAD_LM  = 8
+            _SVG_W_M = 500
+            _BAR_AREA_M = _SVG_W_M - _LBL_W_M - _VAL_W_M - _PAD_LM
+            _SVG_H_M = len(_rows_motivo) * _ROW_H_M + 8
+            _defs_m2 = '<defs><linearGradient id="gmhbar" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient></defs>'
+            _els_m = ""
             for _i, _r in enumerate(_rows_motivo):
                 _lbl  = str(_r["motivo"])
+                _short = (_lbl[:22] + "…") if len(_lbl) > 23 else _lbl
                 _qtd  = int(_r["qtd"])
-                _bh   = max(4, int(_qtd / _max_qtd_m * _BAR_M))
-                _cx   = _slot_m * _i + _slot_m / 2
-                _bx   = _cx - _barw_m / 2
-                _by   = _TOP_M + _BAR_M - _bh
-
-                _rects_m += f'<rect x="{_bx:.1f}" y="{_by}" width="{_barw_m:.1f}" height="{_bh}" rx="3" fill="url(#gmotv)" opacity="0.9"/>'
-                _vty = _by + 14
-                if _bh >= 18:
-                    _rects_m += f'<text x="{_cx:.1f}" y="{_vty}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
-                else:
-                    _rects_m += f'<text x="{_cx:.1f}" y="{_by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
-
-                _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="11" font-weight="600" fill="#a0b4cc">{_lbl}</text>'
-                _pts_m.append((_cx, _by - 20, _qtd))
-
-            _poly_m = ""
-            _dots_m = ""
-            if _pts_m:
-                _ps = " ".join(f"{x:.1f},{y}" for x, y, _ in _pts_m)
-                _poly_m = f'<polyline points="{_ps}" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
-                for _x, _y, _q in _pts_m:
-                    _dots_m += f'<circle cx="{_x:.1f}" cy="{_y}" r="5" fill="#fbbf24" stroke="#141e2b" stroke-width="1.5"/>'
-                    _dots_m += f'<text x="{_x:.1f}" y="{_y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="#fbbf24">{_q}</text>'
-
-            _svg_m = (
-                f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W_M} {_SVG_H_M}" '
-                f'style="width:100%;height:auto;display:block">'
-                f'{_defs_m}{_rects_m}{_lbls_m}{_poly_m}{_dots_m}</svg>'
-            )
-            st.markdown(_svg_m, unsafe_allow_html=True)
-            st.markdown(
-                '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
-                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
-                '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
-                '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
-                '</div>',
-                unsafe_allow_html=True,
-            )
+                _bw   = max(4, int(_qtd / _max_q * _BAR_AREA_M))
+                _y_mid = _i * _ROW_H_M + _ROW_H_M / 2 + 4
+                _bar_y = _y_mid - 5
+                _els_m += f'<rect x="{_LBL_W_M + _PAD_LM}" y="{_bar_y:.1f}" width="{_BAR_AREA_M}" height="10" rx="3" fill="rgba(255,255,255,0.05)"/>'
+                _els_m += f'<rect x="{_LBL_W_M + _PAD_LM}" y="{_bar_y:.1f}" width="{_bw}" height="10" rx="3" fill="url(#gmhbar)" opacity="0.9"/>'
+                _els_m += f'<text x="{_LBL_W_M - 4}" y="{_y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="#a0b4cc" title="{_lbl}">{_short}</text>'
+                _els_m += f'<text x="{_LBL_W_M + _PAD_LM + _bw + 6}" y="{_y_mid:.1f}" dominant-baseline="middle" font-size="10" font-weight="700" fill="#fbbf24">{_qtd}</text>'
+            _svg_m2 = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W_M} {_SVG_H_M}" style="width:100%;height:auto;display:block">{_defs_m2}{_els_m}</svg>'
+            st.markdown(_svg_m2, unsafe_allow_html=True)
         else:
             st.markdown(
                 '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1.5rem 0">'
