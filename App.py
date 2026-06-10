@@ -1777,15 +1777,17 @@ if pagina == "📝  Registro":
 # ROTEIRIZAÇÃO
 # ═══════════════════════════════════════════════════════════════════════════════
 elif pagina == "🗺️  Roteirização":
-    # pend: todas as notas pendentes (qualquer data), garantindo colunas de roteirização
-    pend = df_all[df_all["status"].isin(["pendente", ""]) | df_all["status"].isna()].copy() if not df_all.empty else pd.DataFrame()
-    # rote: usa df_all (não df filtrado por data) para não perder notas roteirizadas em outras datas
-    rote_base = df_all[df_all["status"] == "roteirizado"].copy() if not df_all.empty else pd.DataFrame()
-    # Aplica filtro de data somente se não for "ver todas"
-    if ver_todas or rote_base.empty:
+    # pend e rote: filtrados pela data de registro (ou todas as datas se ver_todas)
+    _base_pend = df_all[df_all["status"].isin(["pendente", ""]) | df_all["status"].isna()].copy() if not df_all.empty else pd.DataFrame()
+    rote_base  = df_all[df_all["status"] == "roteirizado"].copy() if not df_all.empty else pd.DataFrame()
+
+    if ver_todas:
+        pend = _base_pend
         rote = rote_base
     else:
-        rote = rote_base[rote_base["data_registro"] == data_display]
+        pend = _base_pend[_base_pend["data_registro"] == data_display].copy() if not _base_pend.empty else pd.DataFrame()
+        rote = rote_base[rote_base["data_registro"] == data_display].copy() if not rote_base.empty else pd.DataFrame()
+
     # Garante que colunas de roteirização existem
     for _c in ["placa_veiculo", "dt_saida", "dt_roteirizacao"]:
         if not pend.empty and _c not in pend.columns:
@@ -1799,7 +1801,7 @@ elif pagina == "🗺️  Roteirização":
     st.markdown(f"""
     <div class="card-head">
       <span class="card-title" style="color:#f87171">⏳ Notas Pendentes</span>
-      <span class="card-count">{len(pend)} · todas as datas</span>
+      <span class="card-count">{len(pend)} · {periodo_txt}</span>
     </div>
     """, unsafe_allow_html=True)
 
