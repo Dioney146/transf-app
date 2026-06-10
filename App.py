@@ -2135,44 +2135,137 @@ elif pagina == "📋  Histórico":
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Gráficos: Vendedor (colunas+linha) + Veículo (barras horiz) ──────────
-    _gc1, _gc2 = st.columns([3, 2])
+    # ── Gráfico: Vendedor (colunas + linha amarela) ──────────────────────────
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="chart-head">'
+        '<span class="chart-title" style="color:#ef4444">👤 Notas Fiscais por Vendedor · Qtd + Valor</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
-    with _gc1:
-        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="chart-head">'
-            '<span class="chart-title" style="color:#ef4444">👤 Notas Fiscais por Vendedor · Qtd + Valor</span>'
-            '</div>',
-            unsafe_allow_html=True,
+    _rows_vend2 = []
+    if not df.empty and "nomevend" in df.columns:
+        _vend_qtd2 = df.groupby("nomevend")["numnota"].count().reset_index()
+        _vend_qtd2.columns = ["vendedor", "qtd"]
+        _vend_val2 = df.groupby("nomevend")["vltotal"].sum().reset_index()
+        _vend_val2.columns = ["vendedor", "valor"]
+        _tv2 = _vend_qtd2.merge(_vend_val2, on="vendedor", how="left").fillna(0)
+        _tv2 = _tv2.sort_values("valor", ascending=False).head(7)
+        _rows_vend2 = _tv2.to_dict("records")
+
+    def _fmt_brl(v):
+        s = f"{int(round(v)):,}".replace(",", ".")
+        return f"R {s}"
+
+    st.markdown(
+        _svg_col_line(
+            _rows_vend2,
+            label_key="vendedor", val_key="valor", qtd_key="qtd",
+            bar_color_1="#ef4444", bar_color_2="#b91c1c",
+            line_color="#fbbf24",
+            fmt_val=_fmt_brl,
+        ),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
+        '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
+        '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
+        '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+    st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
+
+    # ── Gráfico: Motivo (colunas + linha amarela, texto completo rotacionado) ─
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="chart-head">'
+        '<span class="chart-title" style="color:#ef4444">📋 Notas Fiscais por Motivo · Qtd</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+    _rows_motivo = []
+    if not df.empty and "motivo" in df.columns:
+        _df_mot = df[
+            df["motivo"].notna() &
+            (df["motivo"].astype(str).str.strip() != "") &
+            (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
+        ]
+        if not _df_mot.empty:
+            _top_mot = (
+                _df_mot.groupby("motivo")["numnota"]
+                .count()
+                .sort_values(ascending=False)
+                .reset_index()
+            )
+            _top_mot.columns = ["motivo", "qtd"]
+            _rows_motivo = _top_mot.to_dict("records")
+
+    if _rows_motivo:
+        # mesmos parâmetros do gráfico de Vendedor
+        _nm_m      = len(_rows_motivo)
+        _SVG_W_M   = 560
+        _TOP_M     = 52
+        _BAR_M     = 160
+        _BOT_M     = 110   # mais fundo para labels rotacionados
+        _SVG_H_M   = _TOP_M + _BAR_M + _BOT_M
+        _slot_m    = _SVG_W_M / max(_nm_m, 1)
+        _barw_m    = min(_slot_m * 0.55, 80)
+        _max_qtd_m = max(r["qtd"] for r in _rows_motivo) or 1
+
+        _defs_m = (
+            '<defs><linearGradient id="gmotv" x1="0" y1="0" x2="0" y2="1">'
+            '<stop offset="0%" stop-color="#ef4444"/>'
+            '<stop offset="100%" stop-color="#b91c1c"/>'
+            '</linearGradient></defs>'
         )
-        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+        _rects_m = ""
+        _lbls_m  = ""
+        _pts_m   = []
 
-        _rows_vend2 = []
-        if not df.empty and "nomevend" in df.columns:
-            _vend_qtd2 = df.groupby("nomevend")["numnota"].count().reset_index()
-            _vend_qtd2.columns = ["vendedor", "qtd"]
-            _vend_val2 = df.groupby("nomevend")["vltotal"].sum().reset_index()
-            _vend_val2.columns = ["vendedor", "valor"]
-            _tv2 = _vend_qtd2.merge(_vend_val2, on="vendedor", how="left").fillna(0)
-            _tv2 = _tv2.sort_values("valor", ascending=False).head(7)
-            _rows_vend2 = _tv2.to_dict("records")
+        for _i, _r in enumerate(_rows_motivo):
+            _lbl  = str(_r["motivo"])
+            _qtd  = int(_r["qtd"])
+            _bh   = max(4, int(_qtd / _max_qtd_m * _BAR_M))
+            _cx   = _slot_m * _i + _slot_m / 2
+            _bx   = _cx - _barw_m / 2
+            _by   = _TOP_M + _BAR_M - _bh
 
-        def _fmt_brl(v):
-            # formata sem $ para evitar quebra no SVG; usa R antes do valor
-            s = f"{int(round(v)):,}".replace(",", ".")
-            return f"R {s}"
+            _rects_m += f'<rect x="{_bx:.1f}" y="{_by}" width="{_barw_m:.1f}" height="{_bh}" rx="3" fill="url(#gmotv)" opacity="0.9"/>' 
+            _vty = _by + 12
+            if _bh >= 16:
+                _rects_m += f'<text x="{_cx:.1f}" y="{_vty}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
+            else:
+                _rects_m += f'<text x="{_cx:.1f}" y="{_by - 3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
 
-        st.markdown(
-            _svg_col_line(
-                _rows_vend2,
-                label_key="vendedor", val_key="valor", qtd_key="qtd",
-                bar_color_1="#ef4444", bar_color_2="#b91c1c",
-                line_color="#fbbf24",
-                fmt_val=_fmt_brl,
-            ),
-            unsafe_allow_html=True,
+            # label rotacionado -40° — texto completo
+            _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="8.2" fill="#7d95b5">{_lbl}</text>'
+
+            # linha amarela — flutua 18px acima do topo da barra
+            _pts_m.append((_cx, _by - 18, _qtd))
+
+        _poly_m = ""
+        _dots_m = ""
+        if _pts_m:
+            _ps = " ".join(f"{x:.1f},{y}" for x, y, _ in _pts_m)
+            _poly_m = f'<polyline points="{_ps}" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>' 
+            for _x, _y, _q in _pts_m:
+                _dots_m += f'<circle cx="{_x:.1f}" cy="{_y}" r="4" fill="#fbbf24" stroke="#141e2b" stroke-width="1.5"/>' 
+                _dots_m += f'<text x="{_x:.1f}" y="{_y - 7}" text-anchor="middle" font-size="8" font-weight="700" fill="#fbbf24">{_q}</text>'
+
+        _svg_m = (
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W_M} {_SVG_H_M}" '
+            f'style="width:100%;height:auto;display:block">'
+            f'{_defs_m}{_rects_m}{_lbls_m}{_poly_m}{_dots_m}</svg>'
         )
+        st.markdown(_svg_m, unsafe_allow_html=True)
         st.markdown(
             '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
             '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
@@ -2181,45 +2274,14 @@ elif pagina == "📋  Histórico":
             '</div>',
             unsafe_allow_html=True,
         )
-        st.markdown("</div></div>", unsafe_allow_html=True)
-
-    with _gc2:
-        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    else:
         st.markdown(
-            '<div class="chart-head">'
-            '<span class="chart-title" style="color:#ef4444">📋 Notas Fiscais por Motivo · Qtd</span>'
-            '</div>',
+            '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1.5rem 0">'
+            'Nenhum motivo registrado no período.</p>',
             unsafe_allow_html=True,
         )
-        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
-        _rows_motivo = []
-        if not df.empty and "motivo" in df.columns:
-            _df_mot = df[
-                df["motivo"].notna() &
-                (df["motivo"].astype(str).str.strip() != "") &
-                (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
-            ]
-            if not _df_mot.empty:
-                _top_mot = (
-                    _df_mot.groupby("motivo")["numnota"]
-                    .count()
-                    .sort_values(ascending=False)
-                    .reset_index()
-                )
-                _top_mot.columns = ["motivo", "qtd"]
-                _rows_motivo = _top_mot.to_dict("records")
-
-        st.markdown(
-            _svg_col_line(
-                _rows_motivo,
-                label_key="motivo", val_key="qtd", qtd_key=None,
-                bar_color_1="#ef4444", bar_color_2="#b91c1c",
-                fmt_val=lambda v: f"{int(v)}",
-            ),
-            unsafe_allow_html=True,
-        )
-        st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
