@@ -2217,7 +2217,7 @@ elif pagina == "📋  Histórico":
     st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
     st.markdown(
         '<div class="chart-head">'
-        '<span class="chart-title" style="color:#a78bfa">📋 Notas Fiscais por Motivo · Qtd + Valor</span>'
+        '<span class="chart-title" style="color:#ef4444">📋 Notas Fiscais por Motivo · Qtd + Valor</span>'
         '</div>',
         unsafe_allow_html=True,
     )
@@ -2240,14 +2240,14 @@ elif pagina == "📋  Histórico":
 
     if _rows_motivo:
         _nm       = len(_rows_motivo)
-        # largura dinâmica: mínimo 80px por coluna para labels rotacionados legíveis
-        _SLOT_W   = max(80, 700 // max(_nm, 1))
+        # largura dinâmica: mínimo 65px por coluna para labels rotacionados legíveis
+        _SLOT_W   = max(65, 560 // max(_nm, 1))
         _SVG_W    = _nm * _SLOT_W
-        _TOP_PAD  = 52
-        _BAR_AREA = 160
-        _BOT_PAD  = 115   # espaço extra para labels rotacionados -40°
+        _TOP_PAD  = 42
+        _BAR_AREA = 120
+        _BOT_PAD  = 95    # espaço extra para labels rotacionados -40°
         _SVG_H    = _TOP_PAD + _BAR_AREA + _BOT_PAD
-        _BAR_W    = min(_SLOT_W * 0.55, 72)
+        _BAR_W    = min(_SLOT_W * 0.55, 58)
         _max_val  = max(r["valor"] for r in _rows_motivo) or 1
 
         def _fmt_brl_m(v):
@@ -2256,8 +2256,8 @@ elif pagina == "📋  Histórico":
 
         _mdefs = (
             '<defs><linearGradient id="gmotcol" x1="0" y1="0" x2="0" y2="1">'
-            '<stop offset="0%" stop-color="#a78bfa"/>'
-            '<stop offset="100%" stop-color="#7c3aed"/>'
+            '<stop offset="0%" stop-color="#ef4444"/>'
+            '<stop offset="100%" stop-color="#b91c1c"/>'
             '</linearGradient></defs>'
         )
         _mrects  = ""
