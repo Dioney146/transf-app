@@ -44,7 +44,7 @@ TCOLS = [
     "dt_liberado", "nomevend", "nomesup", "pesobrutotot", "vltotal",
     "praca", "numcarregamento", "destino", "placa_road",
     "placa_veiculo", "dt_saida", "dt_roteirizacao",
-    "status", "observacao", "criado_em",
+    "status", "motivo", "observacao", "criado_em",
 ]
 
 def ensure_header():
@@ -58,7 +58,7 @@ def ensure_header():
     if hdr[:len(TCOLS)] == TCOLS and len(hdr) >= len(TCOLS):
         return ws
     # Reescreve linha 1 completa com TCOLS
-    end_col = chr(ord("A") + len(TCOLS) - 1)  # "S" para 19 colunas
+    end_col = chr(ord("A") + len(TCOLS) - 1)  # "T" para 20 colunas
     ws.update(f"A1:{end_col}1", [TCOLS])
     return ws
 
@@ -114,6 +114,7 @@ def append_transf(row):
     row["id"] = next_id(df)
     row["criado_em"] = datetime.now(ZoneInfo("America/Manaus")).strftime("%d/%m/%Y %H:%M:%S")
     row.setdefault("status", "pendente")
+    row.setdefault("motivo", "")
     row.setdefault("placa_veiculo", "")
     row.setdefault("placa_road", "")
     row.setdefault("dt_roteirizacao", "")
@@ -1286,7 +1287,7 @@ else:
 
 # ─── Colunas padrão de exibição ───────────────────────────────────────────────
 STD_COLS = [
-    "placa_road", "observacao",
+    "placa_road", "motivo", "observacao",
     "numnota", "numped", "nomecliente", "dt_liberado",
     "nomevend", "nomesup", "pesobrutotot", "vltotal",
     "praca", "numcarregamento", "destino",
@@ -1304,6 +1305,7 @@ STD_CONFIG = {
     "numcarregamento": st.column_config.TextColumn("Carregamento",   width=115),
     "destino":         st.column_config.TextColumn("Destino",        width=160),
     "placa_road":      st.column_config.TextColumn("Placa Antiga",   width=110),
+    "motivo":          st.column_config.TextColumn("Motivo",         width=220),
     "observacao":      st.column_config.TextColumn("Observação",     width=220),
 }
 
@@ -1620,6 +1622,35 @@ if pagina == "📝  Registro":
             st.markdown("""
             <div class="sec-div" style="margin-top:1.1rem">
               <div class="sec-div-line"></div>
+              <div class="sec-div-txt">📋 Motivo da Transferência</div>
+              <div class="sec-div-line"></div>
+            </div>
+            """, unsafe_allow_html=True)
+            MOTIVOS = [
+                "— Selecione um motivo —",
+                "Falta de Mercadoria na Carga",
+                "Produto Descongelado avariado",
+                "Atraso na entrega",
+                "Fora de rota/geolocalização",
+                "Sinistro/roubo",
+                "Cliente não fez o pedido",
+                "Cliente Fechado",
+                "Pedido incorreto",
+                "Produto de padrão do cliente",
+                "Preço incorreto",
+                "Pedido duplicado",
+                "Cliente cancelou/Desistiu",
+            ]
+            motivo_input = st.selectbox(
+                "Motivo",
+                options=MOTIVOS,
+                key="motivo_input",
+                label_visibility="collapsed",
+            )
+
+            st.markdown("""
+            <div class="sec-div" style="margin-top:1.1rem">
+              <div class="sec-div-line"></div>
               <div class="sec-div-txt">💬 Observação (opcional)</div>
               <div class="sec-div-line"></div>
             </div>
@@ -1634,31 +1665,35 @@ if pagina == "📝  Registro":
 
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🚛 Confirmar Transferência", type="primary", use_container_width=True, key="confirm_btn"):
-                dt_s = date.today().isoformat()  # data de registro gerada automaticamente pelo sistema
-                if check_dup(cur["numnota"], dt_s):
-                    st.markdown(f'<div class="al-e">❌ Nota {cur["numnota"]} já registrada em {fmt_date(dt_s)}.</div>', unsafe_allow_html=True)
+                if not motivo_input or motivo_input == "— Selecione um motivo —":
+                    st.markdown('<div class="al-e">❌ Selecione um <strong>Motivo</strong> antes de confirmar.</div>', unsafe_allow_html=True)
                 else:
-                    with st.spinner("Salvando..."):
-                        append_transf({
-                            "dt_transferencia": dt_s,
-                            "numped":          cur["numped"],
-                            "numnota":         cur["numnota"],
-                            "nomecliente":     cur["nomecliente"],
-                            "dt_liberado":     cur["dt_liberado"],
-                            "nomevend":        cur["nomevend"],
-                            "nomesup":         cur["nomesup"],
-                            "pesobrutotot":    cur["pesobrutotot"],
-                            "vltotal":         cur["vltotal"],
-                            "praca":           cur["praca"],
-                            "numcarregamento": cur["numcarregamento"],
-                            "destino":         cur["destino"],
-                            "placa_road":      cur.get("placa_road", ""),
-                            "observacao":      obs_input.strip() if obs_input else "",
-                        })
-                    st.success(f"✅ Transferência registrada! Nota {cur['numnota']} aguarda roteirização.")
-                    st.session_state.cur = None
-                    st.balloons()
-                    st.rerun()
+                    dt_s = date.today().isoformat()  # data de registro gerada automaticamente pelo sistema
+                    if check_dup(cur["numnota"], dt_s):
+                        st.markdown(f'<div class="al-e">❌ Nota {cur["numnota"]} já registrada em {fmt_date(dt_s)}.</div>', unsafe_allow_html=True)
+                    else:
+                        with st.spinner("Salvando..."):
+                            append_transf({
+                                "dt_transferencia": dt_s,
+                                "numped":          cur["numped"],
+                                "numnota":         cur["numnota"],
+                                "nomecliente":     cur["nomecliente"],
+                                "dt_liberado":     cur["dt_liberado"],
+                                "nomevend":        cur["nomevend"],
+                                "nomesup":         cur["nomesup"],
+                                "pesobrutotot":    cur["pesobrutotot"],
+                                "vltotal":         cur["vltotal"],
+                                "praca":           cur["praca"],
+                                "numcarregamento": cur["numcarregamento"],
+                                "destino":         cur["destino"],
+                                "placa_road":      cur.get("placa_road", ""),
+                                "motivo":          motivo_input.strip(),
+                                "observacao":      obs_input.strip() if obs_input else "",
+                            })
+                        st.success(f"✅ Transferência registrada! Nota {cur['numnota']} aguarda roteirização.")
+                        st.session_state.cur = None
+                        st.balloons()
+                        st.rerun()
 
             st.markdown("</div></div>", unsafe_allow_html=True)
         else:
@@ -1711,11 +1746,14 @@ if pagina == "📝  Registro":
                 )
                 _obs_side = str(rr.get("observacao","")).strip()
                 _obs_html = f'<div style="font-size:.63rem;color:var(--ylw);margin-top:2px;font-style:italic">📝 {_obs_side[:30]}{"…" if len(_obs_side)>30 else ""}</div>' if _obs_side else ""
+                _mot_side = str(rr.get("motivo","")).strip()
+                _mot_html = f'<div style="font-size:.63rem;color:var(--acc);margin-top:2px">📋 {_mot_side[:30]}{"…" if len(_mot_side)>30 else ""}</div>' if _mot_side else ""
                 st.markdown(f"""
                 <div class="nota-row">
                   <div>
                     <div class="nota-num">{rr['numnota']}</div>
                     <div class="nota-cli">{str(rr.get('nomecliente',''))[:22]}</div>
+                    {_mot_html}
                     {_obs_html}
                   </div>
                   <div style="text-align:right">
@@ -1832,7 +1870,7 @@ elif pagina == "🗺️  Roteirização":
 
         # ── Tabela nativa (st.dataframe) + painel de roteirização ───────────
         PEND_COLS = [c for c in [
-            "placa_road", "observacao",
+            "placa_road", "motivo", "observacao",
             "numnota", "numped", "nomecliente", "dt_liberado",
             "nomevend", "nomesup", "pesobrutotot", "vltotal",
             "praca", "numcarregamento", "destino",
@@ -1851,6 +1889,7 @@ elif pagina == "🗺️  Roteirização":
             "numcarregamento": st.column_config.TextColumn("Carregamento",  width=115),
             "destino":         st.column_config.TextColumn("Destino",       width=160),
             "placa_road":      st.column_config.TextColumn("Placa Antiga",  width=115),
+            "motivo":          st.column_config.TextColumn("Motivo",        width=220),
             "observacao":      st.column_config.TextColumn("Observação",    width=220),
         }
 
@@ -1991,14 +2030,15 @@ elif pagina == "🗺️  Roteirização":
         for _c in ["placa_veiculo", "dt_saida"]:
             if _c not in df_r.columns:
                 df_r[_c] = ""
-        _rot_front = ["placa_road", "observacao", "placa_veiculo", "numcarregamento", "dt_saida"]
-        _rot_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "observacao"] if c not in _rot_front]
+        _rot_front = ["placa_road", "motivo", "observacao", "placa_veiculo", "numcarregamento", "dt_saida"]
+        _rot_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "motivo", "observacao"] if c not in _rot_front]
         ROT_COLS   = [c for c in _rot_front + _rot_rest if c in df_r.columns]
         ROT_CONFIG = {
             **STD_CONFIG,
             "placa_veiculo":   st.column_config.TextColumn("Nova Placa",    width=120),
             "numcarregamento": st.column_config.TextColumn("Carregamento",  width=115),
             "dt_saida":        st.column_config.TextColumn("Dt. Saída",     width=110),
+            "motivo":          st.column_config.TextColumn("Motivo",        width=220),
             "observacao":      st.column_config.TextColumn("Observação",    width=220),
         }
         df_rd = dedup_columns(df_r[ROT_COLS].copy())
@@ -2260,12 +2300,13 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    _hist_front = ["placa_road", "placa_veiculo", "observacao", "numcarregamento"]
-    _hist_rest  = [c for c in STD_COLS + ["dt_saida", "status", "observacao"] if c not in _hist_front]
+    _hist_front = ["placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento"]
+    _hist_rest  = [c for c in STD_COLS + ["dt_saida", "status", "motivo", "observacao"] if c not in _hist_front]
     HIST_COLS = [c for c in _hist_front + _hist_rest if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
         "placa_veiculo":   st.column_config.TextColumn("Nova Placa",   width=110),
+        "motivo":          st.column_config.TextColumn("Motivo",       width=220),
         "observacao":      st.column_config.TextColumn("Observação",   width=220),
         "numcarregamento": st.column_config.TextColumn("Carregamento", width=115),
         "dt_saida":        st.column_config.TextColumn("Dt. Saída",    width=100),
