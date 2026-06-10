@@ -2213,11 +2213,11 @@ elif pagina == "📋  Histórico":
 
     st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
 
-    # ── Gráfico: Notas por Motivo ─────────────────────────────────────────────
+    # ── Gráfico: Notas por Motivo (colunas + linha amarela de qtd) ────────────
     st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
     st.markdown(
         '<div class="chart-head">'
-        '<span class="chart-title" style="color:#a78bfa">📋 Notas Fiscais por Motivo · Qtd</span>'
+        '<span class="chart-title" style="color:#a78bfa">📋 Notas Fiscais por Motivo · Qtd + Valor</span>'
         '</div>',
         unsafe_allow_html=True,
     )
@@ -2231,54 +2231,90 @@ elif pagina == "📋  Histórico":
             (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
         ]
         if not _df_mot.empty:
-            _top_mot = (
-                _df_mot.groupby("motivo")["numnota"]
-                .count()
-                .sort_values(ascending=False)
-                .reset_index()
-            )
-            _top_mot.columns = ["motivo", "qtd"]
-            _rows_motivo = _top_mot.to_dict("records")
+            _mot_qtd = _df_mot.groupby("motivo")["numnota"].count().reset_index()
+            _mot_qtd.columns = ["motivo", "qtd"]
+            _mot_val = _df_mot.groupby("motivo")["vltotal"].sum().reset_index()
+            _mot_val.columns = ["motivo", "valor"]
+            _mot_merged = _mot_qtd.merge(_mot_val, on="motivo").sort_values("valor", ascending=False)
+            _rows_motivo = _mot_merged.to_dict("records")
 
     if _rows_motivo:
-        # SVG de barras horizontais com largura total — labels longos ficam melhores na horizontal
-        _n_mot   = len(_rows_motivo)
-        _LABEL_W = 185
-        _BAR_H   = 11
-        _ROW_H   = 30
-        _VAL_W   = 42
-        _SVG_W   = 700
-        _SVG_H   = _n_mot * _ROW_H + 12
-        _BAR_A   = _SVG_W - _LABEL_W - _VAL_W - 8
-        _max_v   = max(r["qtd"] for r in _rows_motivo) or 1
+        _nm       = len(_rows_motivo)
+        # largura dinâmica: mínimo 80px por coluna para labels rotacionados legíveis
+        _SLOT_W   = max(80, 700 // max(_nm, 1))
+        _SVG_W    = _nm * _SLOT_W
+        _TOP_PAD  = 52
+        _BAR_AREA = 160
+        _BOT_PAD  = 115   # espaço extra para labels rotacionados -40°
+        _SVG_H    = _TOP_PAD + _BAR_AREA + _BOT_PAD
+        _BAR_W    = min(_SLOT_W * 0.55, 72)
+        _max_val  = max(r["valor"] for r in _rows_motivo) or 1
 
-        _els = (
-            '<defs><linearGradient id="gmot" x1="0" y1="0" x2="1" y2="0">'
+        def _fmt_brl_m(v):
+            s = f"{int(round(v)):,}".replace(",", ".")
+            return f"R {s}"
+
+        _mdefs = (
+            '<defs><linearGradient id="gmotcol" x1="0" y1="0" x2="0" y2="1">'
             '<stop offset="0%" stop-color="#a78bfa"/>'
             '<stop offset="100%" stop-color="#7c3aed"/>'
             '</linearGradient></defs>'
         )
+        _mrects  = ""
+        _mlabels = ""
+        _mpts    = []
+
         for _i, _r in enumerate(_rows_motivo):
             _lbl  = str(_r["motivo"])
-            _short = (_lbl[:26] + "…") if len(_lbl) > 27 else _lbl
-            _val  = _r["qtd"]
-            _bw   = max(4, int(_val / _max_v * _BAR_A))
-            _ymid = _i * _ROW_H + _ROW_H / 2 + 6
-            _by   = _ymid - _BAR_H / 2
-            # fundo
-            _els += f'<rect x="{_LABEL_W}" y="{_by:.1f}" width="{_BAR_A}" height="{_BAR_H}" rx="3" fill="rgba(255,255,255,0.05)"/>'
-            # barra colorida
-            _els += f'<rect x="{_LABEL_W}" y="{_by:.1f}" width="{_bw}" height="{_BAR_H}" rx="3" fill="url(#gmot)" opacity="0.9"/>'
-            # label esquerdo
-            _els += f'<text x="{_LABEL_W - 6}" y="{_ymid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="#7d95b5">{_short}</text>'
-            # valor direito
-            _els += f'<text x="{_LABEL_W + _BAR_A + 5}" y="{_ymid:.1f}" dominant-baseline="middle" font-size="9" font-weight="700" fill="#a78bfa">{int(_val)} NFs</text>'
+            _val  = _r["valor"]
+            _qtd  = int(_r["qtd"])
+            _bh   = max(4, int(_val / _max_val * _BAR_AREA))
+            _cx   = _SLOT_W * _i + _SLOT_W / 2
+            _bx   = _cx - _BAR_W / 2
+            _by   = _TOP_PAD + _BAR_AREA - _bh
+            _shown = _fmt_brl_m(_val)
+
+            # coluna
+            _mrects += f'<rect x="{_bx:.1f}" y="{_by}" width="{_BAR_W:.1f}" height="{_bh}" rx="3" fill="url(#gmotcol)" opacity="0.9"/>'
+            # valor dentro/fora da barra
+            _val_ty = _by + 12
+            if _bh >= 16:
+                _mrects += f'<text x="{_cx:.1f}" y="{_val_ty}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{_shown}</text>'
+            else:
+                _mrects += f'<text x="{_cx:.1f}" y="{_by - 3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{_shown}</text>'
+
+            # label rotacionado -40° com texto COMPLETO
+            _lx = _cx
+            _ly = _TOP_PAD + _BAR_AREA + 10
+            _mlabels += f'<text transform="translate({_lx:.1f},{_ly}) rotate(-40)" text-anchor="end" font-size="8.2" fill="#7d95b5">{_lbl}</text>'
+
+            # ponto da linha amarela
+            _dot_y = _by - 18
+            _mpts.append((_cx, _dot_y, _qtd))
+
+        _mpoly = ""
+        _mdots = ""
+        if _mpts:
+            _poly_str = " ".join(f"{x:.1f},{y}" for x, y, _ in _mpts)
+            _mpoly = f'<polyline points="{_poly_str}" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
+            for _x, _y, _q in _mpts:
+                _mdots += f'<circle cx="{_x:.1f}" cy="{_y}" r="4" fill="#fbbf24" stroke="#141e2b" stroke-width="1.5"/>'
+                _mdots += f'<text x="{_x:.1f}" y="{_y - 7}" text-anchor="middle" font-size="8" font-weight="700" fill="#fbbf24">{_q}</text>'
 
         _svg_mot = (
             f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W} {_SVG_H}" '
-            f'style="width:100%;height:auto;display:block">{_els}</svg>'
+            f'style="width:100%;height:auto;display:block">'
+            f'{_mdefs}{_mrects}{_mlabels}{_mpoly}{_mdots}</svg>'
         )
         st.markdown(_svg_mot, unsafe_allow_html=True)
+        st.markdown(
+            '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
+            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
+            '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
+            '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
     else:
         st.markdown(
             '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1.5rem 0">'
