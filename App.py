@@ -1295,7 +1295,7 @@ if ver_todas:
     periodo_txt = "Todas as datas"
 else:
     df = (
-        df_all[df_all["dt_transferencia"] == data_str].copy()
+        df_all[df_all["data_registro"] == data_display].copy()
         if not df_all.empty
         else pd.DataFrame(columns=TCOLS)
     )
@@ -1332,8 +1332,8 @@ st.markdown('<div class="page-body">', unsafe_allow_html=True)
 # DASHBOARD OVERVIEW (topo sempre visível)
 # ═══════════════════════════════════════════════════════════════════════════════
 _df_all_dash = load_transferencias(_cache_key=data_str)
-_today_str   = date.today().isoformat()
-_df_today    = _df_all_dash[_df_all_dash["dt_transferencia"] == _today_str] if not _df_all_dash.empty else pd.DataFrame()
+_today_str   = date.today().strftime("%d/%m/%Y")
+_df_today    = _df_all_dash[_df_all_dash["data_registro"] == _today_str] if not _df_all_dash.empty else pd.DataFrame()
 _df_pend_all = _df_all_dash[_df_all_dash["status"].isin(["pendente",""])  | _df_all_dash["status"].isna()] if not _df_all_dash.empty else pd.DataFrame()
 _df_rot_all  = _df_all_dash[_df_all_dash["status"] == "roteirizado"] if not _df_all_dash.empty else pd.DataFrame()
 _n_today     = len(_df_today)
@@ -1737,7 +1737,7 @@ if pagina == "📝  Registro":
 
     with col_side:
         df_hj = (
-            df_all[df_all["dt_transferencia"] == data_str]
+            df_all[df_all["data_registro"] == data_display]
             if not df_all.empty
             else pd.DataFrame()
         )
@@ -1785,7 +1785,7 @@ elif pagina == "🗺️  Roteirização":
     if ver_todas or rote_base.empty:
         rote = rote_base
     else:
-        rote = rote_base[rote_base["dt_transferencia"] == data_str]
+        rote = rote_base[rote_base["data_registro"] == data_display]
     # Garante que colunas de roteirização existem
     for _c in ["placa_veiculo", "dt_saida", "dt_roteirizacao"]:
         if not pend.empty and _c not in pend.columns:
@@ -1811,14 +1811,14 @@ elif pagina == "🗺️  Roteirização":
         with pb1:
             bp = st.text_input("Buscar", key="rbp", label_visibility="collapsed", placeholder="🔍 Nota, cliente, praça...")
         with pb2:
-            datas_pend = sorted(pend["dt_transferencia"].dropna().unique().tolist(), reverse=True)
-            datas_fmt = ["Todas"] + [fmt_date(d) for d in datas_pend]
+            datas_pend = sorted(pend["data_registro"].dropna().unique().tolist(), reverse=True)
+            datas_fmt = ["Todas"] + [d for d in datas_pend]
             fdp_fmt = st.selectbox("Data", datas_fmt, key="rdp", label_visibility="collapsed")
-            fdp = to_iso(fdp_fmt) if fdp_fmt != "Todas" else "Todas"
+            fdp = fdp_fmt
 
         df_p = pend.copy()
         if fdp != "Todas":
-            df_p = df_p[df_p["dt_transferencia"] == fdp]
+            df_p = df_p[df_p["data_registro"] == fdp]
         if bp:
             m = df_p.apply(lambda r: bp.lower() in " ".join(str(v) for v in r).lower(), axis=1)
             df_p = df_p[m]
