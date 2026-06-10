@@ -2240,14 +2240,14 @@ elif pagina == "📋  Histórico":
 
     if _rows_motivo:
         _nm       = len(_rows_motivo)
-        # largura dinâmica: mínimo 65px por coluna para labels rotacionados legíveis
-        _SLOT_W   = max(65, 560 // max(_nm, 1))
-        _SVG_W    = _nm * _SLOT_W
-        _TOP_PAD  = 42
-        _BAR_AREA = 120
-        _BOT_PAD  = 95    # espaço extra para labels rotacionados -40°
+        # mesmas dimensões do gráfico de Vendedor
+        _SVG_W    = 560
+        _SLOT_W   = _SVG_W / max(_nm, 1)
+        _TOP_PAD  = 52
+        _BAR_AREA = 160
+        _BOT_PAD  = 115   # maior que o vendedor (20) para acomodar labels rotacionados -40°
         _SVG_H    = _TOP_PAD + _BAR_AREA + _BOT_PAD
-        _BAR_W    = min(_SLOT_W * 0.55, 58)
+        _BAR_W    = min(_SLOT_W * 0.55, 80)
         _max_val  = max(r["valor"] for r in _rows_motivo) or 1
 
         def _fmt_brl_m(v):
