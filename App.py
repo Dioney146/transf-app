@@ -2156,7 +2156,7 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
             '<div class="chart-head">'
-            '<span class="chart-title" style="color:#ef4444;font-size:.78rem">🚛 NFs por Veículo Antigo · Qtd + Valor</span>'
+            '<span class="chart-title" style="color:#ef4444;font-size:.78rem">🚛 Por Veículo</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2203,7 +2203,7 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
             '<div class="chart-head">'
-            '<span class="chart-title" style="color:#ef4444;font-size:.78rem">📋 NFs por Motivo · Qtd</span>'
+            '<span class="chart-title" style="color:#ef4444;font-size:.78rem">📋 Por Motivos</span>'
             '</div>',
             unsafe_allow_html=True,
         )
