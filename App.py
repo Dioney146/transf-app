@@ -1425,9 +1425,9 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         return '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
     SVG_W    = 560
-    TOP_PAD  = 52   # espaço acima das barras (rótulos de valor)
+    TOP_PAD  = 56   # espaço acima das barras (rótulos de valor)
     BAR_AREA = 160  # altura da área de barras
-    BOT_PAD  = 20   # espaço abaixo para rótulos de nome
+    BOT_PAD  = 30   # espaço abaixo para rótulos de nome
     SVG_H    = TOP_PAD + BAR_AREA + BOT_PAD
     slot_w   = SVG_W / max(n, 1)
     bar_w    = min(slot_w * 0.55, 80)  # máx 80px para não estourar com poucos itens
@@ -1451,27 +1451,27 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
 
         rects += f'<rect x="{bx:.1f}" y="{by}" width="{bar_w:.1f}" height="{bh}" rx="3" fill="url(#gcol)" opacity="0.9"/>'
         # valor dentro da barra (10px abaixo do topo), só mostra fora se barra for muito pequena
-        val_ty = by + 12
-        if bh >= 16:
-            rects += f'<text x="{cx:.1f}" y="{val_ty}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
+        val_ty = by + 14
+        if bh >= 18:
+            rects += f'<text x="{cx:.1f}" y="{val_ty}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{shown}</text>'
         else:
-            rects += f'<text x="{cx:.1f}" y="{by - 3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
-        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 14}" text-anchor="middle" font-size="8" fill="#7d95b5">{short}</text>'
+            rects += f'<text x="{cx:.1f}" y="{by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{shown}</text>'
+        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 16}" text-anchor="middle" font-size="11" font-weight="600" fill="#a0b4cc">{short}</text>'
 
         if qtd_key:
             qtd    = int(r[qtd_key])
             # linha amarela flutua 18px acima do topo de cada barra
-            dot_y  = by - 18
+            dot_y  = by - 20
             pts.append((cx, dot_y, qtd))
 
     poly = ""
     dots = ""
     if pts:
         poly_str = " ".join(f"{x:.1f},{y}" for x, y, _ in pts)
-        poly = f'<polyline points="{poly_str}" fill="none" stroke="{line_color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
+        poly = f'<polyline points="{poly_str}" fill="none" stroke="{line_color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
         for x, y, q in pts:
-            dots += f'<circle cx="{x:.1f}" cy="{y}" r="4" fill="{line_color}" stroke="#141e2b" stroke-width="1.5"/>'
-            dots += f'<text x="{x:.1f}" y="{y - 7}" text-anchor="middle" font-size="8" font-weight="700" fill="{line_color}">{q}</text>'
+            dots += f'<circle cx="{x:.1f}" cy="{y}" r="5" fill="{line_color}" stroke="#141e2b" stroke-width="1.5"/>'
+            dots += f'<text x="{x:.1f}" y="{y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="{line_color}">{q}</text>'
 
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}" '
@@ -2151,26 +2151,28 @@ elif pagina == "📋  Histórico":
     # ── Gráficos lado a lado: Vendedor | Motivo ──────────────────────────────
     _col_vend, _col_mot = st.columns(2)
 
-    # — Gráfico Vendedor —
+    # — Gráfico Veículo Antigo —
     with _col_vend:
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
             '<div class="chart-head">'
-            '<span class="chart-title" style="color:#ef4444;font-size:.78rem">👤 NFs por Vendedor · Qtd + Valor</span>'
+            '<span class="chart-title" style="color:#ef4444;font-size:.78rem">🚛 NFs por Veículo Antigo · Qtd + Valor</span>'
             '</div>',
             unsafe_allow_html=True,
         )
         st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
         _rows_vend2 = []
-        if not df.empty and "nomevend" in df.columns:
-            _vend_qtd2 = df.groupby("nomevend")["numnota"].count().reset_index()
-            _vend_qtd2.columns = ["vendedor", "qtd"]
-            _vend_val2 = df.groupby("nomevend")["vltotal"].sum().reset_index()
-            _vend_val2.columns = ["vendedor", "valor"]
-            _tv2 = _vend_qtd2.merge(_vend_val2, on="vendedor", how="left").fillna(0)
-            _tv2 = _tv2.sort_values("valor", ascending=False).head(7)
-            _rows_vend2 = _tv2.to_dict("records")
+        if not df.empty and "placa_road" in df.columns:
+            _df_veic2 = df[df["placa_road"].notna() & (df["placa_road"].astype(str).str.strip() != "")]
+            if not _df_veic2.empty:
+                _veic_qtd2 = _df_veic2.groupby("placa_road")["numnota"].count().reset_index()
+                _veic_qtd2.columns = ["veiculo", "qtd"]
+                _veic_val2 = _df_veic2.groupby("placa_road")["vltotal"].sum().reset_index()
+                _veic_val2.columns = ["veiculo", "valor"]
+                _tv2 = _veic_qtd2.merge(_veic_val2, on="veiculo", how="left").fillna(0)
+                _tv2 = _tv2.sort_values("valor", ascending=False).head(7)
+                _rows_vend2 = _tv2.to_dict("records")
 
         def _fmt_brl(v):
             s = f"{int(round(v)):,}".replace(",", ".")
@@ -2179,7 +2181,7 @@ elif pagina == "📋  Histórico":
         st.markdown(
             _svg_col_line(
                 _rows_vend2,
-                label_key="vendedor", val_key="valor", qtd_key="qtd",
+                label_key="veiculo", val_key="valor", qtd_key="qtd",
                 bar_color_1="#ef4444", bar_color_2="#b91c1c",
                 line_color="#fbbf24",
                 fmt_val=_fmt_brl,
@@ -2227,9 +2229,9 @@ elif pagina == "📋  Histórico":
         if _rows_motivo:
             _nm_m      = len(_rows_motivo)
             _SVG_W_M   = 560
-            _TOP_M     = 52
+            _TOP_M     = 56
             _BAR_M     = 160
-            _BOT_M     = 110
+            _BOT_M     = 130
             _SVG_H_M   = _TOP_M + _BAR_M + _BOT_M
             _slot_m    = _SVG_W_M / max(_nm_m, 1)
             _barw_m    = min(_slot_m * 0.55, 80)
@@ -2254,23 +2256,23 @@ elif pagina == "📋  Histórico":
                 _by   = _TOP_M + _BAR_M - _bh
 
                 _rects_m += f'<rect x="{_bx:.1f}" y="{_by}" width="{_barw_m:.1f}" height="{_bh}" rx="3" fill="url(#gmotv)" opacity="0.9"/>'
-                _vty = _by + 12
-                if _bh >= 16:
-                    _rects_m += f'<text x="{_cx:.1f}" y="{_vty}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
+                _vty = _by + 14
+                if _bh >= 18:
+                    _rects_m += f'<text x="{_cx:.1f}" y="{_vty}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
                 else:
-                    _rects_m += f'<text x="{_cx:.1f}" y="{_by - 3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
+                    _rects_m += f'<text x="{_cx:.1f}" y="{_by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
 
-                _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="8.2" fill="#7d95b5">{_lbl}</text>'
-                _pts_m.append((_cx, _by - 18, _qtd))
+                _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="11" font-weight="600" fill="#a0b4cc">{_lbl}</text>'
+                _pts_m.append((_cx, _by - 20, _qtd))
 
             _poly_m = ""
             _dots_m = ""
             if _pts_m:
                 _ps = " ".join(f"{x:.1f},{y}" for x, y, _ in _pts_m)
-                _poly_m = f'<polyline points="{_ps}" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
+                _poly_m = f'<polyline points="{_ps}" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
                 for _x, _y, _q in _pts_m:
-                    _dots_m += f'<circle cx="{_x:.1f}" cy="{_y}" r="4" fill="#fbbf24" stroke="#141e2b" stroke-width="1.5"/>'
-                    _dots_m += f'<text x="{_x:.1f}" y="{_y - 7}" text-anchor="middle" font-size="8" font-weight="700" fill="#fbbf24">{_q}</text>'
+                    _dots_m += f'<circle cx="{_x:.1f}" cy="{_y}" r="5" fill="#fbbf24" stroke="#141e2b" stroke-width="1.5"/>'
+                    _dots_m += f'<text x="{_x:.1f}" y="{_y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="#fbbf24">{_q}</text>'
 
             _svg_m = (
                 f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W_M} {_SVG_H_M}" '
