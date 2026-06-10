@@ -100,6 +100,23 @@ def load_transferencias(_cache_key=None):
     for c in TCOLS:
         if c not in df.columns:
             df[c] = ""
+    # Deriva coluna de data de registro (apenas data, sem horário)
+    def _extract_date(s):
+        s = str(s).strip()
+        if not s:
+            return ""
+        # Formato dd/mm/yyyy HH:MM:SS
+        if len(s) >= 10 and s[2] == "/" and s[5] == "/":
+            return s[:10]
+        # Formato ISO yyyy-mm-dd...
+        if len(s) >= 10 and s[4] == "-" and s[7] == "-":
+            try:
+                d, m, y = s[8:10], s[5:7], s[0:4]
+                return f"{d}/{m}/{y}"
+            except Exception:
+                return s[:10]
+        return s[:10]
+    df["data_registro"] = df["criado_em"].apply(_extract_date)
     return df
 
 def next_id(df):
@@ -1286,12 +1303,13 @@ else:
 
 # ─── Colunas padrão de exibição ───────────────────────────────────────────────
 STD_COLS = [
-    "placa_road", "motivo", "observacao",
+    "data_registro", "placa_road", "motivo", "observacao",
     "numnota", "numped", "nomecliente", "dt_liberado",
     "nomevend", "nomesup", "pesobrutotot", "vltotal",
     "praca", "numcarregamento", "destino",
 ]
 STD_CONFIG = {
+    "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
     "numnota":         st.column_config.TextColumn("Nota Fiscal",    width=105),
     "numped":          st.column_config.TextColumn("Pedido",         width=100),
     "nomecliente":     st.column_config.TextColumn("Cliente",        width=200),
@@ -1810,13 +1828,14 @@ elif pagina == "🗺️  Roteirização":
 
         # ── Tabela nativa (st.dataframe) + painel de roteirização ───────────
         PEND_COLS = [c for c in [
-            "placa_road", "motivo", "observacao",
+            "data_registro", "placa_road", "motivo", "observacao",
             "numnota", "numped", "nomecliente", "dt_liberado",
             "nomevend", "nomesup", "pesobrutotot", "vltotal",
             "praca", "numcarregamento", "destino",
         ] if c in df_p.columns]
 
         PEND_CONFIG = {
+            "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
             "numnota":         st.column_config.TextColumn("Nota Fiscal",   width=110),
             "numped":          st.column_config.TextColumn("Pedido",        width=100),
             "nomecliente":     st.column_config.TextColumn("Cliente",       width=210),
@@ -1970,11 +1989,12 @@ elif pagina == "🗺️  Roteirização":
         for _c in ["placa_veiculo", "dt_saida"]:
             if _c not in df_r.columns:
                 df_r[_c] = ""
-        _rot_front = ["placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento", "dt_saida"]
+        _rot_front = ["data_registro", "placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento", "dt_saida"]
         _rot_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "motivo", "observacao"] if c not in _rot_front]
         ROT_COLS   = [c for c in _rot_front + _rot_rest if c in df_r.columns]
         ROT_CONFIG = {
             **STD_CONFIG,
+            "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
             "placa_veiculo":   st.column_config.TextColumn("Nova Placa",    width=120),
             "numcarregamento": st.column_config.TextColumn("Carregamento",  width=115),
             "dt_saida":        st.column_config.TextColumn("Dt. Saída",     width=110),
@@ -2313,11 +2333,12 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    _hist_front = ["placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento"]
+    _hist_front = ["data_registro", "placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento"]
     _hist_rest  = [c for c in STD_COLS + ["dt_saida", "status", "motivo", "observacao"] if c not in _hist_front]
     HIST_COLS = [c for c in _hist_front + _hist_rest if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
+        "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
         "placa_veiculo":   st.column_config.TextColumn("Nova Placa",   width=110),
         "motivo":          st.column_config.TextColumn("Motivo",       width=220),
         "observacao":      st.column_config.TextColumn("Observação",   width=220),
