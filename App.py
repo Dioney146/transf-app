@@ -2187,70 +2187,39 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
             '<div class="chart-head">'
-            '<span class="chart-title" style="color:#34d399">🚛 Notas Fiscais por Veículo · Qtd</span>'
+            '<span class="chart-title" style="color:#ef4444">📋 Notas Fiscais por Motivo · Qtd</span>'
             '</div>',
             unsafe_allow_html=True,
         )
         st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
-        _rows_veic2 = []
-        if not df.empty and "placa_road" in df.columns:
-            _df_veic2 = df[df["placa_road"].notna() & (df["placa_road"].astype(str).str.strip() != "")]
-            if not _df_veic2.empty:
-                _top_veic2 = _df_veic2.groupby("placa_road")["numnota"].count().sort_values(ascending=False).head(7).reset_index()
-                _top_veic2.columns = ["placa", "qtd"]
-                _rows_veic2 = _top_veic2.to_dict("records")
+        _rows_motivo = []
+        if not df.empty and "motivo" in df.columns:
+            _df_mot = df[
+                df["motivo"].notna() &
+                (df["motivo"].astype(str).str.strip() != "") &
+                (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
+            ]
+            if not _df_mot.empty:
+                _top_mot = (
+                    _df_mot.groupby("motivo")["numnota"]
+                    .count()
+                    .sort_values(ascending=False)
+                    .reset_index()
+                )
+                _top_mot.columns = ["motivo", "qtd"]
+                _rows_motivo = _top_mot.to_dict("records")
+
         st.markdown(
-            _svg_bar_horiz(
-                _rows_veic2,
-                label_key="placa", val_key="qtd",
-                bar_color_1="#34d399", bar_color_2="#10b981",
-                fmt_val=lambda v: f"{int(v)} NFs",
+            _svg_col_line(
+                _rows_motivo,
+                label_key="motivo", val_key="qtd", qtd_key=None,
+                bar_color_1="#ef4444", bar_color_2="#b91c1c",
+                fmt_val=lambda v: f"{int(v)}",
             ),
             unsafe_allow_html=True,
         )
         st.markdown("</div></div>", unsafe_allow_html=True)
-
-    st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
-
-    # ── Gráfico: Notas por Motivo (barras horizontais) ───────────────────────
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="chart-head">'
-        '<span class="chart-title" style="color:#ef4444">📋 Notas Fiscais por Motivo · Qtd</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
-
-    _rows_motivo = []
-    if not df.empty and "motivo" in df.columns:
-        _df_mot = df[
-            df["motivo"].notna() &
-            (df["motivo"].astype(str).str.strip() != "") &
-            (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
-        ]
-        if not _df_mot.empty:
-            _top_mot = (
-                _df_mot.groupby("motivo")["numnota"]
-                .count()
-                .sort_values(ascending=False)
-                .reset_index()
-            )
-            _top_mot.columns = ["motivo", "qtd"]
-            _rows_motivo = _top_mot.to_dict("records")
-
-    st.markdown(
-        _svg_bar_horiz(
-            _rows_motivo,
-            label_key="motivo", val_key="qtd",
-            bar_color_1="#ef4444", bar_color_2="#b91c1c",
-            fmt_val=lambda v: f"{int(v)} NFs",
-        ),
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
