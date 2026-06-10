@@ -1867,104 +1867,139 @@ elif pagina == "🗺️  Roteirização":
                 column_config={k: v for k, v in PEND_CONFIG.items() if k in df_p_display.columns},
             )
 
-            st.markdown('<div class="sec-div" style="margin-top:.5rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar nota</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-div" style="margin-top:.5rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar notas</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
-            # Selectbox para escolher qual nota roteirizar
-            notas_opcoes = df_p_sorted["numnota"].astype(str).tolist()
-            notas_label  = []
-            for _, row in df_p_sorted.iterrows():
-                _cli   = str(row.get("nomecliente", ""))[:30]
-                _placa = str(row.get("placa_road", "")).strip()
-                _obs   = str(row.get("observacao", "")).strip()
-                try:
-                    _peso = f"{float(row.get('pesobrutotot', 0)):,.0f} kg".replace(",", ".")
-                except Exception:
-                    _peso = ""
-                try:
-                    _vl = float(row.get("vltotal", 0))
-                    _valor = f"R$ {_vl:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-                except Exception:
-                    _valor = ""
-                _parts = [_cli]
-                if _placa and _placa not in ("", "nan", "None"):
-                    _parts.append(f"Placa: {_placa}")
-                if _obs and _obs not in ("", "nan", "None"):
-                    _parts.append(f"Obs: {_obs}")
-                if _peso:
-                    _parts.append(f"Peso: {_peso}")
-                if _valor:
-                    _parts.append(f"Valor: {_valor}")
-                notas_label.append(f"{row['numnota']} — " + "  |  ".join(_parts))
-            sel_idx = st.selectbox(
-                "Selecione a nota para roteirizar",
-                options=range(len(notas_label)),
-                format_func=lambda i: notas_label[i],
-                key="sel_nota_rot",
+            # ── Monta tabela de seleção com checkbox ─────────────────────────
+            df_sel = df_p_sorted[["numnota", "nomecliente", "praca", "pesobrutotot", "vltotal", "id"]].copy()
+            df_sel.insert(0, "✓", False)
+            df_sel = df_sel.rename(columns={
+                "numnota":      "Nota",
+                "nomecliente":  "Cliente",
+                "praca":        "Praça",
+                "pesobrutotot": "Peso (kg)",
+                "vltotal":      "Valor (R$)",
+                "id":           "_id",
+            })
+
+            df_edited = st.data_editor(
+                df_sel,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "✓":         st.column_config.CheckboxColumn("✓",           width=40),
+                    "Nota":      st.column_config.TextColumn("Nota Fiscal",     width=110),
+                    "Cliente":   st.column_config.TextColumn("Cliente",         width=220),
+                    "Praça":     st.column_config.TextColumn("Praça",           width=130),
+                    "Peso (kg)": st.column_config.NumberColumn("Peso (kg)",     format="%.0f kg", width=90),
+                    "Valor (R$)":st.column_config.NumberColumn("Valor (R$)",    format="R$ %.2f", width=120),
+                    "_id":       st.column_config.TextColumn("ID",              width=50),
+                },
+                disabled=["Nota","Cliente","Praça","Peso (kg)","Valor (R$)","_id"],
+                key="rot_editor",
             )
 
-            row_r   = df_p_sorted.iloc[sel_idx]
-            rid     = str(row_r["id"])
+            selecionadas = df_edited[df_edited["✓"] == True]
+            n_sel = len(selecionadas)
 
+            # ── Resumo das selecionadas ───────────────────────────────────────
+            if n_sel > 0:
+                _peso_sel  = selecionadas["Peso (kg)"].sum()
+                _valor_sel = selecionadas["Valor (R$)"].sum()
+                _valor_fmt = f"R$ {_valor_sel:,.2f}".replace(",","X").replace(".",",").replace("X",".")
+                _peso_fmt  = f"{_peso_sel:,.0f} kg".replace(",",".")
+                st.markdown(f"""
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.5rem 0 .75rem">
+                  <div style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#93c5fd">
+                    <span style="font-weight:700;font-size:1rem;color:#f0f6ff">{n_sel}</span> &nbsp;nota(s) selecionada(s)
+                  </div>
+                  <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#6ee7b7">
+                    ⚖️ <span style="font-weight:700">{_peso_fmt}</span>
+                  </div>
+                  <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#fde68a">
+                    💰 <span style="font-weight:700">{_valor_fmt}</span>
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="al-i" style="margin:.4rem 0 .75rem">☝️ Marque uma ou mais notas na tabela acima para roteirizar em lote.</div>', unsafe_allow_html=True)
+
+            # ── Placa + Data de saída compartilhadas ─────────────────────────
             c_nova_pl, c_dt_saida, c_btn = st.columns([1.4, 1.1, 0.8])
             with c_nova_pl:
-                nova_pl_i = st.text_input(
-                    "Nova Placa",
-                    placeholder="Ex: ABC-1234",
-                    key=f"pl_{rid}",
-                )
+                nova_pl_i = st.text_input("Nova Placa", placeholder="Ex: ABC-1234", key="pl_lote")
             with c_dt_saida:
-                dt_saida_i = st.date_input(
-                    "Data de Saída",
-                    value=None,
-                    key=f"dt_{rid}",
-                    format="DD/MM/YYYY",
-                )
+                dt_saida_i = st.date_input("Data de Saída", value=None, key="dt_lote", format="DD/MM/YYYY")
             with c_btn:
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("✅ Roteirizar", key=f"btn_{rid}", use_container_width=True):
-                    if not nova_pl_i.strip():
-                        st.markdown('<div class="al-e">⚠️ Informe a placa!</div>', unsafe_allow_html=True)
-                    elif not dt_saida_i:
-                        st.markdown('<div class="al-e">⚠️ Informe a data de saída!</div>', unsafe_allow_html=True)
-                    else:
-                        ws_direct = get_sheet("transferencias")
-                        data_direct = ws_direct.get_all_values()
-                        hdr_direct = [str(c).strip() for c in data_direct[0]]
-                        needed = ["placa_veiculo", "dt_saida", "dt_roteirizacao", "status"]
-                        import string as _string
-                        def _col_letter(n):
-                            res = ""
-                            while n > 0:
-                                n, r2 = divmod(n - 1, 26)
-                                res = _string.ascii_uppercase[r2] + res
-                            return res
-                        for _nc in needed:
-                            if _nc not in hdr_direct:
-                                hdr_direct.append(_nc)
-                                ws_direct.update_cell(1, len(hdr_direct), _nc)
-                        col_map = {c: i+1 for i, c in enumerate(hdr_direct)}
-                        target_row = None
+                _btn_label = f"✅ Roteirizar {n_sel} nota(s)" if n_sel > 0 else "✅ Roteirizar"
+                roteirizar_btn = st.button(_btn_label, key="btn_lote", use_container_width=True, type="primary")
+
+            if roteirizar_btn:
+                if n_sel == 0:
+                    st.markdown('<div class="al-e">⚠️ Selecione ao menos uma nota na tabela!</div>', unsafe_allow_html=True)
+                elif not nova_pl_i.strip():
+                    st.markdown('<div class="al-e">⚠️ Informe a nova placa!</div>', unsafe_allow_html=True)
+                elif not dt_saida_i:
+                    st.markdown('<div class="al-e">⚠️ Informe a data de saída!</div>', unsafe_allow_html=True)
+                else:
+                    import string as _string
+                    def _col_letter(n):
+                        res = ""
+                        while n > 0:
+                            n, r2 = divmod(n - 1, 26)
+                            res = _string.ascii_uppercase[r2] + res
+                        return res
+
+                    ws_direct   = get_sheet("transferencias")
+                    data_direct = ws_direct.get_all_values()
+                    hdr_direct  = [str(c).strip() for c in data_direct[0]]
+                    needed = ["placa_veiculo", "dt_saida", "dt_roteirizacao", "status"]
+                    for _nc in needed:
+                        if _nc not in hdr_direct:
+                            hdr_direct.append(_nc)
+                            ws_direct.update_cell(1, len(hdr_direct), _nc)
+                    col_map = {c: i+1 for i, c in enumerate(hdr_direct)}
+
+                    ids_para_roteirizar = selecionadas["_id"].astype(str).tolist()
+                    to_write = {
+                        "placa_veiculo":   nova_pl_i.strip().upper(),
+                        "dt_saida":        dt_saida_i.isoformat(),
+                        "dt_roteirizacao": date.today().strftime("%d/%m/%Y"),
+                        "status":          "roteirizado",
+                    }
+
+                    _ok = 0
+                    _erros = []
+                    _prog = st.progress(0, text="Roteirizando...")
+                    for _idx, _rid in enumerate(ids_para_roteirizar):
+                        _target_row = None
                         for _i, _row in enumerate(data_direct[1:], start=2):
                             _row_pad = _row + [""] * (len(hdr_direct) - len(_row))
-                            if _row_pad[col_map["id"]-1].strip() == rid:
-                                target_row = _i
+                            if _row_pad[col_map["id"]-1].strip() == str(_rid):
+                                _target_row = _i
                                 break
-                        if target_row:
-                            to_write = {
-                                "placa_veiculo":   nova_pl_i.strip().upper(),
-                                "dt_saida":        dt_saida_i.isoformat(),
-                                "dt_roteirizacao": date.today().strftime("%d/%m/%Y"),
-                                "status":          "roteirizado",
-                            }
+                        if _target_row:
                             for _col, _val in to_write.items():
-                                _cn = col_map[_col]
-                                _ref = f"{_col_letter(_cn)}{target_row}"
+                                _cn  = col_map[_col]
+                                _ref = f"{_col_letter(_cn)}{_target_row}"
                                 ws_direct.update(_ref, [[_val]], value_input_option="USER_ENTERED")
-                            load_transferencias.clear()
-                            st.success(f"✅ Nota {row_r['numnota']} roteirizada! Placa: {nova_pl_i.strip().upper()}")
-                            st.rerun()
+                            _ok += 1
                         else:
-                            st.error(f"ID {rid} não encontrado na planilha.")
+                            _erros.append(_rid)
+                        _prog.progress((_idx + 1) / len(ids_para_roteirizar), text=f"Roteirizando... {_idx+1}/{len(ids_para_roteirizar)}")
+
+                    _prog.empty()
+                    load_transferencias.clear()
+                    if _ok:
+                        notas_str = ", ".join(
+                            selecionadas[selecionadas["_id"].astype(str).isin(ids_para_roteirizar)]["Nota"].astype(str).tolist()
+                        )
+                        st.success(f"✅ {_ok} nota(s) roteirizada(s) com placa {nova_pl_i.strip().upper()}! Notas: {notas_str}")
+                    if _erros:
+                        st.error(f"⚠️ {len(_erros)} ID(s) não encontrado(s): {', '.join(_erros)}")
+                    st.rerun()
+
+
 
     st.markdown("</div>", unsafe_allow_html=True)
 
