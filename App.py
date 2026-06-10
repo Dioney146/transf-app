@@ -2212,6 +2212,83 @@ elif pagina == "📋  Histórico":
         st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
+
+    # ── Gráfico: Notas por Motivo ─────────────────────────────────────────────
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="chart-head">'
+        '<span class="chart-title" style="color:#a78bfa">📋 Notas Fiscais por Motivo · Qtd</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+    _rows_motivo = []
+    if not df.empty and "motivo" in df.columns:
+        _df_mot = df[
+            df["motivo"].notna() &
+            (df["motivo"].astype(str).str.strip() != "") &
+            (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
+        ]
+        if not _df_mot.empty:
+            _top_mot = (
+                _df_mot.groupby("motivo")["numnota"]
+                .count()
+                .sort_values(ascending=False)
+                .reset_index()
+            )
+            _top_mot.columns = ["motivo", "qtd"]
+            _rows_motivo = _top_mot.to_dict("records")
+
+    if _rows_motivo:
+        # SVG de barras horizontais com largura total — labels longos ficam melhores na horizontal
+        _n_mot   = len(_rows_motivo)
+        _LABEL_W = 185
+        _BAR_H   = 11
+        _ROW_H   = 30
+        _VAL_W   = 42
+        _SVG_W   = 700
+        _SVG_H   = _n_mot * _ROW_H + 12
+        _BAR_A   = _SVG_W - _LABEL_W - _VAL_W - 8
+        _max_v   = max(r["qtd"] for r in _rows_motivo) or 1
+
+        _els = (
+            '<defs><linearGradient id="gmot" x1="0" y1="0" x2="1" y2="0">'
+            '<stop offset="0%" stop-color="#a78bfa"/>'
+            '<stop offset="100%" stop-color="#7c3aed"/>'
+            '</linearGradient></defs>'
+        )
+        for _i, _r in enumerate(_rows_motivo):
+            _lbl  = str(_r["motivo"])
+            _short = (_lbl[:26] + "…") if len(_lbl) > 27 else _lbl
+            _val  = _r["qtd"]
+            _bw   = max(4, int(_val / _max_v * _BAR_A))
+            _ymid = _i * _ROW_H + _ROW_H / 2 + 6
+            _by   = _ymid - _BAR_H / 2
+            # fundo
+            _els += f'<rect x="{_LABEL_W}" y="{_by:.1f}" width="{_BAR_A}" height="{_BAR_H}" rx="3" fill="rgba(255,255,255,0.05)"/>'
+            # barra colorida
+            _els += f'<rect x="{_LABEL_W}" y="{_by:.1f}" width="{_bw}" height="{_BAR_H}" rx="3" fill="url(#gmot)" opacity="0.9"/>'
+            # label esquerdo
+            _els += f'<text x="{_LABEL_W - 6}" y="{_ymid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="#7d95b5">{_short}</text>'
+            # valor direito
+            _els += f'<text x="{_LABEL_W + _BAR_A + 5}" y="{_ymid:.1f}" dominant-baseline="middle" font-size="9" font-weight="700" fill="#a78bfa">{int(_val)} NFs</text>'
+
+        _svg_mot = (
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W} {_SVG_H}" '
+            f'style="width:100%;height:auto;display:block">{_els}</svg>'
+        )
+        st.markdown(_svg_mot, unsafe_allow_html=True)
+    else:
+        st.markdown(
+            '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1.5rem 0">'
+            'Nenhum motivo registrado no período.</p>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+    st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
     # ── Linha 1 de filtros: busca + excel ────────────────────────────────────
     fst  = "Todos"
