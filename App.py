@@ -1065,7 +1065,7 @@ input[type="date"] {{ color-scheme: dark !important; }}
 
 /* ── Chart container ── */
 .chart-wrap {{
-  background: var(--glass);
+  background: rgba(30,45,65,0.72);
   backdrop-filter: blur(20px);
   border: 1px solid var(--bdr);
   border-radius: 14px;
@@ -1077,7 +1077,7 @@ input[type="date"] {{ color-scheme: dark !important; }}
   padding: .9rem 1.35rem;
   border-bottom: 1px solid var(--bdr);
   display: flex; align-items: center; justify-content: space-between;
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
 }}
 .chart-title {{
   font-size: .68rem; font-weight: 800;
