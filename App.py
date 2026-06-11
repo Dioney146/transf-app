@@ -1364,7 +1364,7 @@ _top_veiculo = pd.DataFrame()
 if not _df_all_dash.empty and "placa_road" in _df_all_dash.columns:
     _df_veic = _df_all_dash[_df_all_dash["placa_road"].notna() & (_df_all_dash["placa_road"].astype(str).str.strip() != "")]
     if not _df_veic.empty:
-        _top_veiculo = _df_veic.groupby("placa_road")["numnota"].count().sort_values(ascending=False).head(7).reset_index()
+        _top_veiculo = _df_veic.groupby("placa_road")["numnota"].count().sort_values(ascending=False).reset_index()
         _top_veiculo.columns = ["placa", "qtd"]
 
 # Top vendedores por qtd de NFs
@@ -1441,7 +1441,8 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
     if not rows:
         return '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
-    SVG_W    = 560
+    MIN_SLOT = 60   # largura mínima por coluna para não ficar espremido
+    SVG_W    = max(560, n * MIN_SLOT)
     TOP_PAD  = 56   # espaço acima das barras (rótulos de valor)
     BAR_AREA = 160  # altura da área de barras
     BOT_PAD  = 30   # espaço abaixo para rótulos de nome
@@ -2163,7 +2164,7 @@ elif pagina == "📋  Histórico":
                 _veic_val2 = _df_veic2.groupby("placa_road")["vltotal"].sum().reset_index()
                 _veic_val2.columns = ["veiculo", "valor"]
                 _tv2 = _veic_qtd2.merge(_veic_val2, on="veiculo", how="left").fillna(0)
-                _tv2 = _tv2.sort_values("valor", ascending=False).head(7)
+                _tv2 = _tv2.sort_values("valor", ascending=False)
                 _rows_vend2 = _tv2.to_dict("records")
 
         def _fmt_brl(v):
