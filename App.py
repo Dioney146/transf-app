@@ -2348,7 +2348,7 @@ elif pagina == "📋  Histórico":
         _placas_opts = ["Todos"] + sorted(df["placa_veiculo"].dropna().unique().tolist()) if not df.empty and "placa_veiculo" in df.columns else ["Todos"]
         filtro_nova_placa = st.selectbox("Nova Placa", _placas_opts, key="h_nova_placa", label_visibility="visible")
 
-    df_h = df.copy() if not df.empty else pd.DataFrame(columns=TCOLS)
+    df_h = df_all.copy() if not df_all.empty else pd.DataFrame(columns=TCOLS)
     if not df_h.empty:
         if fst != "Todos":
             df_h = df_h[df_h["status"] == fst]
