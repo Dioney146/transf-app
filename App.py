@@ -1912,14 +1912,18 @@ elif pagina == "🗺️  Roteirização":
 
             # ── Resumo das selecionadas ───────────────────────────────────────
             if n_sel > 0:
-                _peso_sel  = selecionadas["Peso (kg)"].sum()
-                _valor_sel = selecionadas["Valor (R$)"].sum()
-                _valor_fmt = f"R$ {_valor_sel:,.2f}".replace(",","X").replace(".",",").replace("X",".")
-                _peso_fmt  = f"{_peso_sel:,.0f} kg".replace(",",".")
+                _peso_sel    = selecionadas["Peso (kg)"].sum()
+                _valor_sel   = selecionadas["Valor (R$)"].sum()
+                _n_clientes  = selecionadas["Cliente"].nunique()
+                _valor_fmt   = f"R$ {_valor_sel:,.2f}".replace(",","X").replace(".",",").replace("X",".")
+                _peso_fmt    = f"{_peso_sel:,.0f} kg".replace(",",".")
                 st.markdown(f"""
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.5rem 0 .75rem">
                   <div style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#93c5fd">
                     <span style="font-weight:700;font-size:1rem;color:#f0f6ff">{n_sel}</span> &nbsp;nota(s) selecionada(s)
+                  </div>
+                  <div style="background:rgba(167,139,250,0.10);border:1px solid rgba(167,139,250,0.30);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#c4b5fd">
+                    👤 <span style="font-weight:700;font-size:1rem;color:#f0f6ff">{_n_clientes}</span> &nbsp;cliente(s)
                   </div>
                   <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#6ee7b7">
                     ⚖️ <span style="font-weight:700">{_peso_fmt}</span>
