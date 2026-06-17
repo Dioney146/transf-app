@@ -40,7 +40,7 @@ def get_sheet(name):
         return ss.add_worksheet(title=name, rows=5000, cols=25)
 
 TCOLS = [
-    "id", "dt_transferencia", "numped", "numnota", "nomecliente",
+    "id", "dt_transferencia", "numped", "numnota", "codcliente", "nomecliente",
     "dt_liberado", "nomevend", "nomesup", "pesobrutotot", "vltotal",
     "praca", "numcarregamento", "destino", "placa_road",
     "placa_veiculo", "dt_saida", "dt_roteirizacao",
@@ -132,6 +132,7 @@ def append_transf(row):
     row["criado_em"] = datetime.now(ZoneInfo("America/Manaus")).strftime("%d/%m/%Y %H:%M:%S")
     row.setdefault("status", "pendente")
     row.setdefault("motivo", "")
+    row.setdefault("codcliente", "")
     row.setdefault("placa_veiculo", "")
     row.setdefault("placa_road", "")
     row.setdefault("dt_roteirizacao", "")
@@ -353,9 +354,18 @@ def buscar_nota(numnota):
             cli_val = v
             break
 
+    cod_cli_cols = [c for c in df.columns if ("COD" in c and "CLI" in c) or c in ("CODCLI", "COD_CLI", "CODIGO CLIENTE", "CODIGO_CLIENTE")]
+    cod_cli_val = ""
+    for cc in cod_cli_cols:
+        v = str(r.get(cc, "")).strip()
+        if v and v not in ("nan", "None", "", "0.0"):
+            cod_cli_val = v[:-2] if v.endswith(".0") else v
+            break
+
     return {
         "numped":          safe(ped_col or "PEDIDO"),
         "numnota":         safe(nf_col),
+        "codcliente":      cod_cli_val,
         "nomecliente":     cli_val or safe("CLIENTE"),
         "dt_liberado":     safe(dtlib_col or "DATA LIBERADO", "DATA LIBERADO", "DT LIBERADO"),
         "nomevend":        vend_val or safe("VENDEDOR"),
@@ -1307,7 +1317,7 @@ else:
 # ─── Colunas padrão de exibição ───────────────────────────────────────────────
 STD_COLS = [
     "data_registro", "placa_road", "motivo", "observacao",
-    "numnota", "numped", "nomecliente", "dt_liberado",
+    "numnota", "numped", "codcliente", "nomecliente", "dt_liberado",
     "nomevend", "nomesup", "pesobrutotot", "vltotal",
     "praca", "numcarregamento", "destino",
 ]
@@ -1315,6 +1325,7 @@ STD_CONFIG = {
     "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
     "numnota":         st.column_config.TextColumn("Nota Fiscal",    width=105),
     "numped":          st.column_config.TextColumn("Pedido",         width=100),
+    "codcliente":      st.column_config.TextColumn("Cód. Cliente",   width=110),
     "nomecliente":     st.column_config.TextColumn("Cliente",        width=200),
     "dt_liberado":     st.column_config.TextColumn("Dt. Liberado",   width=105),
     "nomevend":        st.column_config.TextColumn("Vendedor",       width=160),
@@ -1619,18 +1630,21 @@ if pagina == "📝  Registro":
 
             r2a, r2b, r2c = st.columns(3)
             with r2a: st.text_input("Cliente",       value=cur["nomecliente"],             disabled=True, key="d_cli")
-            with r2b: st.text_input("Data Liberado", value=cur["dt_liberado"]    or "—", disabled=True, key="d_dtl")
-            with r2c: st.text_input("Vendedor",      value=cur["nomevend"]        or "—", disabled=True, key="d_vnd")
+            with r2b: st.text_input("Cód. Cliente",  value=cur.get("codcliente", "") or "—", disabled=True, key="d_codcli")
+            with r2c: st.text_input("Data Liberado", value=cur["dt_liberado"]    or "—", disabled=True, key="d_dtl")
 
             r3a, r3b, r3c = st.columns(3)
-            with r3a: st.text_input("Supervisor",    value=cur["nomesup"]         or "—", disabled=True, key="d_sup")
-            with r3b: st.text_input("Praça",         value=cur["praca"]           or "—", disabled=True, key="d_prc")
-            with r3c: st.text_input("Destino",       value=cur["destino"]         or "—", disabled=True, key="d_dst")
+            with r3a: st.text_input("Vendedor",      value=cur["nomevend"]        or "—", disabled=True, key="d_vnd")
+            with r3b: st.text_input("Supervisor",    value=cur["nomesup"]         or "—", disabled=True, key="d_sup")
+            with r3c: st.text_input("Praça",         value=cur["praca"]           or "—", disabled=True, key="d_prc")
 
             r4a, r4b, r4c = st.columns(3)
-            with r4a: st.text_input("Peso (kg)", value=f"{cur['pesobrutotot']:.3f}".replace(".", ","), disabled=True, key="d_pes")
-            with r4b: st.text_input("Valor Total",  value=br(cur["vltotal"]),              disabled=True, key="d_vl")
-            with r4c:
+            with r4a: st.text_input("Destino",       value=cur["destino"]         or "—", disabled=True, key="d_dst")
+            with r4b: st.text_input("Peso (kg)", value=f"{cur['pesobrutotot']:.3f}".replace(".", ","), disabled=True, key="d_pes")
+            with r4c: st.text_input("Valor Total",  value=br(cur["vltotal"]),              disabled=True, key="d_vl")
+
+            r5a, r5b, r5c = st.columns(3)
+            with r5a:
                 placa_antiga = cur.get("placa_road", "") or "—"
                 st.text_input("Placa Anterior",       value=placa_antiga,                  disabled=True, key="d_pl")
 
@@ -1710,6 +1724,7 @@ if pagina == "📝  Registro":
                                 "dt_transferencia": dt_s,
                                 "numped":          cur["numped"],
                                 "numnota":         cur["numnota"],
+                                "codcliente":      cur.get("codcliente", ""),
                                 "nomecliente":     cur["nomecliente"],
                                 "dt_liberado":     cur["dt_liberado"],
                                 "nomevend":        cur["nomevend"],
@@ -1835,7 +1850,7 @@ elif pagina == "🗺️  Roteirização":
         # ── Tabela nativa (st.dataframe) + painel de roteirização ───────────
         PEND_COLS = [c for c in [
             "data_registro", "placa_road", "motivo", "observacao",
-            "numnota", "numped", "nomecliente", "dt_liberado",
+            "numnota", "numped", "codcliente", "nomecliente", "dt_liberado",
             "nomevend", "nomesup", "pesobrutotot", "vltotal",
             "praca", "numcarregamento", "destino",
         ] if c in df_p.columns]
@@ -1844,6 +1859,7 @@ elif pagina == "🗺️  Roteirização":
             "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
             "numnota":         st.column_config.TextColumn("Nota Fiscal",   width=110),
             "numped":          st.column_config.TextColumn("Pedido",        width=100),
+            "codcliente":      st.column_config.TextColumn("Cód. Cliente",  width=110),
             "nomecliente":     st.column_config.TextColumn("Cliente",       width=210),
             "dt_liberado":     st.column_config.TextColumn("Dt. Liberado",  width=110),
             "nomevend":        st.column_config.TextColumn("Vendedor",      width=160),
