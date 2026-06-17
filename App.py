@@ -1206,6 +1206,9 @@ input[type="date"] {{ color-scheme: dark !important; }}
 .card[style*="border-top:3px solid #10b981"] {{
   box-shadow: var(--shadow-md), 0 -2px 20px rgba(52,211,153,0.06) !important;
 }}
+.card[style*="border-top:3px solid #3b82f6"] {{
+  box-shadow: var(--shadow-md), 0 -2px 20px rgba(59,130,246,0.06) !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -2094,6 +2097,65 @@ elif pagina == "🗺️  Roteirização":
                     })
                     st.success("↩️ Devolvida para pendentes.")
                     st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div class="card" style="border-top:3px solid #3b82f6">', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="card-head">
+      <span class="card-title" style="color:#60a5fa">📊 Relatório por Placa</span>
+      <span class="card-count">{len(rote)} · {periodo_txt}</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if rote.empty:
+        st.markdown(f'<div style="padding:1.25rem"><div class="al-i">Nenhum dado roteirizado em {periodo_txt}.</div></div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="card-body" style="padding-bottom:.5rem">', unsafe_allow_html=True)
+
+        _df_rep = rote.copy()
+        _df_rep["placa_veiculo"] = _df_rep["placa_veiculo"].replace("", "—").fillna("—")
+        _df_rep["nomecliente"]   = _df_rep["nomecliente"].fillna("")
+
+        df_placa = (
+            _df_rep.groupby(["data_registro", "placa_veiculo"])
+            .agg(
+                qtd_clientes=("nomecliente", "nunique"),
+                peso=("pesobrutotot", "sum"),
+                valor=("vltotal", "sum"),
+            )
+            .reset_index()
+        )
+        df_placa["_ord"] = df_placa["data_registro"].apply(to_iso)
+        df_placa = (
+            df_placa.sort_values(["_ord", "placa_veiculo"], ascending=[False, True])
+            .drop(columns="_ord")
+            .reset_index(drop=True)
+        )
+
+        PLACA_CONFIG = {
+            "data_registro": st.column_config.TextColumn("Data", width=110),
+            "placa_veiculo": st.column_config.TextColumn("Placa", width=120),
+            "qtd_clientes":  st.column_config.NumberColumn("Qtd. Clientes", format="%d", width=130),
+            "peso":          st.column_config.NumberColumn("Peso (kg)", format="%.3f", width=120),
+            "valor":         st.column_config.NumberColumn("Valor (R$)", format="R$ %.2f", width=130),
+        }
+
+        st.dataframe(
+            df_placa,
+            use_container_width=True,
+            hide_index=True,
+            column_config={k: v for k, v in PLACA_CONFIG.items() if k in df_placa.columns},
+        )
+
+        _tot_placas    = df_placa["placa_veiculo"].nunique()
+        _tot_clientes  = _df_rep["nomecliente"].nunique()
+        _tot_peso_fmt  = f"{df_placa['peso'].sum():,.3f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        _tot_valor_fmt = br(df_placa["valor"].sum())
+        st.caption(f"🚚 {_tot_placas} placa(s) · 👤 {_tot_clientes} cliente(s) único(s) · ⚖️ {_tot_peso_fmt} kg · 💰 {_tot_valor_fmt}")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
