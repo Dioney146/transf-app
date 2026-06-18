@@ -346,14 +346,7 @@ def buscar_nota(numnota):
             dest_val = v
             break
 
-    cli_cols = [c for c in df.columns if "CLIEN" in c and "COD" not in c]
-    cli_val = ""
-    for clc in cli_cols:
-        v = str(r.get(clc, "")).strip()
-        if v and v not in ("nan", "None", ""):
-            cli_val = v
-            break
-
+    # Código do cliente: colunas que tenham COD e CLI (ex: CODCLIENTE, COD_CLI, etc.)
     cod_cli_cols = [c for c in df.columns if ("COD" in c and "CLI" in c) or c in ("CODCLI", "COD_CLI", "CODIGO CLIENTE", "CODIGO_CLIENTE")]
     cod_cli_val = ""
     for cc in cod_cli_cols:
@@ -362,11 +355,22 @@ def buscar_nota(numnota):
             cod_cli_val = v[:-2] if v.endswith(".0") else v
             break
 
+    # Nome do cliente: prioriza NOMECLIENTE, depois colunas com CLIEN mas SEM COD
+    nome_cli_priority = [c for c in df.columns if c in ("NOMECLIENTE", "NOME CLIENTE", "NOME_CLIENTE")]
+    nome_cli_fallback = [c for c in df.columns if "CLIEN" in c and "COD" not in c and c not in nome_cli_priority]
+    cli_cols = nome_cli_priority + nome_cli_fallback
+    cli_val = ""
+    for clc in cli_cols:
+        v = str(r.get(clc, "")).strip()
+        if v and v not in ("nan", "None", ""):
+            cli_val = v
+            break
+
     return {
         "numped":          safe(ped_col or "PEDIDO"),
         "numnota":         safe(nf_col),
         "codcliente":      cod_cli_val,
-        "nomecliente":     cli_val or safe("CLIENTE"),
+        "nomecliente":     cli_val or safe("NOMECLIENTE", "NOME CLIENTE", "NOME_CLIENTE", "CLIENTE"),
         "dt_liberado":     safe(dtlib_col or "DATA LIBERADO", "DATA LIBERADO", "DT LIBERADO"),
         "nomevend":        vend_val or safe("VENDEDOR"),
         "nomesup":         sup_val or safe("SUPERVISOR"),
