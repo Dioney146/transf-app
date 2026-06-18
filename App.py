@@ -346,7 +346,7 @@ def buscar_nota(numnota):
             dest_val = v
             break
 
-    cli_cols = [c for c in df.columns if "CLIEN" in c]
+    cli_cols = [c for c in df.columns if "CLIEN" in c and "COD" not in c]
     cli_val = ""
     for clc in cli_cols:
         v = str(r.get(clc, "")).strip()
