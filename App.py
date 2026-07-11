@@ -1589,7 +1589,7 @@ if pagina == "📝  Registro":
             )
         with cb:
             st.markdown("<br>", unsafe_allow_html=True)
-            buscar_btn = st.button("🔍 Buscar", width="stretch", key="buscar_btn")
+            buscar_btn = st.button("🔍 Buscar", use_container_width=True, key="buscar_btn")
 
         st.markdown("</div></div>", unsafe_allow_html=True)
 
