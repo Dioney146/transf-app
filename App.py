@@ -496,6 +496,18 @@ st.markdown(f"""
   --shadow-md:    0 4px 16px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
   --shadow-lg:    0 12px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35);
   --shadow-acc:   0 0 24px rgba(76,140,245,0.20);
+
+  /* ── Escala de espaçamento premium (ritmo consistente) ── */
+  --space-1:  6px;
+  --space-2:  10px;
+  --space-3:  16px;
+  --space-4:  24px;
+  --space-5:  32px;
+  --space-6:  48px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --content-max: 1400px;
 }}
 
 *, *::before, *::after {{ box-sizing: border-box; }}
@@ -555,9 +567,11 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  padding: 18px 40px;
+  gap: 24px;
+  padding: 26px 48px;
   width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
 }}
 .nav-logo {{
   height: 64px;
@@ -651,35 +665,40 @@ div[data-testid="stRadio"] > div > label > div:first-child {{
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--bdr);
-  padding: 0.55rem 2rem;
+  padding: 1rem 2rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
+  gap: 1.25rem;
+}}
+.filter-bar > div {{
+  width: 100%;
+  max-width: var(--content-max);
 }}
 
 /* ── Page body ── */
-.page-body {{ padding: 1rem 1.5rem 2rem; max-width: 1440px; margin: 0 auto; }}
+.page-body {{ padding: var(--space-5) var(--space-4) var(--space-6); max-width: var(--content-max); margin: 0 auto; }}
 
 /* ── Page title ── */
-.page-title-block {{ margin-bottom: 1.75rem; }}
+.page-title-block {{ margin-bottom: var(--space-5); }}
 .page-eyebrow {{
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.60rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.20em;
   color: var(--acc);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   opacity: 0.85;
 }}
 .page-title {{
-  font-size: 1.65rem;
+  font-size: 2.05rem;
   font-weight: 800;
   color: var(--txt);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
   line-height: 1.15;
 }}
-.page-sub {{ font-size: 0.75rem; color: var(--txt2); margin-top: 5px; line-height: 1.5; }}
+.page-sub {{ font-size: 0.82rem; color: var(--txt2); margin-top: 7px; line-height: 1.55; }}
 
 /* ── Cards de vidro aprimorados ── */
 .card {{
@@ -687,9 +706,9 @@ div[data-testid="stRadio"] > div > label > div:first-child {{
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--bdr);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--space-4);
   box-shadow: var(--shadow-md);
   transition: border-color 0.2s, box-shadow 0.2s;
 }}
@@ -698,7 +717,7 @@ div[data-testid="stRadio"] > div > label > div:first-child {{
   box-shadow: var(--shadow-lg);
 }}
 .card-head {{
-  padding: 0.9rem 1.35rem;
+  padding: 1.15rem 1.75rem;
   border-bottom: 1px solid var(--bdr);
   display: flex;
   align-items: center;
@@ -706,26 +725,26 @@ div[data-testid="stRadio"] > div > label > div:first-child {{
   background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
 }}
 .card-title {{
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.115em;
   color: var(--txt);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
 }}
 .card-count {{
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
+  font-size: 0.64rem;
   font-weight: 600;
   color: var(--txt2);
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--bdr);
   border-radius: 20px;
-  padding: 3px 11px;
+  padding: 4px 13px;
 }}
-.card-body {{ padding: 1.35rem; }}
+.card-body {{ padding: 1.75rem; }}
 
 /* ── Status badges refinados ── */
 .badge {{
@@ -998,8 +1017,8 @@ div[data-testid="stRadio"] > div > label > div:first-child {{
 
 /* ── Divider estilizado ── */
 .sec-div {{
-  display: flex; align-items: center; gap: .75rem;
-  margin: 1.5rem 0 1.1rem;
+  display: flex; align-items: center; gap: .9rem;
+  margin: var(--space-5) 0 var(--space-3);
 }}
 .sec-div-line {{
   flex:1; height:1px;
@@ -1007,8 +1026,8 @@ div[data-testid="stRadio"] > div > label > div:first-child {{
 }}
 .sec-div-txt {{
   font-family:'JetBrains Mono',monospace;
-  font-size:.58rem; font-weight:700;
-  text-transform:uppercase; letter-spacing:.14em;
+  font-size:.62rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.16em;
   color:var(--txt3); white-space:nowrap;
 }}
 
@@ -1066,17 +1085,17 @@ input[type="date"] {{ color-scheme: dark !important; }}
 /* ── Dashboard Grid ── */
 .dash-grid {{
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }}
 .kpi-card {{
   background: var(--glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--bdr);
-  border-radius: 16px;
-  padding: 1.25rem 1.35rem;
+  border-radius: var(--radius-md);
+  padding: 1.6rem 1.75rem;
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-md);
@@ -1095,23 +1114,23 @@ input[type="date"] {{ color-scheme: dark !important; }}
   transform: translateY(-3px);
 }}
 .kpi-card-icon {{
-  font-size: 1.5rem;
-  margin-bottom: .65rem;
+  font-size: 1.6rem;
+  margin-bottom: .85rem;
   display: block;
 }}
 .kpi-card-label {{
-  font-size: .60rem; font-weight: 700;
+  font-size: .62rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .12em;
-  color: var(--txt2); margin-bottom: .45rem;
+  color: var(--txt2); margin-bottom: .6rem;
   font-family: 'JetBrains Mono', monospace;
 }}
 .kpi-card-value {{
-  font-size: 2rem; font-weight: 900;
+  font-size: 2.35rem; font-weight: 900;
   letter-spacing: -.05em; line-height: 1;
   color: var(--txt);
 }}
 .kpi-card-sub {{
-  font-size: .68rem; color: var(--txt3); margin-top: 5px;
+  font-size: .7rem; color: var(--txt3); margin-top: 8px;
 }}
 .kpi-card-badge {{
   position: absolute; top: .85rem; right: .85rem;
@@ -1144,22 +1163,23 @@ input[type="date"] {{ color-scheme: dark !important; }}
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--bdr);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 0;
   overflow: hidden;
   box-shadow: var(--shadow-md);
+  height: 100%;
 }}
 .chart-head {{
-  padding: .9rem 1.35rem;
+  padding: 1.1rem 1.75rem;
   border-bottom: 1px solid var(--bdr);
   display: flex; align-items: center; justify-content: space-between;
   background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
 }}
 .chart-title {{
-  font-size: .68rem; font-weight: 800;
-  text-transform: uppercase; letter-spacing: .11em; color: var(--txt);
+  font-size: .74rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .115em; color: var(--txt);
 }}
-.chart-body {{ padding: 1.1rem 1.35rem 1.35rem; }}
+.chart-body {{ padding: 1.5rem 1.75rem 1.75rem; }}
 
 /* ── Table aprimorada com fundo transparente e bordas visíveis ── */
 .stDataFrame [data-testid="stDataFrameResizable"] {{
@@ -1218,8 +1238,8 @@ input[type="date"] {{ color-scheme: dark !important; }}
 
 /* ── Welcome header dashboard ── */
 .dash-welcome {{
-  margin-bottom: 1.75rem;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1.25rem; flex-wrap: wrap;
 }}
 .dash-welcome-left {{}}
 .dash-clock {{
@@ -1295,7 +1315,7 @@ pagina = st.radio(
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-fc0, fc1, fc2, fc5 = st.columns([3.4, 1.4, 1.1, 3.4])
+fc0, fc1, fc2, fc5 = st.columns([3.4, 1.4, 1.1, 3.4], gap="medium")
 with fc1:
     data_filtro = st.date_input(
         "📅 Data",
@@ -1617,7 +1637,7 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
 # ═══════════════════════════════════════════════════════════════════════════════
 if pagina == "📝  Registro":
 
-    _c_left, col_form, _c_right = st.columns([1, 3, 1])
+    _c_left, col_form, _c_right = st.columns([1, 3, 1], gap="large")
 
     with col_form:
         st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -1628,7 +1648,7 @@ if pagina == "📝  Registro":
         <div class="card-body">
         """, unsafe_allow_html=True)
 
-        ca, cb = st.columns([2, 1])
+        ca, cb = st.columns([2, 1], gap="medium")
         with ca:
             nota_inp = st.text_input(
                 "Número da Nota Fiscal",
@@ -1676,27 +1696,27 @@ if pagina == "📝  Registro":
             <div class="card-body">
             """, unsafe_allow_html=True)
 
-            r1a, r1b, r1c = st.columns(3)
+            r1a, r1b, r1c = st.columns(3, gap="medium")
             with r1a: st.text_input("Pedido",       value=cur["numped"]          or "—", disabled=True, key="d_ped")
             with r1b: st.text_input("Nota Fiscal",   value=cur["numnota"],                disabled=True, key="d_nf")
             with r1c: st.text_input("Carregamento",  value=cur["numcarregamento"] or "—", disabled=True, key="d_car")
 
-            r2a, r2b, r2c = st.columns(3)
+            r2a, r2b, r2c = st.columns(3, gap="medium")
             with r2a: st.text_input("Cliente",       value=cur["nomecliente"],             disabled=True, key="d_cli")
             with r2b: st.text_input("Cód. Cliente",  value=cur.get("codcliente", "") or "—", disabled=True, key="d_codcli")
             with r2c: st.text_input("Data Liberado", value=cur["dt_liberado"]    or "—", disabled=True, key="d_dtl")
 
-            r3a, r3b, r3c = st.columns(3)
+            r3a, r3b, r3c = st.columns(3, gap="medium")
             with r3a: st.text_input("Vendedor",      value=cur["nomevend"]        or "—", disabled=True, key="d_vnd")
             with r3b: st.text_input("Supervisor",    value=cur["nomesup"]         or "—", disabled=True, key="d_sup")
             with r3c: st.text_input("Praça",         value=cur["praca"]           or "—", disabled=True, key="d_prc")
 
-            r4a, r4b, r4c = st.columns(3)
+            r4a, r4b, r4c = st.columns(3, gap="medium")
             with r4a: st.text_input("Destino",       value=cur["destino"]         or "—", disabled=True, key="d_dst")
             with r4b: st.text_input("Peso (kg)", value=f"{cur['pesobrutotot']:.3f}".replace(".", ","), disabled=True, key="d_pes")
             with r4c: st.text_input("Valor Total",  value=br(cur["vltotal"]),              disabled=True, key="d_vl")
 
-            r5a, r5b, r5c = st.columns(3)
+            r5a, r5b, r5c = st.columns(3, gap="medium")
             with r5a:
                 placa_antiga = cur.get("placa_road", "") or "—"
                 st.text_input("Placa Anterior",       value=placa_antiga,                  disabled=True, key="d_pl")
@@ -1833,7 +1853,7 @@ if pagina == "📝  Registro":
         )
         st.markdown('<div style="padding:.75rem 1.25rem;border-top:1px solid var(--bdr)">', unsafe_allow_html=True)
         ids_hj = df_hj["id"].astype(str).tolist()
-        cd1, cd2, _ = st.columns([2, 1, 3])
+        cd1, cd2, _ = st.columns([2, 1, 3], gap="medium")
         with cd1:
             del_id = st.selectbox("Excluir por ID", ["—"] + ids_hj, key="del_id", label_visibility="visible")
         with cd2:
@@ -1880,7 +1900,7 @@ elif pagina == "🗺️  Roteirização":
         st.markdown('<div style="padding:1.5rem;text-align:center"><span class="al-s" style="justify-content:center">✅ Nenhuma nota pendente!</span></div>', unsafe_allow_html=True)
     else:
         st.markdown('<div class="card-body" style="padding-bottom:.5rem">', unsafe_allow_html=True)
-        pb1, pb2 = st.columns([3, 1])
+        pb1, pb2 = st.columns([3, 1], gap="medium")
         with pb1:
             bp = st.text_input("Buscar", key="rbp", label_visibility="collapsed", placeholder="🔍 Nota, cliente, praça...")
         with pb2:
@@ -2008,7 +2028,7 @@ elif pagina == "🗺️  Roteirização":
                 st.markdown('<div class="al-i" style="margin:.4rem 0 .75rem">☝️ Marque uma ou mais notas na tabela acima para roteirizar em lote.</div>', unsafe_allow_html=True)
 
             # ── Placa + Data de saída compartilhadas ─────────────────────────
-            c_nova_pl, c_dt_saida, c_btn = st.columns([1.4, 1.1, 0.8])
+            c_nova_pl, c_dt_saida, c_btn = st.columns([1.4, 1.1, 0.8], gap="medium")
             with c_nova_pl:
                 nova_pl_i = st.text_input("Nova Placa", placeholder="Ex: ABC-1234", key="pl_lote")
             with c_dt_saida:
@@ -2087,7 +2107,7 @@ elif pagina == "🗺️  Roteirização":
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div style="height:var(--space-4)"></div>', unsafe_allow_html=True)
     st.markdown('<div class="card" style="border-top:3px solid #10b981">', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="card-head">
@@ -2150,7 +2170,7 @@ elif pagina == "🗺️  Roteirização":
                 for _, row in df_r_sorted.iterrows()
             ]
             _nota_ids = df_r_sorted["id"].tolist()
-            _dv_col1, _dv_col2, _ = st.columns([3, 1, 2])
+            _dv_col1, _dv_col2, _ = st.columns([3, 1, 2], gap="medium")
             with _dv_col1:
                 _sel_idx = st.selectbox("Nota para devolver", range(len(_nota_opts)),
                                         format_func=lambda i: _nota_opts[i],
@@ -2170,7 +2190,7 @@ elif pagina == "🗺️  Roteirização":
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div style="height:var(--space-4)"></div>', unsafe_allow_html=True)
     st.markdown('<div class="card" style="border-top:3px solid #3b82f6">', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="card-head">
@@ -2247,7 +2267,7 @@ elif pagina == "📋  Histórico":
         return f"{v:,.0f} kg".replace(",", ".")
 
     st.markdown(f"""
-    <div class="dash-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem">
+    <div class="dash-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:var(--space-5)">
       <div class="kpi-card kpi-card-accent">
         <span class="kpi-card-icon">🧾</span>
         <div class="kpi-card-label">Total de Notas</div>
@@ -2276,7 +2296,7 @@ elif pagina == "📋  Histórico":
     """, unsafe_allow_html=True)
 
     # ── Gráficos lado a lado: Vendedor | Motivo ──────────────────────────────
-    _col_vend, _col_mot = st.columns(2)
+    _col_vend, _col_mot = st.columns(2, gap="large")
 
     # — Gráfico Veículo Antigo —
     with _col_vend:
@@ -2434,7 +2454,7 @@ elif pagina == "📋  Histórico":
     # ── Linha 1 de filtros: busca + excel ────────────────────────────────────
     fst  = "Todos"
     fsup = "Todos"
-    hf1, hf4 = st.columns([6.7, 1])
+    hf1, hf4 = st.columns([6.7, 1], gap="medium")
     with hf1:
         busca_h = st.text_input("Buscar", key="hb", label_visibility="collapsed", placeholder="🔍 Nota, cliente, placa, destino...")
     with hf4:
@@ -2458,7 +2478,7 @@ elif pagina == "📋  Histórico":
         '</div>',
         unsafe_allow_html=True,
     )
-    hf5, hf6, _hf_spacer = st.columns([1.3, 1.3, 4])
+    hf5, hf6, _hf_spacer = st.columns([1.3, 1.3, 4], gap="medium")
     with hf5:
         dt_saida_de = st.date_input(
             "Dt. Saída — De",
@@ -2477,7 +2497,7 @@ elif pagina == "📋  Histórico":
         )
 
     # ── Linha 3 de filtros: nova placa ───────────────────────────────────────
-    hf7, _hf_spacer2 = st.columns([1.3, 5.3])
+    hf7, _hf_spacer2 = st.columns([1.3, 5.3], gap="medium")
     with hf7:
         _placas_opts = ["Todos"] + sorted(df["placa_veiculo"].dropna().unique().tolist()) if not df.empty and "placa_veiculo" in df.columns else ["Todos"]
         filtro_nova_placa = st.selectbox("Nova Placa", _placas_opts, key="h_nova_placa", label_visibility="visible")
