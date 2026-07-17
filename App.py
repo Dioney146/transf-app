@@ -585,26 +585,38 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 .nav-brand-title span {{
   color: #3b82f6;
 }}
-.nav-wrap > div {{
+/* O st.radio é renderizado pelo Streamlit como um componente independente,
+   não como filho real do .nav-wrap — por isso os seletores abaixo NÃO
+   dependem de ".nav-wrap" como ancestral, e sim do próprio container do
+   componente (div[data-testid="stRadio"]), que é único nesta página. */
+div[data-testid="stRadio"] {{
+  background: var(--nav-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--bdr);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   display: flex !important;
   justify-content: center !important;
   width: 100% !important;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  margin: 0 !important;
+  padding: 0 !important;
 }}
-.nav-wrap div[data-testid="stRadio"] > label {{ display: none !important; }}
-.nav-wrap div[data-testid="stRadio"] {{
-  display: flex !important;
-  justify-content: center !important;
-  width: 100% !important;
-}}
-.nav-wrap div[data-testid="stRadio"] > div {{
+div[data-testid="stRadio"] > label {{ display: none !important; }}
+div[data-testid="stRadio"] > div {{
   display: flex !important;
   flex-direction: row !important;
   justify-content: center !important;
+  align-items: center !important;
   gap: 0 !important;
   padding: 0 !important;
+  margin: 0 auto !important;
   background: transparent !important;
+  width: auto !important;
 }}
-.nav-wrap div[data-testid="stRadio"] > div > label {{
+div[data-testid="stRadio"] > div > label {{
   display: flex !important;
   align-items: center !important;
   gap: 7px !important;
@@ -624,16 +636,16 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   margin: 0 !important;
   position: relative !important;
 }}
-.nav-wrap div[data-testid="stRadio"] > div > label:hover {{
+div[data-testid="stRadio"] > div > label:hover {{
   color: rgba(240,246,255,0.75) !important;
   background: rgba(255,255,255,0.03) !important;
 }}
-.nav-wrap div[data-testid="stRadio"] > div > label[data-selected="true"] {{
+div[data-testid="stRadio"] > div > label[data-selected="true"] {{
   color: var(--txt) !important;
   border-bottom-color: var(--acc) !important;
   background: linear-gradient(180deg, transparent, rgba(59,130,246,0.06)) !important;
 }}
-.nav-wrap div[data-testid="stRadio"] > div > label > div:first-child {{
+div[data-testid="stRadio"] > div > label > div:first-child {{
   display: none !important;
 }}
 
@@ -1269,13 +1281,13 @@ _logo_html = (
     f'<img src="data:image/webp;base64,{LOGO_B64}" class="nav-logo" alt="Delly\'s Logo"/>'
     if LOGO_B64 else ""
 )
-st.markdown(f'''<div class="nav-wrap">
-  <div class="nav-logo-wrap">
-    <div class="nav-brand">
-      <span class="nav-brand-title">Registro de Transferência <span>Delly's</span></span>
-      {_logo_html}
-    </div>
-  </div>''', unsafe_allow_html=True)
+_nav_html = (
+    '<div class="nav-wrap"><div class="nav-logo-wrap"><div class="nav-brand">'
+    '<span class="nav-brand-title">Registro de Transferência <span>Delly\'s</span></span>'
+    f'{_logo_html}'
+    '</div></div></div>'
+)
+st.markdown(_nav_html, unsafe_allow_html=True)
 pagina = st.radio(
     "nav",
     ["📝  Registro", "🗺️  Roteirização", "📋  Histórico"],
@@ -1283,7 +1295,6 @@ pagina = st.radio(
     label_visibility="collapsed",
     key="nav_main",
 )
-st.markdown("</div>", unsafe_allow_html=True)
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
