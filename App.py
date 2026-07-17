@@ -464,38 +464,38 @@ st.markdown(f"""
   --white:        #ffffff;
   --sur:          rgba(255,255,255,0.05);
   --sur2:         rgba(255,255,255,0.03);
-  --bdr:          rgba(255,255,255,0.08);
-  --bdr2:         rgba(255,255,255,0.15);
-  --bdr-hover:    rgba(255,255,255,0.25);
-  --acc:          #3b82f6;
-  --acc-lt:       rgba(59,130,246,0.10);
-  --acc-mid:      rgba(59,130,246,0.22);
-  --acc-hover:    #2563eb;
-  --acc-glow:     rgba(59,130,246,0.35);
-  --grn:          #34d399;
-  --grn-dk:       #10b981;
-  --grn-lt:       rgba(52,211,153,0.10);
-  --grn-bdr:      rgba(52,211,153,0.30);
-  --red:          #fb7185;
-  --red-lt:       rgba(251,113,133,0.10);
-  --red-bdr:      rgba(251,113,133,0.30);
-  --ylw:          #fbbf24;
-  --ylw-lt:       rgba(251,191,36,0.10);
-  --ylw-bdr:      rgba(251,191,36,0.30);
-  --txt:          #f0f6ff;
-  --txt2:         #7d95b5;
-  --txt3:         #3d5068;
-  --nav-bg:       rgba(6,12,22,0.90);
-  --nav-txt:      #4a6080;
+  --bdr:          rgba(255,255,255,0.10);
+  --bdr2:         rgba(255,255,255,0.18);
+  --bdr-hover:    rgba(255,255,255,0.28);
+  --acc:          #4c8cf5;
+  --acc-lt:       rgba(76,140,245,0.12);
+  --acc-mid:      rgba(76,140,245,0.24);
+  --acc-hover:    #2f6fe0;
+  --acc-glow:     rgba(76,140,245,0.35);
+  --grn:          #3ddba0;
+  --grn-dk:       #12b981;
+  --grn-lt:       rgba(61,219,160,0.12);
+  --grn-bdr:      rgba(61,219,160,0.32);
+  --red:          #fb7c8f;
+  --red-lt:       rgba(251,124,143,0.12);
+  --red-bdr:      rgba(251,124,143,0.32);
+  --ylw:          #fbc245;
+  --ylw-lt:       rgba(251,194,69,0.12);
+  --ylw-bdr:      rgba(251,194,69,0.32);
+  --txt:          #f4f8ff;
+  --txt2:         #96acc9;
+  --txt3:         #5d7794;
+  --nav-bg:       rgba(7,13,24,0.92);
+  --nav-txt:      #5d7794;
   --nav-act:      #ffffff;
-  --nav-acc:      #3b82f6;
-  --glass:        rgba(10,18,30,0.70);
-  --glass2:       rgba(10,18,30,0.45);
-  --glass-light:  rgba(255,255,255,0.04);
+  --nav-acc:      #4c8cf5;
+  --glass:        rgba(13,21,35,0.72);
+  --glass2:       rgba(13,21,35,0.48);
+  --glass-light:  rgba(255,255,255,0.045);
   --shadow-sm:    0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
   --shadow-md:    0 4px 16px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
   --shadow-lg:    0 12px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35);
-  --shadow-acc:   0 0 24px rgba(59,130,246,0.18);
+  --shadow-acc:   0 0 24px rgba(76,140,245,0.20);
 }}
 
 *, *::before, *::after {{ box-sizing: border-box; }}
@@ -585,10 +585,6 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 .nav-brand-title span {{
   color: #3b82f6;
 }}
-/* O st.radio é renderizado pelo Streamlit como um componente independente,
-   não como filho real do .nav-wrap — por isso os seletores abaixo NÃO
-   dependem de ".nav-wrap" como ancestral, e sim do próprio container do
-   componente (div[data-testid="stRadio"]), que é único nesta página. */
 div[data-testid="stRadio"] {{
   background: var(--nav-bg);
   backdrop-filter: blur(24px) saturate(180%);
@@ -865,7 +861,6 @@ div[data-testid="stRadio"] > div > label > div:first-child {{
 }}
 
 /* ── Checkbox ── */
-/* ── Checkbox: esconde o input nativo e usa pseudo-elemento customizado ── */
 [data-testid="stCheckbox"] input[type="checkbox"] {{
   appearance: none !important;
   -webkit-appearance: none !important;
@@ -1145,8 +1140,10 @@ input[type="date"] {{ color-scheme: dark !important; }}
 
 /* ── Chart container ── */
 .chart-wrap {{
-  background: #2a2a2a;
-  border: 1px solid rgba(255,255,255,0.10);
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bdr);
   border-radius: 14px;
   padding: 0;
   overflow: hidden;
@@ -1154,9 +1151,9 @@ input[type="date"] {{ color-scheme: dark !important; }}
 }}
 .chart-head {{
   padding: .9rem 1.35rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--bdr);
   display: flex; align-items: center; justify-content: space-between;
-  background: rgba(255,255,255,0.04);
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
 }}
 .chart-title {{
   font-size: .68rem; font-weight: 800;
@@ -1461,7 +1458,7 @@ _vl_pend = _df_pend_all["vltotal"].sum() if not _df_pend_all.empty else 0
 # ── Helper: gráfico de barras horizontal em HTML puro ─────────────────────────
 def _bar_chart_html(rows, label_key, value_key, color, fmt_val=None):
     if not rows:
-        return '<div style="padding:.75rem;color:#3d5068;font-size:.78rem;text-align:center">Sem dados</div>'
+        return '<div style="padding:.75rem;color:#5d7794;font-size:.78rem;text-align:center">Sem dados</div>'
     max_v = max(r[value_key] for r in rows) or 1
     bars = ""
     for i, r in enumerate(rows):
@@ -1471,7 +1468,7 @@ def _bar_chart_html(rows, label_key, value_key, color, fmt_val=None):
         shown = fmt_val(val) if fmt_val else str(val)
         bars += f'''
         <div style="display:grid;grid-template-columns:140px 1fr 70px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-          <div style="font-size:.75rem;color:#7d95b5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{lbl}">{lbl}</div>
+          <div style="font-size:.75rem;color:#96acc9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{lbl}">{lbl}</div>
           <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
             <div style="width:{pct}%;height:100%;background:{color};border-radius:4px;transition:width .4s ease"></div>
           </div>
@@ -1482,7 +1479,7 @@ def _bar_chart_html(rows, label_key, value_key, color, fmt_val=None):
 # ── Helper: gráfico de colunas verticais em HTML puro ─────────────────────────
 def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
     if not rows:
-        return '<div style="padding:.75rem;color:#3d5068;font-size:.78rem;text-align:center">Sem dados</div>'
+        return '<div style="padding:.75rem;color:#5d7794;font-size:.78rem;text-align:center">Sem dados</div>'
     max_v = max(r[value_key] for r in rows) or 1
     cols_html = ""
     for r in rows:
@@ -1499,7 +1496,7 @@ def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
           <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;height:{height}px">
             <div style="width:70%;background:{color};border-radius:4px 4px 0 0;height:{bar_h}px;min-height:4px;box-shadow:0 0 8px {color}55"></div>
           </div>
-          <div style="font-size:.62rem;color:#7d95b5;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px" title="{lbl}">{short}</div>
+          <div style="font-size:.62rem;color:#96acc9;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px" title="{lbl}">{short}</div>
         </div>'''
     return f'<div style="display:flex;gap:4px;align-items:flex-end;padding:.5rem .25rem 0">{cols_html}</div>'
 
@@ -1509,7 +1506,7 @@ def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
 def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#fbbf24", fmt_val=None):
     """Retorna string SVG: barras verticais + polyline de quantidade."""
     if not rows:
-        return '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
+        return '<p style="color:#5d7794;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
     MIN_SLOT = 60   # largura mínima por coluna para não ficar espremido
     SVG_W    = max(560, n * MIN_SLOT)
@@ -1544,7 +1541,7 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
             rects += f'<text x="{cx:.1f}" y="{val_ty}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{shown}</text>'
         else:
             rects += f'<text x="{cx:.1f}" y="{by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{shown}</text>'
-        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 16}" text-anchor="middle" font-size="11" font-weight="600" fill="#a0b4cc">{short}</text>'
+        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 16}" text-anchor="middle" font-size="11" font-weight="600" fill="#a9bfd9">{short}</text>'
 
         if qtd_key:
             qtd    = int(r[qtd_key])
@@ -1572,7 +1569,7 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
 def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=None):
     """Retorna string SVG: barras horizontais."""
     if not rows:
-        return '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
+        return '<p style="color:#5d7794;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
     LABEL_W  = 70   # largura da coluna de rótulos
     BAR_H    = 10   # altura de cada barra
@@ -1600,7 +1597,7 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
         # barra colorida
         els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{bw}" height="{BAR_H}" rx="3" fill="url(#gbar)" opacity="0.9"/>'
         # rótulo esquerdo
-        els += f'<text x="{LABEL_W - 4}" y="{y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="8.5" fill="#7d95b5">{short}</text>'
+        els += f'<text x="{LABEL_W - 4}" y="{y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="8.5" fill="#96acc9">{short}</text>'
         # valor direito
         els += f'<text x="{LABEL_W + BAR_AREA + 4}" y="{y_mid:.1f}" dominant-baseline="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
 
@@ -2323,7 +2320,7 @@ elif pagina == "📋  Histórico":
             '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
             '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
             '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
-            '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
+            '<span style="font-size:.68rem;color:#96acc9">Linha = quantidade de NFs</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2398,7 +2395,7 @@ elif pagina == "📋  Histórico":
                 else:
                     _rects_m += f'<text x="{_cx:.1f}" y="{_by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
 
-                _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="11" font-weight="600" fill="#a0b4cc">{_lbl}</text>'
+                _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="11" font-weight="600" fill="#a9bfd9">{_lbl}</text>'
                 _pts_m.append((_cx, _by - 20, _qtd))
 
             _poly_m = ""
@@ -2420,13 +2417,13 @@ elif pagina == "📋  Histórico":
                 '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
                 '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
                 '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
-                '<span style="font-size:.68rem;color:#7d95b5">Linha = quantidade de NFs</span>'
+                '<span style="font-size:.68rem;color:#96acc9">Linha = quantidade de NFs</span>'
                 '</div>',
                 unsafe_allow_html=True,
             )
         else:
             st.markdown(
-                '<p style="color:#3d5068;font-size:.78rem;text-align:center;padding:1.5rem 0">'
+                '<p style="color:#5d7794;font-size:.78rem;text-align:center;padding:1.5rem 0">'
                 'Nenhum motivo registrado no período.</p>',
                 unsafe_allow_html=True,
             )
@@ -2457,7 +2454,7 @@ elif pagina == "📋  Histórico":
     # ── Linha 2 de filtros: data de saída ────────────────────────────────────
     st.markdown(
         '<div style="margin-top:10px;margin-bottom:2px;display:flex;align-items:center;gap:8px">'
-        '<span style="font-size:.68rem;font-weight:600;color:#7d95b5;text-transform:uppercase;letter-spacing:.08em">&#128197; Filtrar por Data de Sa&#237;da</span>'
+        '<span style="font-size:.68rem;font-weight:600;color:#96acc9;text-transform:uppercase;letter-spacing:.08em">&#128197; Filtrar por Data de Sa&#237;da</span>'
         '<div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>'
         '</div>',
         unsafe_allow_html=True,
