@@ -454,17 +454,6 @@ LOGO_PATH = find_first_existing(
 BG_B64 = img_to_base64(BG_PATH)
 LOGO_B64 = img_to_base64(LOGO_PATH)
 
-if not BG_B64:
-    st.warning(
-        f"⚠️ Imagem de fundo não encontrada em `{BG_PATH}`. "
-        "O app vai continuar funcionando, mas sem o plano de fundo."
-    )
-if not LOGO_B64:
-    st.warning(
-        f"⚠️ Logo não encontrada em `{LOGO_PATH}`. "
-        "O app vai continuar funcionando, mas sem a logo no topo."
-    )
-
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
 <style>
