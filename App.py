@@ -1093,6 +1093,107 @@ div[data-testid="stPopoverBody"] {{
 .page-body {{
   padding-bottom: var(--space-6);
 }}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BUSCA PREMIUM — estilo Google Cloud Console (campo grande + ícone + botão)
+   ══════════════════════════════════════════════════════════════════════════ */
+.search-card {{
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border: 1px solid var(--bdr2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.05);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  margin-bottom: var(--space-4);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}}
+.search-card::before {{
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--radius-lg);
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(76,140,245,0.34), transparent 45%, transparent 60%, rgba(61,219,160,0.16));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}}
+.search-card-label {{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--txt2);
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}}
+
+/* Campo de busca — maior, com ícone de lupa embutido */
+.search-card .st-key-nota_inp input,
+.search-card [data-testid="stTextInput"] input[aria-label="Número da Nota Fiscal"] {{
+  height: 56px !important;
+  font-size: 1.02rem !important;
+  font-weight: 500 !important;
+  padding: 0 20px 0 52px !important;
+  border-radius: 14px !important;
+  border: 1.5px solid var(--bdr2) !important;
+  background-color: rgba(255,255,255,0.045) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2396acc9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: 18px center !important;
+  color: var(--txt) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all .25s cubic-bezier(0.4,0,0.2,1) !important;
+}}
+.search-card .st-key-nota_inp input::placeholder,
+.search-card [data-testid="stTextInput"] input[aria-label="Número da Nota Fiscal"]::placeholder {{
+  color: var(--txt3) !important;
+  font-weight: 400 !important;
+}}
+.search-card .st-key-nota_inp input:hover,
+.search-card [data-testid="stTextInput"] input[aria-label="Número da Nota Fiscal"]:hover {{
+  border-color: var(--bdr-hover) !important;
+  background-color: rgba(255,255,255,0.065) !important;
+}}
+.search-card .st-key-nota_inp input:focus,
+.search-card [data-testid="stTextInput"] input[aria-label="Número da Nota Fiscal"]:focus {{
+  border-color: var(--acc) !important;
+  background-color: rgba(255,255,255,0.075) !important;
+  box-shadow: 0 0 0 4px var(--acc-lt), var(--shadow-md) !important;
+}}
+
+/* Botão de busca — gradiente azul, sombra e hover elevado (estilo GCP) */
+.search-card .st-key-buscar_btn button,
+.search-card div[data-testid="stButton"]:has(button[kind="primary"]) button {{
+  height: 56px !important;
+  min-height: 56px !important;
+  border-radius: 14px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #5b98f7 0%, #2f6fe0 100%) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 6px 22px rgba(47,111,224,0.40), var(--shadow-sm) !important;
+  transition: all .25s cubic-bezier(0.4,0,0.2,1) !important;
+}}
+.search-card .st-key-buscar_btn button:hover {{
+  transform: translateY(-2px) !important;
+  background: linear-gradient(135deg, #6ba4f9 0%, #3b7ce8 100%) !important;
+  box-shadow: 0 10px 30px rgba(47,111,224,0.55), var(--shadow-md) !important;
+}}
+.search-card .st-key-buscar_btn button:active {{
+  transform: translateY(0) !important;
+  box-shadow: 0 4px 14px rgba(47,111,224,0.45) !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1513,26 +1614,24 @@ if pagina == "📝  Registro":
     _c_left, col_form, _c_right = st.columns([1, 3, 1], gap="large")
 
     with col_form:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("""
-        <div class="card-head">
-          <span class="card-title">🔍 Buscar Nota Fiscal</span>
-        </div>
-        <div class="card-body">
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="search-card">', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="search-card-label">🔍 Buscar Nota Fiscal</div>',
+            unsafe_allow_html=True,
+        )
 
-        ca, cb = st.columns([2, 1], gap="medium")
+        ca, cb = st.columns([4.2, 1], gap="medium")
         with ca:
             nota_inp = st.text_input(
                 "Número da Nota Fiscal",
-                placeholder="Ex: 398234",
+                placeholder="Pesquisar por número da nota fiscal…",
                 key="nota_inp",
+                label_visibility="collapsed",
             )
         with cb:
-            st.markdown("<br>", unsafe_allow_html=True)
-            buscar_btn = st.button("🔍 Buscar", use_container_width=True, key="buscar_btn")
+            buscar_btn = st.button("Buscar", use_container_width=True, key="buscar_btn", type="primary")
 
-        st.markdown("</div></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
         if "cur" not in st.session_state:
