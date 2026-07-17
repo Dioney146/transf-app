@@ -5,6 +5,8 @@ from google.oauth2.service_account import Credentials
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 import io
+import base64
+from pathlib import Path
 
 st.set_page_config(
     page_title="Delly's — Transferências",
@@ -414,6 +416,54 @@ def safe_dataframe(df, cols):
     # Garante sem duplicatas de coluna
     result = dedup_columns(result)
     return result
+
+# ─── Imagens em Base64 (fundo + logo) ─────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def img_to_base64(path):
+    """
+    Lê um arquivo de imagem do disco e retorna seu conteúdo em base64 (str).
+    Retorna string vazia se o arquivo não existir, para o app não quebrar.
+    """
+    p = Path(path)
+    if not p.exists():
+        return ""
+    return base64.b64encode(p.read_bytes()).decode()
+
+def find_first_existing(*candidates):
+    """Retorna o primeiro caminho que existir dentre os candidatos."""
+    for c in candidates:
+        if Path(c).exists():
+            return c
+    return candidates[0]  # devolve o primeiro mesmo que não exista (vai gerar "")
+
+# Ajuste os caminhos abaixo para onde os arquivos realmente estão no seu repositório.
+# Procura em "assets/" e também na raiz do projeto, como fallback.
+BG_PATH = find_first_existing(
+    "assets/fundo.png",
+    "assets/background.png",
+    "fundo.png",
+    "background.png",
+)
+LOGO_PATH = find_first_existing(
+    "assets/logo.webp",
+    "assets/logo.png",
+    "logo.webp",
+    "logo.png",
+)
+
+BG_B64 = img_to_base64(BG_PATH)
+LOGO_B64 = img_to_base64(LOGO_PATH)
+
+if not BG_B64:
+    st.warning(
+        f"⚠️ Imagem de fundo não encontrada em `{BG_PATH}`. "
+        "O app vai continuar funcionando, mas sem o plano de fundo."
+    )
+if not LOGO_B64:
+    st.warning(
+        f"⚠️ Logo não encontrada em `{LOGO_PATH}`. "
+        "O app vai continuar funcionando, mas sem a logo no topo."
+    )
 
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
@@ -1226,11 +1276,15 @@ input[type="date"] {{ color-scheme: dark !important; }}
 
 
 # ─── Navigation com Logo integrada ───────────────────────────────────────────
+_logo_html = (
+    f'<img src="data:image/webp;base64,{LOGO_B64}" class="nav-logo" alt="Delly\'s Logo"/>'
+    if LOGO_B64 else ""
+)
 st.markdown(f'''<div class="nav-wrap">
   <div class="nav-logo-wrap">
     <div class="nav-brand">
       <span class="nav-brand-title">Registro de Transferência <span>Delly's</span></span>
-      <img src="data:image/webp;base64,{LOGO_B64}" class="nav-logo" alt="Delly's Logo"/>
+      {_logo_html}
     </div>
   </div>''', unsafe_allow_html=True)
 pagina = st.radio(
