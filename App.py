@@ -549,769 +549,305 @@ html, body, [class*="css"], .stApp {{
 section[data-testid="stSidebar"] {{ display: none !important; }}
 .main .block-container {{ padding: 0 !important; max-width: 100% !important; }}
 
-/* ── Nav bar com logo + abas integradas ── */
-.nav-wrap {{
+/* ══════════════════════════════════════════════════════════════════════════
+   CABEÇALHO PREMIUM — logo, título, abas, avatar, notificações, tema
+   ══════════════════════════════════════════════════════════════════════════ */
+.st-key-app_header {{
   background: var(--nav-bg);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid var(--bdr);
-  padding: 0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  display: flex !important;
-  align-items: center !important;
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  border: 1px solid var(--bdr2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 0 46px rgba(76,140,245,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
+  margin: 14px 22px 0;
+  padding: 14px 22px;
   position: sticky;
-  top: 0;
-  z-index: 100;
+  top: 12px;
+  z-index: 999;
+  transition: box-shadow .25s ease;
 }}
-.nav-logo-wrap {{
+.st-key-app_header::before {{
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(76,140,245,0.35), transparent 30%, transparent 70%, rgba(61,219,160,0.20));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}}
+.st-key-app_header [data-testid="stVerticalBlockBorderWrapper"] {{ position: relative; }}
+.st-key-app_header [data-testid="stHorizontalBlock"] {{
+  align-items: center !important;
+  gap: 0.5rem !important;
+}}
+
+/* Marca / logo */
+.hdr-brand {{
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 24px;
-  padding: 26px 48px;
-  width: 100%;
-  max-width: var(--content-max);
-  margin: 0 auto;
+  gap: 14px;
+  min-width: 0;
 }}
-.nav-logo {{
-  height: 64px;
-  width: 64px;
+.hdr-logo-ring {{
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4c8cf5, #3ddba0);
+  padding: 2px;
+  box-shadow: 0 0 22px rgba(76,140,245,0.45), var(--shadow-sm);
+}}
+.hdr-logo-ring img {{
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid rgba(59,130,246,0.7);
-  box-shadow: 0 0 22px rgba(59,130,246,0.45), 0 2px 10px rgba(0,0,0,0.50);
-  flex-shrink: 0;
+  border: 2px solid rgba(8,14,23,0.9);
+  display: block;
 }}
-.nav-brand {{
+.hdr-brand-text {{
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  line-height: 1.18;
+  min-width: 0;
 }}
-.nav-brand-title {{
+.hdr-title {{
   font-family: 'Sora', sans-serif;
-  font-size: 2.2rem;
   font-weight: 800;
-  color: #f0f6ff;
-  letter-spacing: 0.01em;
+  font-size: 1.32rem;
+  color: #f4f8ff;
+  letter-spacing: -0.02em;
   white-space: nowrap;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }}
-.nav-brand-title span {{
-  color: #3b82f6;
+.hdr-title span {{ color: #4c8cf5; }}
+.hdr-sub {{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.60rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--txt2);
+  margin-top: 2px;
 }}
-div[data-testid="stRadio"] {{
-  background: var(--nav-bg);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid var(--bdr);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  display: flex !important;
-  justify-content: center !important;
-  width: 100% !important;
-  position: sticky;
-  top: 0;
-  z-index: 99;
-  margin: 0 !important;
+
+/* Abas (st.radio) estilizadas como pill-tabs dentro do cabeçalho */
+.st-key-app_header div[data-testid="stRadio"] {{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  position: static !important;
   padding: 0 !important;
 }}
-div[data-testid="stRadio"] > label {{ display: none !important; }}
-div[data-testid="stRadio"] > div {{
+.st-key-app_header div[data-testid="stRadio"] > label {{ display: none !important; }}
+.st-key-app_header div[data-testid="stRadio"] > div {{
   display: flex !important;
   flex-direction: row !important;
   justify-content: center !important;
   align-items: center !important;
-  gap: 0 !important;
-  padding: 0 !important;
+  gap: 4px !important;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--bdr);
+  border-radius: 14px;
+  padding: 4px !important;
+  width: fit-content !important;
   margin: 0 auto !important;
-  background: transparent !important;
-  width: auto !important;
 }}
-div[data-testid="stRadio"] > div > label {{
+.st-key-app_header div[data-testid="stRadio"] > div > label {{
   display: flex !important;
   align-items: center !important;
-  gap: 7px !important;
-  padding: 14px 32px !important;
-  font-size: 0.68rem !important;
+  gap: 6px !important;
+  padding: 9px 20px !important;
+  font-size: 0.66rem !important;
   font-weight: 700 !important;
   cursor: pointer !important;
   border: none !important;
-  border-bottom: 2px solid transparent !important;
   color: var(--nav-txt) !important;
   font-family: 'Sora', sans-serif !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.10em !important;
+  letter-spacing: 0.08em !important;
   transition: all 0.25s cubic-bezier(0.4,0,0.2,1) !important;
-  border-radius: 0 !important;
+  border-radius: 10px !important;
   background: transparent !important;
   margin: 0 !important;
-  position: relative !important;
 }}
-div[data-testid="stRadio"] > div > label:hover {{
-  color: rgba(240,246,255,0.75) !important;
-  background: rgba(255,255,255,0.03) !important;
+.st-key-app_header div[data-testid="stRadio"] > div > label:hover {{
+  color: rgba(240,246,255,0.85) !important;
+  background: rgba(255,255,255,0.05) !important;
 }}
-div[data-testid="stRadio"] > div > label[data-selected="true"] {{
-  color: var(--txt) !important;
-  border-bottom-color: var(--acc) !important;
-  background: linear-gradient(180deg, transparent, rgba(59,130,246,0.06)) !important;
+.st-key-app_header div[data-testid="stRadio"] > div > label[data-selected="true"] {{
+  color: #fff !important;
+  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.45), 0 1px 3px rgba(0,0,0,0.3) !important;
 }}
-div[data-testid="stRadio"] > div > label > div:first-child {{
+.st-key-app_header div[data-testid="stRadio"] > div > label > div:first-child {{
   display: none !important;
 }}
 
-/* ── Filter bar ── */
-.filter-bar {{
-  background: rgba(8,14,24,0.60);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--bdr);
-  padding: 1rem 2rem;
+/* Botões de ação do cabeçalho (tema / notificações / avatar) */
+.st-key-app_header .stButton,
+.st-key-app_header [data-testid="stPopover"] {{
+  display: flex !important;
+  justify-content: center !important;
+}}
+.st-key-app_header .stButton > button,
+.st-key-app_header [data-testid="stPopover"] > div > button {{
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid var(--bdr2) !important;
+  border-radius: 12px !important;
+  color: var(--txt) !important;
+  font-size: 0.95rem !important;
+  padding: 8px 12px !important;
+  min-width: 0 !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1) !important;
+}}
+.st-key-app_header .stButton > button:hover,
+.st-key-app_header [data-testid="stPopover"] > div > button:hover {{
+  background: rgba(255,255,255,0.10) !important;
+  border-color: var(--bdr-hover) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md), 0 0 14px rgba(76,140,245,0.20) !important;
+}}
+
+/* Avatar circular (5ª coluna do cabeçalho) */
+.st-key-app_header [data-testid="column"]:nth-of-type(5) [data-testid="stPopover"] > div > button {{
+  border-radius: 50% !important;
+  width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  background: linear-gradient(135deg, #4c8cf5, #2f6fe0) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  font-size: 0.82rem !important;
+  border: 2px solid rgba(255,255,255,0.18) !important;
+  box-shadow: 0 0 14px rgba(76,140,245,0.45), var(--shadow-sm) !important;
+}}
+
+/* Badge de notificações (4ª coluna do cabeçalho) */
+.st-key-app_header [data-testid="column"]:nth-of-type(4) {{ position: relative; }}
+.hdr-badge {{
+  position: absolute;
+  top: -4px;
+  right: 10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: linear-gradient(135deg, #fb7c8f, #ef4444);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.56rem;
+  font-weight: 800;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
-}}
-.filter-bar > div {{
-  width: 100%;
-  max-width: var(--content-max);
+  box-shadow: 0 0 10px rgba(251,124,143,0.6);
+  z-index: 20;
+  pointer-events: none;
 }}
 
-/* ── Page body ── */
-.page-body {{ padding: var(--space-5) var(--space-4) var(--space-6); max-width: var(--content-max); margin: 0 auto; }}
-
-/* ── Page title ── */
-.page-title-block {{ margin-bottom: var(--space-5); }}
-.page-eyebrow {{
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.20em;
-  color: var(--acc);
-  margin-bottom: 8px;
-  opacity: 0.85;
-}}
-.page-title {{
-  font-size: 2.05rem;
-  font-weight: 800;
-  color: var(--txt);
-  letter-spacing: -0.045em;
-  line-height: 1.15;
-}}
-.page-sub {{ font-size: 0.82rem; color: var(--txt2); margin-top: 7px; line-height: 1.55; }}
-
-/* ── Cards de vidro aprimorados ── */
-.card {{
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--bdr);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  margin-bottom: var(--space-4);
-  box-shadow: var(--shadow-md);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}}
-.card:hover {{
-  border-color: var(--bdr2);
-  box-shadow: var(--shadow-lg);
-}}
-.card-head {{
-  padding: 1.15rem 1.75rem;
-  border-bottom: 1px solid var(--bdr);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-}}
-.card-title {{
-  font-size: 0.74rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.115em;
-  color: var(--txt);
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}}
-.card-count {{
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.64rem;
-  font-weight: 600;
-  color: var(--txt2);
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--bdr);
-  border-radius: 20px;
-  padding: 4px 13px;
-}}
-.card-body {{ padding: 1.75rem; }}
-
-/* ── Status badges refinados ── */
-.badge {{
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 11px;
-  border-radius: 20px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.04em;
-}}
-.badge-pend {{
-  background: var(--ylw-lt);
-  color: var(--ylw);
-  border: 1px solid var(--ylw-bdr);
-  box-shadow: 0 0 12px rgba(251,191,36,0.10);
-}}
-.badge-rot {{
-  background: var(--grn-lt);
-  color: var(--grn);
-  border: 1px solid var(--grn-bdr);
-  box-shadow: 0 0 12px rgba(52,211,153,0.10);
-}}
-
-/* ── Alerts com borda esquerda grossa ── */
-.al-s {{
-  background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.04));
-  border: 1px solid var(--grn-bdr);
-  border-left: 3px solid var(--grn);
-  color: var(--grn);
-  border-radius: 10px;
-  padding: .7rem 1rem;
-  font-size: .8rem;
-  margin: .4rem 0;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-weight: 500;
-}}
-.al-e {{
-  background: linear-gradient(135deg, rgba(251,113,133,0.08), rgba(251,113,133,0.04));
-  border: 1px solid var(--red-bdr);
-  border-left: 3px solid var(--red);
-  color: var(--red);
-  border-radius: 10px;
-  padding: .7rem 1rem;
-  font-size: .8rem;
-  margin: .4rem 0;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-weight: 500;
-}}
-.al-i {{
-  background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.04));
-  border: 1px solid rgba(59,130,246,.25);
-  border-left: 3px solid var(--acc);
-  color: #93c5fd;
-  border-radius: 10px;
-  padding: .7rem 1rem;
-  font-size: .8rem;
-  margin: .4rem 0;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-weight: 500;
-}}
-.al-w {{
-  background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.04));
-  border: 1px solid var(--ylw-bdr);
-  border-left: 3px solid var(--ylw);
-  color: var(--ylw);
-  border-radius: 10px;
-  padding: .7rem 1rem;
-  font-size: .8rem;
-  margin: .4rem 0;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-weight: 500;
-}}
-
-/* ── Form inputs — dark polished ── */
-.stTextInput > div > div > input,
-.stDateInput > div > div > input {{
-  background: rgba(255,255,255,0.05) !important;
-  color: var(--txt) !important;
-  border: 1px solid var(--bdr2) !important;
-  border-radius: 10px !important;
-  font-family: 'Sora', sans-serif !important;
-  font-size: 0.84rem !important;
-  padding: 0.52rem 0.85rem !important;
-  transition: border-color .2s, box-shadow .2s, background .2s !important;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.25) !important;
-}}
-.stTextInput > div > div > input:focus,
-.stDateInput > div > div > input:focus {{
-  border-color: var(--acc) !important;
-  box-shadow: 0 0 0 3px var(--acc-lt), inset 0 1px 3px rgba(0,0,0,0.15), var(--shadow-acc) !important;
-  background: rgba(255,255,255,0.08) !important;
-}}
-.stTextInput > div > div > input:hover:not(:disabled):not(:focus),
-.stDateInput > div > div > input:hover:not(:disabled):not(:focus) {{
-  border-color: var(--bdr-hover) !important;
-  background: rgba(255,255,255,0.07) !important;
-}}
-.stTextInput > div > div > input:disabled {{
-  background: rgba(255,255,255,0.025) !important;
-  color: var(--txt3) !important;
-  cursor: default !important;
-  border-color: var(--bdr) !important;
-}}
-.stSelectbox > div > div {{
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid var(--bdr2) !important;
-  border-radius: 10px !important;
-  color: var(--txt) !important;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2) !important;
-}}
-.stSelectbox > div > div:hover {{
-  border-color: var(--bdr-hover) !important;
-}}
-.stTextInput label, .stDateInput label, .stSelectbox label,
-.stTextArea label, .stNumberInput label, .stCheckbox label span {{
-  color: var(--txt2) !important;
-  font-size: 0.62rem !important;
-  font-weight: 700 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.10em !important;
-  font-family: 'Sora', sans-serif !important;
-}}
-
-/* ── Checkbox ── */
-[data-testid="stCheckbox"] input[type="checkbox"] {{
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  width: 17px !important;
-  height: 17px !important;
-  min-width: 17px !important;
-  border: 1.5px solid var(--bdr2) !important;
-  border-radius: 5px !important;
-  background: rgba(255,255,255,0.05) !important;
-  cursor: pointer !important;
-  position: relative !important;
-  transition: background .15s, border-color .15s !important;
-  flex-shrink: 0 !important;
-}}
-[data-testid="stCheckbox"] input[type="checkbox"]:checked {{
-  background: var(--acc) !important;
-  border-color: var(--acc) !important;
-}}
-[data-testid="stCheckbox"] input[type="checkbox"]:checked::after {{
-  content: "" !important;
-  position: absolute !important;
-  left: 4px !important;
-  top: 1px !important;
-  width: 5px !important;
-  height: 9px !important;
-  border: 2px solid #fff !important;
-  border-top: none !important;
-  border-left: none !important;
-  transform: rotate(45deg) !important;
-  display: block !important;
-}}
-[data-testid="stCheckbox"] input[type="checkbox"]:hover:not(:checked) {{
-  border-color: var(--bdr-hover) !important;
-  background: rgba(255,255,255,0.09) !important;
-}}
-[data-testid="stCheckbox"] > label > span:first-child,
-[data-testid="stCheckbox"] > label > div:first-child {{
-  display: none !important;
-}}
-
-/* ── Buttons ── */
-.stButton > button {{
-  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 10px !important;
-  font-weight: 700 !important;
-  font-family: 'Sora', sans-serif !important;
-  font-size: 0.78rem !important;
-  transition: all 0.2s cubic-bezier(0.4,0,0.2,1) !important;
-  letter-spacing: 0.03em !important;
-  padding: 0.52rem 1.35rem !important;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.35), 0 1px 3px rgba(0,0,0,0.3) !important;
-}}
-.stButton > button:hover {{
-  background: linear-gradient(135deg, #4f96ff, #3b82f6) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(59,130,246,0.45), 0 2px 6px rgba(0,0,0,0.3) !important;
-}}
-.stButton > button:active {{
-  transform: translateY(0) !important;
-  box-shadow: 0 1px 4px rgba(37,99,235,0.25) !important;
-}}
-.stDownloadButton > button {{
-  background: rgba(255,255,255,0.05) !important;
-  color: var(--txt2) !important;
-  border: 1px solid var(--bdr2) !important;
-  border-radius: 10px !important;
-  font-weight: 600 !important;
-  box-shadow: none !important;
-  transition: all 0.2s !important;
-}}
-.stDownloadButton > button:hover {{
-  background: rgba(255,255,255,0.09) !important;
-  color: var(--txt) !important;
-  border-color: var(--bdr-hover) !important;
-  transform: translateY(-1px) !important;
-}}
-
-/* ── Table refinada ── */
-.stDataFrame {{ border-radius: 0 !important; border: none !important; }}
-[data-testid="stDataFrameResizable"] {{ background: transparent !important; }}
-.stDataFrame thead tr th {{
-  background: rgba(255,255,255,0.04) !important;
-  color: var(--txt2) !important;
-  font-family: 'JetBrains Mono', monospace !important;
-  font-size: 0.57rem !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.12em !important;
-  border-bottom: 1px solid var(--bdr) !important;
-  padding: 10px 14px !important;
-  font-weight: 700 !important;
-}}
-.stDataFrame tbody tr:nth-child(even) td {{
-  background: rgba(255,255,255,0.015) !important;
-}}
-.stDataFrame tbody tr:hover td {{
-  background: var(--acc-lt) !important;
-}}
-.stDataFrame tbody td {{
-  font-family: 'Sora', sans-serif !important;
-  font-size: 0.79rem !important;
-  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-  color: var(--txt) !important;
-  padding: 10px 14px !important;
-  background: transparent !important;
-}}
-
-/* ── Note card ── */
-.nota-row {{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: .65rem 1rem;
-  border-bottom: 1px solid var(--bdr);
-  font-size: .82rem;
-  transition: background .15s;
-}}
-.nota-row:hover {{ background: rgba(59,130,246,0.05); }}
-.nota-row:last-child {{ border-bottom: none; }}
-.nota-num {{
-  font-family:'JetBrains Mono',monospace;
-  font-weight:700;
-  font-size:.80rem;
-  color:var(--txt);
-  letter-spacing:-0.01em;
-}}
-.nota-cli {{ color:var(--txt2); font-size:.70rem; margin-top:1px; }}
-.nota-val {{
-  font-weight:800;
-  color:var(--acc);
-  font-size:.80rem;
-  letter-spacing:-0.01em;
-}}
-
-/* ── Divider estilizado ── */
-.sec-div {{
-  display: flex; align-items: center; gap: .9rem;
-  margin: var(--space-5) 0 var(--space-3);
-}}
-.sec-div-line {{
-  flex:1; height:1px;
-  background: linear-gradient(90deg, transparent, var(--bdr), transparent);
-}}
-.sec-div-txt {{
-  font-family:'JetBrains Mono',monospace;
-  font-size:.62rem; font-weight:700;
-  text-transform:uppercase; letter-spacing:.16em;
-  color:var(--txt3); white-space:nowrap;
-}}
-
-/* ── KPI mini — versão premium ── */
-.kpi-mini {{
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--bdr);
-  border-radius: 14px;
-  padding: 1.1rem 1.35rem;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-}}
-.kpi-mini::before {{
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
-}}
-.kpi-mini:hover {{
-  border-color: var(--bdr2);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}}
-.kpi-mini-label {{
-  font-size:.60rem; font-weight:700; text-transform:uppercase;
-  letter-spacing:.12em; color:var(--txt2); margin-bottom:.55rem;
-  font-family:'JetBrains Mono',monospace;
-}}
-.kpi-mini-value {{
-  font-size:1.65rem; font-weight:800; color:var(--txt);
-  letter-spacing:-.04em; line-height:1;
-}}
-.kpi-mini-sub {{ font-size:.67rem; color:var(--txt3); margin-top:4px; }}
-
-/* ── Placa chip — mais destaque ── */
-.placa-chip {{
-  display:inline-flex; align-items:center; gap:5px;
-  background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.08));
-  border:1px solid rgba(251,191,36,0.35);
-  border-radius:6px; padding:3px 9px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:.70rem; font-weight:700; color:#fbbf24;
-  box-shadow: 0 0 12px rgba(251,191,36,0.08);
-  letter-spacing:0.03em;
-}}
-
-input[type="date"] {{ color-scheme: dark !important; }}
-
-
-/* ── Dashboard Grid ── */
-.dash-grid {{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-}}
-.kpi-card {{
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--bdr);
-  border-radius: var(--radius-md);
-  padding: 1.6rem 1.75rem;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-}}
-.kpi-card::before {{
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
-}}
-.kpi-card:hover {{
-  border-color: var(--bdr2);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-3px);
-}}
-.kpi-card-icon {{
-  font-size: 1.6rem;
-  margin-bottom: .85rem;
-  display: block;
-}}
-.kpi-card-label {{
-  font-size: .62rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .12em;
-  color: var(--txt2); margin-bottom: .6rem;
-  font-family: 'JetBrains Mono', monospace;
-}}
-.kpi-card-value {{
-  font-size: 2.35rem; font-weight: 900;
-  letter-spacing: -.05em; line-height: 1;
-  color: var(--txt);
-}}
-.kpi-card-sub {{
-  font-size: .7rem; color: var(--txt3); margin-top: 8px;
-}}
-.kpi-card-badge {{
-  position: absolute; top: .85rem; right: .85rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .58rem; font-weight: 700;
-  padding: 2px 8px; border-radius: 4px;
-}}
-.kpi-card-accent {{ border-top: 3px solid var(--acc); }}
-.kpi-card-green  {{ border-top: 3px solid var(--grn); }}
-.kpi-card-red    {{ border-top: 3px solid var(--red); }}
-.kpi-card-yellow {{ border-top: 3px solid var(--ylw); }}
-
-/* ── Progress bar ── */
-.progress-wrap {{
-  margin-top: .75rem;
-  height: 4px;
-  background: rgba(255,255,255,0.07);
-  border-radius: 99px;
-  overflow: hidden;
-}}
-.progress-bar {{
-  height: 100%;
-  border-radius: 99px;
-  transition: width .6s cubic-bezier(0.4,0,0.2,1);
-}}
-
-/* ── Chart container ── */
-.chart-wrap {{
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--bdr);
-  border-radius: var(--radius-md);
-  padding: 0;
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  height: 100%;
-}}
-.chart-head {{
-  padding: 1.1rem 1.75rem;
-  border-bottom: 1px solid var(--bdr);
-  display: flex; align-items: center; justify-content: space-between;
-  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-}}
-.chart-title {{
-  font-size: .74rem; font-weight: 800;
-  text-transform: uppercase; letter-spacing: .115em; color: var(--txt);
-}}
-.chart-body {{ padding: 1.5rem 1.75rem 1.75rem; }}
-
-/* ── Table aprimorada com fundo transparente e bordas visíveis ── */
-.stDataFrame [data-testid="stDataFrameResizable"] {{
-  border-radius: 0 !important;
-}}
-.stDataFrame iframe {{
-  background: transparent !important;
-}}
-/* Força as tabelas do dataframe a usar o tema escuro */
-[data-testid="stDataFrame"] > div {{
-  background: transparent !important;
-}}
-
-/* ── Recent activity list ── */
-.activity-item {{
-  display: flex; align-items: center; gap: .85rem;
-  padding: .7rem 1.1rem;
-  border-bottom: 1px solid var(--bdr);
-  transition: background .15s;
-}}
-.activity-item:hover {{ background: rgba(59,130,246,0.04); }}
-.activity-item:last-child {{ border-bottom: none; }}
-.activity-dot {{
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-}}
-.activity-content {{ flex: 1; min-width: 0; }}
-.activity-title {{
-  font-size: .79rem; color: var(--txt); font-weight: 600;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}}
-.activity-meta {{ font-size: .65rem; color: var(--txt3); margin-top: 1px; }}
-.activity-value {{
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .76rem; font-weight: 700; color: var(--acc);
-  white-space: nowrap;
-}}
-
-/* ── Rank list ── */
-.rank-item {{
-  display: flex; align-items: center; gap: .7rem;
-  padding: .55rem .9rem;
-}}
-.rank-num {{
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .62rem; font-weight: 700; color: var(--txt3);
-  min-width: 18px;
-}}
-.rank-bar-wrap {{ flex: 1; height: 5px; background: rgba(255,255,255,0.06); border-radius: 99px; }}
-.rank-bar {{ height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--acc), var(--grn)); }}
-.rank-name {{ font-size: .76rem; color: var(--txt); min-width: 80px; font-weight: 500; }}
-.rank-val {{
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .72rem; color: var(--acc); font-weight: 700;
-  white-space: nowrap;
-}}
-
-/* ── Welcome header dashboard ── */
-.dash-welcome {{
-  margin-bottom: var(--space-5);
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 1.25rem; flex-wrap: wrap;
-}}
-.dash-welcome-left {{}}
-.dash-clock {{
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .70rem; color: var(--txt2);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--bdr);
-  border-radius: 8px; padding: .35rem .75rem;
-}}
-
-/* ── Scrollbar premium ── */
-::-webkit-scrollbar {{ width:5px; height:5px; }}
-::-webkit-scrollbar-track {{ background:transparent; }}
-::-webkit-scrollbar-thumb {{
-  background: linear-gradient(180deg, var(--bdr2), var(--bdr));
-  border-radius:99px;
-}}
-::-webkit-scrollbar-thumb:hover {{ background: var(--bdr-hover); }}
-
-/* ── Expander ── */
-[data-testid="stExpander"] {{
+/* Painel dos popovers (notificações / usuário) */
+div[data-testid="stPopoverBody"] {{
   background: var(--glass) !important;
-  border: 1px solid var(--bdr) !important;
-  border-radius: 10px !important;
-  box-shadow: var(--shadow-sm) !important;
+  backdrop-filter: blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+  border: 1px solid var(--bdr2) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
 }}
-
-/* ── Caption ── */
-.stCaption {{ color: var(--txt3) !important; font-size:.65rem !important; }}
-
-/* ── Alerts nativas ── */
-[data-testid="stAlert"] {{ border-radius: 10px !important; }}
-
-/* ── Spinner ── */
-[data-testid="stSpinner"] > div {{ border-top-color: var(--acc) !important; }}
-
-/* ── Success balloon container ── */
-.stSuccess {{ border-radius: 10px !important; }}
-
-/* ── Brilho nos cards com borda colorida ── */
-.card[style*="border-top:3px solid #f87171"] {{
-  box-shadow: var(--shadow-md), 0 -2px 20px rgba(251,113,133,0.06) !important;
+.hdr-pop-title {{
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--txt);
+  margin-bottom: 4px;
 }}
-.card[style*="border-top:3px solid #10b981"] {{
-  box-shadow: var(--shadow-md), 0 -2px 20px rgba(52,211,153,0.06) !important;
+.hdr-notif-item {{
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--bdr);
+  font-size: 0.76rem;
+  color: var(--txt2);
 }}
-.card[style*="border-top:3px solid #3b82f6"] {{
-  box-shadow: var(--shadow-md), 0 -2px 20px rgba(59,130,246,0.06) !important;
+.hdr-notif-item:last-child {{ border-bottom: none; }}
+.hdr-notif-dot {{
+  width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
 }}
+.hdr-user-name {{ font-size: 0.86rem; font-weight: 700; color: var(--txt); }}
+.hdr-user-mail {{ font-size: 0.70rem; color: var(--txt3); margin-bottom: 8px; }}
 </style>
 """, unsafe_allow_html=True)
 
 
-# ─── Navigation com Logo integrada ───────────────────────────────────────────
-_logo_html = (
-    f'<img src="data:image/webp;base64,{LOGO_B64}" class="nav-logo" alt="Delly\'s Logo"/>'
-    if LOGO_B64 else ""
-)
-_nav_html = (
-    '<div class="nav-wrap"><div class="nav-logo-wrap"><div class="nav-brand">'
-    '<span class="nav-brand-title">Registro de Transferência <span>Delly\'s</span></span>'
-    f'{_logo_html}'
-    '</div></div></div>'
-)
-st.markdown(_nav_html, unsafe_allow_html=True)
-pagina = st.radio(
-    "nav",
-    ["📝  Registro", "🗺️  Roteirização", "📋  Histórico"],
-    horizontal=True,
-    label_visibility="collapsed",
-    key="nav_main",
-)
+# ─── Cabeçalho Premium — logo, título, abas, tema, notificações e avatar ─────
+if "_tema_claro" not in st.session_state:
+    st.session_state["_tema_claro"] = False
+
+header_ctr = st.container(key="app_header")
+with header_ctr:
+    hcol_brand, hcol_tabs, hcol_theme, hcol_notif, hcol_user = st.columns(
+        [2.6, 4.2, 0.55, 0.55, 0.55], gap="small"
+    )
+
+    with hcol_brand:
+        _logo_html = (
+            f'<img src="data:image/webp;base64,{LOGO_B64}" alt="Delly\'s Logo"/>'
+            if LOGO_B64 else ""
+        )
+        st.markdown(
+            '<div class="hdr-brand">'
+            f'<div class="hdr-logo-ring">{_logo_html}</div>'
+            '<div class="hdr-brand-text">'
+            '<span class="hdr-title">Delly\'s <span>Transferências</span></span>'
+            '<span class="hdr-sub">Registro de Transferência</span>'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    with hcol_tabs:
+        pagina = st.radio(
+            "nav",
+            ["📝  Registro", "🗺️  Roteirização", "📋  Histórico"],
+            horizontal=True,
+            label_visibility="collapsed",
+            key="nav_main",
+        )
+
+    with hcol_theme:
+        _tema_icon = "☀️" if st.session_state["_tema_claro"] else "🌙"
+        if st.button(_tema_icon, key="btn_tema_header", help="Alternar tema claro/escuro"):
+            st.session_state["_tema_claro"] = not st.session_state["_tema_claro"]
+            st.rerun()
+
+    with hcol_notif:
+        st.markdown('<span class="hdr-badge">2</span>', unsafe_allow_html=True)
+        with st.popover("🔔", help="Notificações"):
+            st.markdown('<div class="hdr-pop-title">Notificações</div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#fbc245"></span>'
+                'Existem notas pendentes de roteirização hoje.</div>'
+                '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#4c8cf5"></span>'
+                'Sincronização com a base ROAD concluída.</div>',
+                unsafe_allow_html=True,
+            )
+
+    with hcol_user:
+        with st.popover("N", help="Minha conta"):
+            st.markdown(
+                '<div class="hdr-user-name">Ney</div>'
+                '<div class="hdr-user-mail">Painel de Transferências · Delly\'s</div>',
+                unsafe_allow_html=True,
+            )
+            st.button("🚪 Sair", key="btn_logout_header", use_container_width=True)
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
