@@ -1295,7 +1295,7 @@ pagina = st.radio(
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-fc1, fc2, fc4 = st.columns([1.4, 1.1, 5.7])
+fc0, fc1, fc2, fc5 = st.columns([3.4, 1.4, 1.1, 3.4])
 with fc1:
     data_filtro = st.date_input(
         "📅 Data",
@@ -1312,7 +1312,7 @@ with fc2:
     _color = "#93c5fd"               if _vt_ativo else "rgba(255,255,255,0.38)"
     st.markdown(f"""<style>
     div[data-testid="stButton"] button[kind="secondary"]#btn_ver_todas,
-    div[data-testid="column"]:nth-child(2) div[data-testid="stButton"] > button {{
+    div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button {{
         background: {_bg} !important;
         border: 1px solid {_borda} !important;
         color: {_color} !important;
@@ -1332,7 +1332,7 @@ with fc2:
         load_transferencias.clear()
         st.rerun()
     ver_todas = st.session_state.get("_ver_todas", False)
-with fc4:
+with fc5:
     pass
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1617,7 +1617,7 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
 # ═══════════════════════════════════════════════════════════════════════════════
 if pagina == "📝  Registro":
 
-    col_form, col_side = st.columns([1.5, 0.7])
+    _c_left, col_form, _c_right = st.columns([1, 3, 1])
 
     with col_form:
         st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -1807,13 +1807,12 @@ if pagina == "📝  Registro":
             </div>
             """, unsafe_allow_html=True)
 
-    with col_side:
-        df_hj = (
-            df_all[df_all["data_registro"] == data_display]
-            if not df_all.empty
-            else pd.DataFrame()
-        )
-        n_hj = len(df_hj)
+    df_hj = (
+        df_all[df_all["data_registro"] == data_display]
+        if not df_all.empty
+        else pd.DataFrame()
+    )
+    n_hj = len(df_hj)
 
     if not df_hj.empty:
         st.markdown('<div class="sec-div"><div class="sec-div-line"></div><div class="sec-div-txt">Notas registradas na data selecionada</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
@@ -1828,7 +1827,7 @@ if pagina == "📝  Registro":
         df_show = dedup_columns(df_hj[SHOW].copy())
         st.dataframe(
             df_show,
-            use_container_width=True,
+            use_container_width=False,
             hide_index=True,
             column_config={k: v for k, v in STD_CONFIG.items() if k in df_show.columns},
         )
@@ -1935,7 +1934,7 @@ elif pagina == "🗺️  Roteirização":
 
             st.dataframe(
                 df_p_display,
-                use_container_width=True,
+                use_container_width=False,
                 hide_index=True,
                 column_config={k: v for k, v in PEND_CONFIG.items() if k in df_p_display.columns},
             )
@@ -1960,7 +1959,7 @@ elif pagina == "🗺️  Roteirização":
 
             df_edited = st.data_editor(
                 df_sel,
-                use_container_width=True,
+                use_container_width=False,
                 hide_index=True,
                 column_config={
                     "✓":            st.column_config.CheckboxColumn("✓",              width=40),
@@ -2137,7 +2136,7 @@ elif pagina == "🗺️  Roteirização":
         # ── Tabela nativa (planilha bonita) ──────────────────────────────────
         st.dataframe(
             df_rd_sorted,
-            use_container_width=True,
+            use_container_width=False,
             hide_index=True,
             column_config={k: v for k, v in ROT_CONFIG.items() if k in df_rd_sorted.columns},
         )
@@ -2215,7 +2214,7 @@ elif pagina == "🗺️  Roteirização":
 
         st.dataframe(
             df_placa,
-            use_container_width=True,
+            use_container_width=False,
             hide_index=True,
             column_config={k: v for k, v in PLACA_CONFIG.items() if k in df_placa.columns},
         )
@@ -2553,7 +2552,7 @@ elif pagina == "📋  Histórico":
             df_hd["dt_saida"] = df_hd["dt_saida"].apply(fmt_date)
         st.dataframe(
             df_hd.sort_values("numnota", ascending=False),
-            use_container_width=True,
+            use_container_width=False,
             hide_index=True,
             column_config={k: v for k, v in HIST_CONFIG.items() if k in df_hd.columns},
         )
