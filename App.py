@@ -552,7 +552,7 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 /* ══════════════════════════════════════════════════════════════════════════
    CABEÇALHO PREMIUM — logo, título, abas, avatar, notificações, tema
    ══════════════════════════════════════════════════════════════════════════ */
-.st-key-app_header {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) {{
   background: var(--nav-bg);
   backdrop-filter: blur(26px) saturate(180%);
   -webkit-backdrop-filter: blur(26px) saturate(180%);
@@ -566,7 +566,7 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   z-index: 999;
   transition: box-shadow .25s ease;
 }}
-.st-key-app_header::before {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5))::before {{
   content: '';
   position: absolute;
   inset: 0;
@@ -578,8 +578,7 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   mask-composite: exclude;
   pointer-events: none;
 }}
-.st-key-app_header [data-testid="stVerticalBlockBorderWrapper"] {{ position: relative; }}
-.st-key-app_header [data-testid="stHorizontalBlock"] {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="stHorizontalBlock"] {{
   align-items: center !important;
   gap: 0.5rem !important;
 }}
@@ -637,15 +636,15 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 }}
 
 /* Abas (st.radio) estilizadas como pill-tabs dentro do cabeçalho */
-.st-key-app_header div[data-testid="stRadio"] {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] {{
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   position: static !important;
   padding: 0 !important;
 }}
-.st-key-app_header div[data-testid="stRadio"] > label {{ display: none !important; }}
-.st-key-app_header div[data-testid="stRadio"] > div {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > label {{ display: none !important; }}
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div {{
   display: flex !important;
   flex-direction: row !important;
   justify-content: center !important;
@@ -658,7 +657,7 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   width: fit-content !important;
   margin: 0 auto !important;
 }}
-.st-key-app_header div[data-testid="stRadio"] > div > label {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div > label {{
   display: flex !important;
   align-items: center !important;
   gap: 6px !important;
@@ -676,27 +675,27 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   background: transparent !important;
   margin: 0 !important;
 }}
-.st-key-app_header div[data-testid="stRadio"] > div > label:hover {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div > label:hover {{
   color: rgba(240,246,255,0.85) !important;
   background: rgba(255,255,255,0.05) !important;
 }}
-.st-key-app_header div[data-testid="stRadio"] > div > label[data-selected="true"] {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div > label[data-selected="true"] {{
   color: #fff !important;
   background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
   box-shadow: 0 4px 16px rgba(59,130,246,0.45), 0 1px 3px rgba(0,0,0,0.3) !important;
 }}
-.st-key-app_header div[data-testid="stRadio"] > div > label > div:first-child {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div > label > div:first-child {{
   display: none !important;
 }}
 
 /* Botões de ação do cabeçalho (tema / notificações / avatar) */
-.st-key-app_header .stButton,
-.st-key-app_header [data-testid="stPopover"] {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) .stButton,
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="stPopover"] {{
   display: flex !important;
   justify-content: center !important;
 }}
-.st-key-app_header .stButton > button,
-.st-key-app_header [data-testid="stPopover"] > div > button {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) .stButton > button,
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="stPopover"] > div > button {{
   background: rgba(255,255,255,0.05) !important;
   border: 1px solid var(--bdr2) !important;
   border-radius: 12px !important;
@@ -707,8 +706,8 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
   box-shadow: var(--shadow-sm) !important;
   transition: all 0.2s cubic-bezier(0.4,0,0.2,1) !important;
 }}
-.st-key-app_header .stButton > button:hover,
-.st-key-app_header [data-testid="stPopover"] > div > button:hover {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) .stButton > button:hover,
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="stPopover"] > div > button:hover {{
   background: rgba(255,255,255,0.10) !important;
   border-color: var(--bdr-hover) !important;
   transform: translateY(-2px) !important;
@@ -716,7 +715,7 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 }}
 
 /* Avatar circular (5ª coluna do cabeçalho) */
-.st-key-app_header [data-testid="column"]:nth-of-type(5) [data-testid="stPopover"] > div > button {{
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="column"]:nth-of-type(5) [data-testid="stPopover"] > div > button {{
   border-radius: 50% !important;
   width: 42px !important;
   height: 42px !important;
@@ -730,7 +729,7 @@ section[data-testid="stSidebar"] {{ display: none !important; }}
 }}
 
 /* Badge de notificações (4ª coluna do cabeçalho) */
-.st-key-app_header [data-testid="column"]:nth-of-type(4) {{ position: relative; }}
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="column"]:nth-of-type(4) {{ position: relative; }}
 .hdr-badge {{
   position: absolute;
   top: -4px;
@@ -791,63 +790,86 @@ div[data-testid="stPopoverBody"] {{
 # ─── Cabeçalho Premium — logo, título, abas, tema, notificações e avatar ─────
 if "_tema_claro" not in st.session_state:
     st.session_state["_tema_claro"] = False
+if "_notif_aberta" not in st.session_state:
+    st.session_state["_notif_aberta"] = False
+if "_user_aberto" not in st.session_state:
+    st.session_state["_user_aberto"] = False
 
-header_ctr = st.container(key="app_header")
-with header_ctr:
-    hcol_brand, hcol_tabs, hcol_theme, hcol_notif, hcol_user = st.columns(
-        [2.6, 4.2, 0.55, 0.55, 0.55], gap="small"
+_HAS_POPOVER = hasattr(st, "popover")
+
+def _hdr_dropdown(icon_label, state_key, help_txt, render_fn):
+    """Usa st.popover quando disponível; caso contrário, cai para um
+    botão + painel expansível (compatível com versões mais antigas do Streamlit)."""
+    if _HAS_POPOVER:
+        with st.popover(icon_label, help=help_txt):
+            render_fn()
+    else:
+        if st.button(icon_label, key=f"btn_{state_key}", help=help_txt):
+            st.session_state[state_key] = not st.session_state.get(state_key, False)
+        if st.session_state.get(state_key, False):
+            with st.container():
+                render_fn()
+
+hcol_brand, hcol_tabs, hcol_theme, hcol_notif, hcol_user = st.columns(
+    [2.6, 4.2, 0.55, 0.55, 0.55], gap="small"
+)
+
+with hcol_brand:
+    _logo_html = (
+        f'<img src="data:image/webp;base64,{LOGO_B64}" alt="Delly\'s Logo"/>'
+        if LOGO_B64 else ""
+    )
+    st.markdown(
+        '<div class="hdr-brand">'
+        f'<div class="hdr-logo-ring">{_logo_html}</div>'
+        '<div class="hdr-brand-text">'
+        '<span class="hdr-title">Delly\'s <span>Transferências</span></span>'
+        '<span class="hdr-sub">Registro de Transferência</span>'
+        '</div></div>',
+        unsafe_allow_html=True,
     )
 
-    with hcol_brand:
-        _logo_html = (
-            f'<img src="data:image/webp;base64,{LOGO_B64}" alt="Delly\'s Logo"/>'
-            if LOGO_B64 else ""
-        )
+with hcol_tabs:
+    pagina = st.radio(
+        "nav",
+        ["📝  Registro", "🗺️  Roteirização", "📋  Histórico"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="nav_main",
+    )
+
+with hcol_theme:
+    _tema_icon = "☀️" if st.session_state["_tema_claro"] else "🌙"
+    if st.button(_tema_icon, key="btn_tema_header", help="Alternar tema claro/escuro"):
+        st.session_state["_tema_claro"] = not st.session_state["_tema_claro"]
+        st.rerun()
+
+with hcol_notif:
+    st.markdown('<span class="hdr-badge">2</span>', unsafe_allow_html=True)
+
+    def _render_notif():
+        st.markdown('<div class="hdr-pop-title">Notificações</div>', unsafe_allow_html=True)
         st.markdown(
-            '<div class="hdr-brand">'
-            f'<div class="hdr-logo-ring">{_logo_html}</div>'
-            '<div class="hdr-brand-text">'
-            '<span class="hdr-title">Delly\'s <span>Transferências</span></span>'
-            '<span class="hdr-sub">Registro de Transferência</span>'
-            '</div></div>',
+            '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#fbc245"></span>'
+            'Existem notas pendentes de roteirização hoje.</div>'
+            '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#4c8cf5"></span>'
+            'Sincronização com a base ROAD concluída.</div>',
             unsafe_allow_html=True,
         )
 
-    with hcol_tabs:
-        pagina = st.radio(
-            "nav",
-            ["📝  Registro", "🗺️  Roteirização", "📋  Histórico"],
-            horizontal=True,
-            label_visibility="collapsed",
-            key="nav_main",
+    _hdr_dropdown("🔔", "_notif_aberta", "Notificações", _render_notif)
+
+with hcol_user:
+
+    def _render_user():
+        st.markdown(
+            '<div class="hdr-user-name">Ney</div>'
+            '<div class="hdr-user-mail">Painel de Transferências · Delly\'s</div>',
+            unsafe_allow_html=True,
         )
+        st.button("🚪 Sair", key="btn_logout_header", use_container_width=True)
 
-    with hcol_theme:
-        _tema_icon = "☀️" if st.session_state["_tema_claro"] else "🌙"
-        if st.button(_tema_icon, key="btn_tema_header", help="Alternar tema claro/escuro"):
-            st.session_state["_tema_claro"] = not st.session_state["_tema_claro"]
-            st.rerun()
-
-    with hcol_notif:
-        st.markdown('<span class="hdr-badge">2</span>', unsafe_allow_html=True)
-        with st.popover("🔔", help="Notificações"):
-            st.markdown('<div class="hdr-pop-title">Notificações</div>', unsafe_allow_html=True)
-            st.markdown(
-                '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#fbc245"></span>'
-                'Existem notas pendentes de roteirização hoje.</div>'
-                '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#4c8cf5"></span>'
-                'Sincronização com a base ROAD concluída.</div>',
-                unsafe_allow_html=True,
-            )
-
-    with hcol_user:
-        with st.popover("N", help="Minha conta"):
-            st.markdown(
-                '<div class="hdr-user-name">Ney</div>'
-                '<div class="hdr-user-mail">Painel de Transferências · Delly\'s</div>',
-                unsafe_allow_html=True,
-            )
-            st.button("🚪 Sair", key="btn_logout_header", use_container_width=True)
+    _hdr_dropdown("N", "_user_aberto", "Minha conta", _render_user)
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
