@@ -1375,22 +1375,22 @@ STD_COLS = [
     "praca", "numcarregamento", "destino",
 ]
 STD_CONFIG = {
-    "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
-    "numnota":         st.column_config.TextColumn("Nota Fiscal",    width=105),
-    "numped":          st.column_config.TextColumn("Pedido",         width=100),
-    "codcliente":      st.column_config.TextColumn("Cód. Cliente",   width=110),
-    "nomecliente":     st.column_config.TextColumn("Cliente",        width=200),
-    "dt_liberado":     st.column_config.TextColumn("Dt. Liberado",   width=105),
-    "nomevend":        st.column_config.TextColumn("Vendedor",       width=160),
-    "nomesup":         st.column_config.TextColumn("Supervisor",     width=140),
-    "pesobrutotot":    st.column_config.NumberColumn("Peso (kg)",    format="%.3f", width=95),
-    "vltotal":         st.column_config.NumberColumn("Valor (R$)",   format="R$ %.2f", width=120),
-    "praca":           st.column_config.TextColumn("Praça",          width=130),
-    "numcarregamento": st.column_config.TextColumn("Carregamento",   width=115),
-    "destino":         st.column_config.TextColumn("Destino",        width=160),
-    "placa_road":      st.column_config.TextColumn("Placa Antiga",   width=110),
-    "motivo":          st.column_config.TextColumn("Motivo",         width=220),
-    "observacao":      st.column_config.TextColumn("Observação",     width=220),
+    "data_registro":   st.column_config.TextColumn("Data de Registro", width="small"),
+    "numnota":         st.column_config.TextColumn("Nota Fiscal",    width="small"),
+    "numped":          st.column_config.TextColumn("Pedido",         width="small"),
+    "codcliente":      st.column_config.TextColumn("Cód. Cliente",   width="small"),
+    "nomecliente":     st.column_config.TextColumn("Cliente",        width="medium"),
+    "dt_liberado":     st.column_config.TextColumn("Dt. Liberado",   width="small"),
+    "nomevend":        st.column_config.TextColumn("Vendedor",       width="small"),
+    "nomesup":         st.column_config.TextColumn("Supervisor",     width="small"),
+    "pesobrutotot":    st.column_config.NumberColumn("Peso (kg)",    format="%.3f", width="small"),
+    "vltotal":         st.column_config.NumberColumn("Valor (R$)",   format="R$ %.2f", width="small"),
+    "praca":           st.column_config.TextColumn("Praça",          width="small"),
+    "numcarregamento": st.column_config.TextColumn("Carregamento",   width="small"),
+    "destino":         st.column_config.TextColumn("Destino",        width="small"),
+    "placa_road":      st.column_config.TextColumn("Placa Antiga",   width="small"),
+    "motivo":          st.column_config.TextColumn("Motivo",         width="medium"),
+    "observacao":      st.column_config.TextColumn("Observação",     width="medium"),
 }
 
 st.markdown('<div class="page-body">', unsafe_allow_html=True)
@@ -1827,7 +1827,7 @@ if pagina == "📝  Registro":
         df_show = dedup_columns(df_hj[SHOW].copy())
         st.dataframe(
             df_show,
-            use_container_width=False,
+            use_container_width=True,
             hide_index=True,
             column_config={k: v for k, v in STD_CONFIG.items() if k in df_show.columns},
         )
@@ -1908,22 +1908,22 @@ elif pagina == "🗺️  Roteirização":
         ] if c in df_p.columns]
 
         PEND_CONFIG = {
-            "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
-            "numnota":         st.column_config.TextColumn("Nota Fiscal",   width=110),
-            "numped":          st.column_config.TextColumn("Pedido",        width=100),
-            "codcliente":      st.column_config.TextColumn("Cód. Cliente",  width=110),
-            "nomecliente":     st.column_config.TextColumn("Cliente",       width=210),
-            "dt_liberado":     st.column_config.TextColumn("Dt. Liberado",  width=110),
-            "nomevend":        st.column_config.TextColumn("Vendedor",      width=160),
-            "nomesup":         st.column_config.TextColumn("Supervisor",    width=140),
-            "pesobrutotot":    st.column_config.NumberColumn("Peso (kg)",   format="%.3f", width=95),
-            "vltotal":         st.column_config.NumberColumn("Valor (R$)",  format="R$ %.2f", width=120),
-            "praca":           st.column_config.TextColumn("Praça",         width=130),
-            "numcarregamento": st.column_config.TextColumn("Carregamento",  width=115),
-            "destino":         st.column_config.TextColumn("Destino",       width=160),
-            "placa_road":      st.column_config.TextColumn("Placa Antiga",  width=115),
-            "motivo":          st.column_config.TextColumn("Motivo",        width=220),
-            "observacao":      st.column_config.TextColumn("Observação",    width=220),
+            "data_registro":   st.column_config.TextColumn("Data de Registro", width="small"),
+            "numnota":         st.column_config.TextColumn("Nota Fiscal",   width="small"),
+            "numped":          st.column_config.TextColumn("Pedido",        width="small"),
+            "codcliente":      st.column_config.TextColumn("Cód. Cliente",  width="small"),
+            "nomecliente":     st.column_config.TextColumn("Cliente",       width="medium"),
+            "dt_liberado":     st.column_config.TextColumn("Dt. Liberado",  width="small"),
+            "nomevend":        st.column_config.TextColumn("Vendedor",      width="small"),
+            "nomesup":         st.column_config.TextColumn("Supervisor",    width="small"),
+            "pesobrutotot":    st.column_config.NumberColumn("Peso (kg)",   format="%.3f", width="small"),
+            "vltotal":         st.column_config.NumberColumn("Valor (R$)",  format="R$ %.2f", width="small"),
+            "praca":           st.column_config.TextColumn("Praça",         width="small"),
+            "numcarregamento": st.column_config.TextColumn("Carregamento",  width="small"),
+            "destino":         st.column_config.TextColumn("Destino",       width="small"),
+            "placa_road":      st.column_config.TextColumn("Placa Antiga",  width="small"),
+            "motivo":          st.column_config.TextColumn("Motivo",        width="medium"),
+            "observacao":      st.column_config.TextColumn("Observação",    width="medium"),
         }
 
         if df_p.empty:
@@ -1934,7 +1934,7 @@ elif pagina == "🗺️  Roteirização":
 
             st.dataframe(
                 df_p_display,
-                use_container_width=False,
+                use_container_width=True,
                 hide_index=True,
                 column_config={k: v for k, v in PEND_CONFIG.items() if k in df_p_display.columns},
             )
@@ -1959,20 +1959,20 @@ elif pagina == "🗺️  Roteirização":
 
             df_edited = st.data_editor(
                 df_sel,
-                use_container_width=False,
+                use_container_width=True,
                 hide_index=True,
                 column_config={
-                    "✓":            st.column_config.CheckboxColumn("✓",              width=40),
-                    "Nota":         st.column_config.TextColumn("Nota Fiscal",        width=110),
-                    "Pedido":       st.column_config.TextColumn("Pedido",             width=110),
-                    "Cliente":      st.column_config.TextColumn("Cliente",            width=210),
-                    "Observação":   st.column_config.TextColumn("Observação",         width=200),
-                    "Carregamento": st.column_config.TextColumn("Carregamento",       width=115),
-                    "Placa Antiga": st.column_config.TextColumn("Placa Antiga",       width=110),
-                    "Peso (kg)":    st.column_config.NumberColumn("Peso (kg)",        format="%.0f kg", width=90),
-                    "Valor (R$)":   st.column_config.NumberColumn("Valor (R$)",       format="R$ %.2f", width=120),
-                    "Praça":        st.column_config.TextColumn("Praça",              width=130),
-                    "_id":          st.column_config.TextColumn("ID",                 width=50),
+                    "✓":            st.column_config.CheckboxColumn("✓",              width="small"),
+                    "Nota":         st.column_config.TextColumn("Nota Fiscal",        width="small"),
+                    "Pedido":       st.column_config.TextColumn("Pedido",             width="small"),
+                    "Cliente":      st.column_config.TextColumn("Cliente",            width="medium"),
+                    "Observação":   st.column_config.TextColumn("Observação",         width="medium"),
+                    "Carregamento": st.column_config.TextColumn("Carregamento",       width="small"),
+                    "Placa Antiga": st.column_config.TextColumn("Placa Antiga",       width="small"),
+                    "Peso (kg)":    st.column_config.NumberColumn("Peso (kg)",        format="%.0f kg", width="small"),
+                    "Valor (R$)":   st.column_config.NumberColumn("Valor (R$)",       format="R$ %.2f", width="small"),
+                    "Praça":        st.column_config.TextColumn("Praça",              width="small"),
+                    "_id":          st.column_config.TextColumn("ID",                 width="small"),
                 },
                 disabled=["Nota","Pedido","Cliente","Observação","Carregamento","Placa Antiga","Peso (kg)","Valor (R$)","Praça","_id"],
                 key="rot_editor",
@@ -2115,12 +2115,12 @@ elif pagina == "🗺️  Roteirização":
         ROT_COLS   = [c for c in _rot_front + _rot_rest if c in df_r.columns]
         ROT_CONFIG = {
             **STD_CONFIG,
-            "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
-            "placa_veiculo":   st.column_config.TextColumn("Nova Placa",    width=120),
-            "numcarregamento": st.column_config.TextColumn("Carregamento",  width=115),
-            "dt_saida":        st.column_config.TextColumn("Dt. Saída",     width=110),
-            "motivo":          st.column_config.TextColumn("Motivo",        width=220),
-            "observacao":      st.column_config.TextColumn("Observação",    width=220),
+            "data_registro":   st.column_config.TextColumn("Data de Registro", width="small"),
+            "placa_veiculo":   st.column_config.TextColumn("Nova Placa",    width="small"),
+            "numcarregamento": st.column_config.TextColumn("Carregamento",  width="small"),
+            "dt_saida":        st.column_config.TextColumn("Dt. Saída",     width="small"),
+            "motivo":          st.column_config.TextColumn("Motivo",        width="medium"),
+            "observacao":      st.column_config.TextColumn("Observação",    width="medium"),
         }
         df_rd = dedup_columns(df_r[ROT_COLS].copy())
         if "dt_saida" in df_rd.columns:
@@ -2136,7 +2136,7 @@ elif pagina == "🗺️  Roteirização":
         # ── Tabela nativa (planilha bonita) ──────────────────────────────────
         st.dataframe(
             df_rd_sorted,
-            use_container_width=False,
+            use_container_width=True,
             hide_index=True,
             column_config={k: v for k, v in ROT_CONFIG.items() if k in df_rd_sorted.columns},
         )
@@ -2205,16 +2205,16 @@ elif pagina == "🗺️  Roteirização":
         )
 
         PLACA_CONFIG = {
-            "data_registro": st.column_config.TextColumn("Data", width=110),
-            "placa_veiculo": st.column_config.TextColumn("Placa", width=120),
-            "qtd_clientes":  st.column_config.NumberColumn("Qtd. Clientes", format="%d", width=130),
-            "peso":          st.column_config.NumberColumn("Peso (kg)", format="%.3f", width=120),
-            "valor":         st.column_config.NumberColumn("Valor (R$)", format="R$ %.2f", width=130),
+            "data_registro": st.column_config.TextColumn("Data", width="small"),
+            "placa_veiculo": st.column_config.TextColumn("Placa", width="small"),
+            "qtd_clientes":  st.column_config.NumberColumn("Qtd. Clientes", format="%d", width="small"),
+            "peso":          st.column_config.NumberColumn("Peso (kg)", format="%.3f", width="small"),
+            "valor":         st.column_config.NumberColumn("Valor (R$)", format="R$ %.2f", width="small"),
         }
 
         st.dataframe(
             df_placa,
-            use_container_width=False,
+            use_container_width=True,
             hide_index=True,
             column_config={k: v for k, v in PLACA_CONFIG.items() if k in df_placa.columns},
         )
@@ -2523,13 +2523,13 @@ elif pagina == "📋  Histórico":
     HIST_COLS = [c for c in _hist_front + _hist_rest if c in df_h.columns]
     HIST_CONFIG = {
         **STD_CONFIG,
-        "data_registro":   st.column_config.TextColumn("Data de Registro", width=120),
-        "placa_veiculo":   st.column_config.TextColumn("Nova Placa",   width=110),
-        "motivo":          st.column_config.TextColumn("Motivo",       width=220),
-        "observacao":      st.column_config.TextColumn("Observação",   width=220),
-        "numcarregamento": st.column_config.TextColumn("Carregamento", width=115),
-        "dt_saida":        st.column_config.TextColumn("Dt. Saída",    width=100),
-        "status":          st.column_config.TextColumn("Status",       width=110),
+        "data_registro":   st.column_config.TextColumn("Data de Registro", width="small"),
+        "placa_veiculo":   st.column_config.TextColumn("Nova Placa",   width="small"),
+        "motivo":          st.column_config.TextColumn("Motivo",       width="medium"),
+        "observacao":      st.column_config.TextColumn("Observação",   width="medium"),
+        "numcarregamento": st.column_config.TextColumn("Carregamento", width="small"),
+        "dt_saida":        st.column_config.TextColumn("Dt. Saída",    width="small"),
+        "status":          st.column_config.TextColumn("Status",       width="small"),
     }
 
     n_pend = int((df_h["status"] == "pendente").sum()) if not df_h.empty else 0
@@ -2552,7 +2552,7 @@ elif pagina == "📋  Histórico":
             df_hd["dt_saida"] = df_hd["dt_saida"].apply(fmt_date)
         st.dataframe(
             df_hd.sort_values("numnota", ascending=False),
-            use_container_width=False,
+            use_container_width=True,
             hide_index=True,
             column_config={k: v for k, v in HIST_CONFIG.items() if k in df_hd.columns},
         )
