@@ -1302,6 +1302,95 @@ div[data-testid="stPopoverBody"] {{
 .dg-pager-marker + div[data-testid="stHorizontalBlock"] button:disabled {{
   opacity: 0.3 !important;
 }}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MICRO-ANIMAÇÕES — fade-in, hover, glow, elevação (300ms)
+   Apenas efeitos de transição/interação — nenhuma alteração de layout.
+   ══════════════════════════════════════════════════════════════════════════ */
+@keyframes fadeInUp {{
+  from {{ opacity: 0; transform: translateY(10px); }}
+  to   {{ opacity: 1; transform: translateY(0); }}
+}}
+@keyframes fadeIn {{
+  from {{ opacity: 0; }}
+  to   {{ opacity: 1; }}
+}}
+
+/* Fade-in ao carregar: cards, KPIs, gráficos, filtros e busca */
+.card, .kpi-card, .chart-wrap, .filter-bar, .search-card {{
+  animation: fadeInUp 0.45s cubic-bezier(0.4,0,0.2,1) both;
+}}
+.dg-wrap, .al-s, .al-e, .al-w, .al-i {{
+  animation: fadeIn 0.35s ease both;
+}}
+/* Pequeno escalonamento visual entre KPIs para um fade-in mais orgânico */
+.dash-grid .kpi-card:nth-child(1) {{ animation-delay: 0.02s; }}
+.dash-grid .kpi-card:nth-child(2) {{ animation-delay: 0.06s; }}
+.dash-grid .kpi-card:nth-child(3) {{ animation-delay: 0.10s; }}
+.dash-grid .kpi-card:nth-child(4) {{ animation-delay: 0.14s; }}
+
+/* Todos os botões Streamlit: transição suave + leve elevação + glow no hover */
+.stButton > button,
+[data-testid="stDownloadButton"] > button,
+[data-testid="stPopover"] > div > button {{
+  transition: transform 300ms cubic-bezier(0.4,0,0.2,1),
+              box-shadow 300ms cubic-bezier(0.4,0,0.2,1),
+              background-color 300ms ease,
+              border-color 300ms ease,
+              filter 300ms ease !important;
+}}
+.stButton > button:hover:not(:disabled),
+[data-testid="stDownloadButton"] > button:hover:not(:disabled),
+[data-testid="stPopover"] > div > button:hover {{
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: 0 8px 22px rgba(59,130,246,0.30), var(--shadow-md) !important;
+}}
+.stButton > button:active:not(:disabled),
+[data-testid="stDownloadButton"] > button:active:not(:disabled) {{
+  transform: translateY(0);
+}}
+
+/* Inputs / selects / date pickers: transição suave em foco e hover */
+[data-testid="stTextInput"] input,
+[data-testid="stDateInput"] input,
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+[data-testid="stTextArea"] textarea {{
+  transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease !important;
+}}
+
+/* Chips de status: leve elevação + glow no hover dentro das tabelas */
+.dg-chip {{
+  transition: transform 300ms cubic-bezier(0.4,0,0.2,1), box-shadow 300ms ease, filter 300ms ease;
+}}
+.dg-table tbody tr:hover .dg-chip {{
+  transform: translateY(-1px) scale(1.03);
+  filter: brightness(1.08);
+}}
+
+/* Linhas da tabela: transição de 300ms no hover (mantendo o mesmo efeito, apenas suavizado) */
+.dg-table tbody tr {{
+  transition: background 300ms ease;
+}}
+
+/* KPI icon: leve giro/glow no hover do card */
+.kpi-card-icon {{
+  transition: transform 300ms cubic-bezier(0.4,0,0.2,1), box-shadow 300ms ease;
+}}
+.kpi-card:hover .kpi-card-icon {{
+  transform: scale(1.08);
+  box-shadow: 0 0 18px var(--kpi-glow, rgba(59,130,246,0.35)), var(--shadow-sm);
+}}
+
+/* Popovers: fade-in suave ao abrir */
+div[data-testid="stPopoverBody"] {{
+  animation: fadeIn 300ms ease both;
+}}
+
+/* Pill-tabs do cabeçalho: transição de 300ms já reforçada aqui */
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div > label {{
+  transition: all 300ms cubic-bezier(0.4,0,0.2,1) !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
