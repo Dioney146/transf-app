@@ -1194,6 +1194,109 @@ div[data-testid="stPopoverBody"] {{
   transform: translateY(0) !important;
   box-shadow: 0 4px 14px rgba(47,111,224,0.45) !important;
 }}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DATAGRID PROFISSIONAL — cabeçalho fixo, zebra, hover, chips, paginação
+   ══════════════════════════════════════════════════════════════════════════ */
+.dg-wrap {{
+  border: 1px solid var(--bdr2);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: rgba(255,255,255,0.015);
+  box-shadow: var(--shadow-sm);
+}}
+.dg-scroll {{
+  max-height: 520px;
+  overflow-y: auto;
+  overflow-x: auto;
+}}
+.dg-scroll::-webkit-scrollbar {{ width: 8px; height: 8px; }}
+.dg-scroll::-webkit-scrollbar-thumb {{ background: rgba(255,255,255,0.14); border-radius: 8px; }}
+.dg-scroll::-webkit-scrollbar-track {{ background: transparent; }}
+.dg-table {{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.80rem;
+}}
+.dg-table thead th {{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(13,21,35,0.97);
+  backdrop-filter: blur(8px);
+  color: var(--txt2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--bdr2);
+  white-space: nowrap;
+}}
+.dg-th-left   {{ text-align: left; }}
+.dg-th-right  {{ text-align: right; }}
+.dg-th-center {{ text-align: center; }}
+.dg-table tbody td {{
+  padding: 11px 16px;
+  color: var(--txt);
+  border-bottom: 1px solid rgba(255,255,255,0.045);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}}
+.dg-td-left   {{ text-align: left; }}
+.dg-td-right  {{ text-align: right; font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }}
+.dg-td-center {{ text-align: center; }}
+.dg-table tbody tr {{ transition: background .15s ease; }}
+.dg-table tbody tr:nth-child(even) {{ background: rgba(255,255,255,0.018); }}
+.dg-table tbody tr:hover {{ background: var(--acc-lt) !important; }}
+.dg-table tbody tr:last-child td {{ border-bottom: none; }}
+
+.dg-chip {{
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border: 1px solid;
+  white-space: nowrap;
+}}
+
+.dg-pageinfo {{
+  font-size: 0.72rem;
+  color: var(--txt2);
+  padding-top: 8px;
+}}
+.dg-pager-marker + div[data-testid="stHorizontalBlock"] {{
+  margin-top: 4px;
+  align-items: center !important;
+}}
+.dg-pager-marker + div[data-testid="stHorizontalBlock"] button {{
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,0.045) !important;
+  border: 1px solid var(--bdr2) !important;
+  color: var(--txt) !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}}
+.dg-pager-marker + div[data-testid="stHorizontalBlock"] button:hover:not(:disabled) {{
+  background: var(--acc) !important;
+  border-color: var(--acc) !important;
+  color: #fff !important;
+  transform: none !important;
+}}
+.dg-pager-marker + div[data-testid="stHorizontalBlock"] button:disabled {{
+  opacity: 0.3 !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1281,6 +1384,149 @@ with hcol_user:
         st.button("🚪 Sair", key="btn_logout_header", use_container_width=True)
 
     _hdr_dropdown("N", "_user_aberto", "Minha conta", _render_user)
+
+# ══════════════════════════════════════════════════════════════════════════
+# DATAGRID PROFISSIONAL — helpers de renderização (chips, células, paginação)
+# ══════════════════════════════════════════════════════════════════════════
+STATUS_CHIP_STYLES = {
+    "roteirizado": ("#3ddba0", "rgba(61,219,160,0.14)", "rgba(61,219,160,0.35)", "Roteirizado"),
+    "pendente":    ("#fbc245", "rgba(251,194,69,0.14)", "rgba(251,194,69,0.35)", "Pendente"),
+    "cancelado":   ("#fb7c8f", "rgba(251,124,143,0.14)", "rgba(251,124,143,0.35)", "Cancelado"),
+}
+
+def _status_chip(value):
+    v = str(value).strip().lower()
+    if v in ("", "nan", "none"):
+        v = "pendente"
+    color, bg, bdr, label = STATUS_CHIP_STYLES.get(
+        v, ("#96acc9", "rgba(255,255,255,0.06)", "rgba(255,255,255,0.16)", str(value) or "—")
+    )
+    return f'<span class="dg-chip" style="color:{color};background:{bg};border-color:{bdr}">{label}</span>'
+
+def _fmt_cell(value, col_type="text"):
+    s = "" if value is None else str(value).strip()
+    if s in ("", "nan", "None", "NaT"):
+        return "—"
+    if col_type == "currency":
+        try:
+            return br(float(value))
+        except Exception:
+            return s
+    if col_type == "weight":
+        try:
+            return f"{float(value):,.3f}".replace(",", "X").replace(".", ",").replace("X", ".") + " kg"
+        except Exception:
+            return s
+    if col_type == "int":
+        try:
+            return f"{int(float(value)):,}".replace(",", ".")
+        except Exception:
+            return s
+    return s.replace("<", "&lt;").replace(">", "&gt;")
+
+def render_pro_table(df, column_defs, key, page_size=10, status_key=None, empty_msg="Nenhum registro encontrado."):
+    """
+    Renderiza uma tabela HTML no estilo DataGrid profissional:
+    cabeçalho fixo, linhas zebradas, hover, chips de status e paginação.
+
+    column_defs: lista de dicts:
+      {"key": "coluna_no_df", "label": "Rótulo", "align": "left"/"right"/"center",
+       "type": "text"/"currency"/"weight"/"int"/"status", "width": "160px" (opcional)}
+    """
+    total = len(df)
+    page_key = f"_{key}_page"
+    if page_key not in st.session_state:
+        st.session_state[page_key] = 0
+
+    if total == 0:
+        st.markdown(f'<div class="al-i" style="margin:.75rem 0">{empty_msg}</div>', unsafe_allow_html=True)
+        return
+
+    total_pages = max(1, -(-total // page_size))
+    cur_page = min(st.session_state[page_key], total_pages - 1)
+    st.session_state[page_key] = cur_page
+
+    start = cur_page * page_size
+    end = start + page_size
+    page_df = df.iloc[start:end]
+
+    thead = "<tr>"
+    for c in column_defs:
+        align = c.get("align", "left")
+        width = f' style="width:{c["width"]}"' if c.get("width") else ""
+        thead += f'<th class="dg-th-{align}"{width}>{c["label"]}</th>'
+    thead += "</tr>"
+
+    rows_html = []
+    for _, row in page_df.iterrows():
+        tds = []
+        for c in column_defs:
+            align = c.get("align", "left")
+            key_c = c["key"]
+            raw = row[key_c] if key_c in row.index else ""
+            if c.get("type") == "status" or (status_key and key_c == status_key):
+                cell = _status_chip(raw)
+            else:
+                cell = _fmt_cell(raw, c.get("type", "text"))
+            tds.append(f'<td class="dg-td-{align}">{cell}</td>')
+        rows_html.append(f"<tr>{''.join(tds)}</tr>")
+
+    table_html = (
+        '<div class="dg-wrap"><div class="dg-scroll"><table class="dg-table">'
+        f'<thead>{thead}</thead><tbody>{"".join(rows_html)}</tbody>'
+        '</table></div></div>'
+    )
+    st.markdown(table_html, unsafe_allow_html=True)
+
+    # ── Paginação ──────────────────────────────────────────────────────────
+    st.markdown('<div class="dg-pager-marker"></div>', unsafe_allow_html=True)
+    c1, c2, c3, c4, c5, c6 = st.columns([2.4, 0.45, 0.45, 1.3, 0.45, 0.45], gap="small")
+    with c1:
+        st.markdown(
+            f'<div class="dg-pageinfo">Mostrando <strong>{start + 1}</strong>–<strong>{min(end, total)}</strong> de <strong>{total}</strong></div>',
+            unsafe_allow_html=True,
+        )
+    with c2:
+        if st.button("«", key=f"{key}_first", disabled=cur_page == 0, use_container_width=True):
+            st.session_state[page_key] = 0
+            st.rerun()
+    with c3:
+        if st.button("‹", key=f"{key}_prev", disabled=cur_page == 0, use_container_width=True):
+            st.session_state[page_key] = cur_page - 1
+            st.rerun()
+    with c4:
+        st.markdown(
+            f'<div class="dg-pageinfo" style="text-align:center">Página <strong>{cur_page + 1}</strong> de <strong>{total_pages}</strong></div>',
+            unsafe_allow_html=True,
+        )
+    with c5:
+        if st.button("›", key=f"{key}_next", disabled=cur_page >= total_pages - 1, use_container_width=True):
+            st.session_state[page_key] = cur_page + 1
+            st.rerun()
+    with c6:
+        if st.button("»", key=f"{key}_last", disabled=cur_page >= total_pages - 1, use_container_width=True):
+            st.session_state[page_key] = total_pages - 1
+            st.rerun()
+
+# Definições de colunas reutilizadas pelas tabelas de exibição
+STD_DG_DEFS = [
+    {"key": "data_registro",   "label": "Data Registro", "align": "left"},
+    {"key": "placa_road",      "label": "Placa Antiga",  "align": "left"},
+    {"key": "motivo",          "label": "Motivo",        "align": "left",  "width": "200px"},
+    {"key": "observacao",      "label": "Observação",    "align": "left",  "width": "200px"},
+    {"key": "numnota",         "label": "Nota Fiscal",   "align": "left"},
+    {"key": "numped",          "label": "Pedido",        "align": "left"},
+    {"key": "codcliente",      "label": "Cód. Cliente",  "align": "left"},
+    {"key": "nomecliente",     "label": "Cliente",       "align": "left",  "width": "220px"},
+    {"key": "dt_liberado",     "label": "Dt. Liberado",  "align": "left"},
+    {"key": "nomevend",        "label": "Vendedor",      "align": "left"},
+    {"key": "nomesup",         "label": "Supervisor",    "align": "left"},
+    {"key": "pesobrutotot",    "label": "Peso (kg)",     "align": "right", "type": "weight"},
+    {"key": "vltotal",         "label": "Valor (R$)",    "align": "right", "type": "currency"},
+    {"key": "praca",           "label": "Praça",         "align": "left"},
+    {"key": "numcarregamento", "label": "Carregamento",  "align": "left"},
+    {"key": "destino",         "label": "Destino",       "align": "left"},
+]
 
 # ─── Filter Bar ───────────────────────────────────────────────────────────────
 st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
@@ -1817,12 +2063,10 @@ if pagina == "📝  Registro":
         """, unsafe_allow_html=True)
         SHOW = [c for c in STD_COLS if c in df_hj.columns]
         df_show = dedup_columns(df_hj[SHOW].copy())
-        st.dataframe(
-            df_show,
-            use_container_width=True,
-            hide_index=True,
-            column_config={k: v for k, v in STD_CONFIG.items() if k in df_show.columns},
-        )
+        st.markdown('<div class="card-body" style="padding-top:0">', unsafe_allow_html=True)
+        _lista_defs = [d for d in STD_DG_DEFS if d["key"] in df_show.columns]
+        render_pro_table(df_show, _lista_defs, key="lista_completa", page_size=10)
+        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('<div style="padding:.75rem 1.25rem;border-top:1px solid var(--bdr)">', unsafe_allow_html=True)
         ids_hj = df_hj["id"].astype(str).tolist()
         cd1, cd2, _ = st.columns([2, 1, 3], gap="medium")
@@ -1891,7 +2135,7 @@ elif pagina == "🗺️  Roteirização":
         st.caption(f"{len(df_p)} nota(s) pendentes")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ── Tabela nativa (st.dataframe) + painel de roteirização ───────────
+        # ── Tabela de exibição (DataGrid com paginação) + painel de roteirização
         PEND_COLS = [c for c in [
             "data_registro", "placa_road", "motivo", "observacao",
             "numnota", "numped", "codcliente", "nomecliente", "dt_liberado",
@@ -1899,37 +2143,16 @@ elif pagina == "🗺️  Roteirização":
             "praca", "numcarregamento", "destino",
         ] if c in df_p.columns]
 
-        PEND_CONFIG = {
-            "data_registro":   st.column_config.TextColumn("Data de Registro", width="small"),
-            "numnota":         st.column_config.TextColumn("Nota Fiscal",   width="small"),
-            "numped":          st.column_config.TextColumn("Pedido",        width="small"),
-            "codcliente":      st.column_config.TextColumn("Cód. Cliente",  width="small"),
-            "nomecliente":     st.column_config.TextColumn("Cliente",       width="medium"),
-            "dt_liberado":     st.column_config.TextColumn("Dt. Liberado",  width="small"),
-            "nomevend":        st.column_config.TextColumn("Vendedor",      width="small"),
-            "nomesup":         st.column_config.TextColumn("Supervisor",    width="small"),
-            "pesobrutotot":    st.column_config.NumberColumn("Peso (kg)",   format="%.3f", width="small"),
-            "vltotal":         st.column_config.NumberColumn("Valor (R$)",  format="R$ %.2f", width="small"),
-            "praca":           st.column_config.TextColumn("Praça",         width="small"),
-            "numcarregamento": st.column_config.TextColumn("Carregamento",  width="small"),
-            "destino":         st.column_config.TextColumn("Destino",       width="small"),
-            "placa_road":      st.column_config.TextColumn("Placa Antiga",  width="small"),
-            "motivo":          st.column_config.TextColumn("Motivo",        width="medium"),
-            "observacao":      st.column_config.TextColumn("Observação",    width="medium"),
-        }
-
         if df_p.empty:
             st.markdown('<div class="al-i" style="margin:1rem 1.25rem">Nenhuma nota pendente nos filtros.</div>', unsafe_allow_html=True)
         else:
             df_p_sorted = df_p.sort_values("dt_liberado", ascending=False).reset_index(drop=True)
             df_p_display = dedup_columns(df_p_sorted[PEND_COLS].copy()) if PEND_COLS else df_p_sorted
 
-            st.dataframe(
-                df_p_display,
-                use_container_width=True,
-                hide_index=True,
-                column_config={k: v for k, v in PEND_CONFIG.items() if k in df_p_display.columns},
-            )
+            st.markdown('<div class="card-body" style="padding-top:0">', unsafe_allow_html=True)
+            _pend_defs = [d for d in STD_DG_DEFS if d["key"] in df_p_display.columns]
+            render_pro_table(df_p_display, _pend_defs, key="pend_table", page_size=10)
+            st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown('<div class="sec-div" style="margin-top:.5rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar notas</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
@@ -2105,15 +2328,17 @@ elif pagina == "🗺️  Roteirização":
         _rot_front = ["data_registro", "placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento", "dt_saida"]
         _rot_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "motivo", "observacao"] if c not in _rot_front]
         ROT_COLS   = [c for c in _rot_front + _rot_rest if c in df_r.columns]
-        ROT_CONFIG = {
-            **STD_CONFIG,
-            "data_registro":   st.column_config.TextColumn("Data de Registro", width="small"),
-            "placa_veiculo":   st.column_config.TextColumn("Nova Placa",    width="small"),
-            "numcarregamento": st.column_config.TextColumn("Carregamento",  width="small"),
-            "dt_saida":        st.column_config.TextColumn("Dt. Saída",     width="small"),
-            "motivo":          st.column_config.TextColumn("Motivo",        width="medium"),
-            "observacao":      st.column_config.TextColumn("Observação",    width="medium"),
-        }
+        ROT_DG_DEFS = [
+            {"key": "data_registro",   "label": "Data Registro", "align": "left"},
+            {"key": "placa_road",      "label": "Placa Antiga",  "align": "left"},
+            {"key": "placa_veiculo",   "label": "Nova Placa",    "align": "left"},
+            {"key": "motivo",          "label": "Motivo",        "align": "left",  "width": "180px"},
+            {"key": "observacao",      "label": "Observação",    "align": "left",  "width": "180px"},
+            {"key": "numcarregamento", "label": "Carregamento",  "align": "left"},
+            {"key": "dt_saida",        "label": "Dt. Saída",     "align": "left"},
+        ] + [d for d in STD_DG_DEFS if d["key"] not in (
+            "placa_road", "motivo", "observacao", "numcarregamento", "data_registro"
+        )]
         df_rd = dedup_columns(df_r[ROT_COLS].copy())
         if "dt_saida" in df_rd.columns:
             df_rd["dt_saida"] = df_rd["dt_saida"].apply(fmt_date)
@@ -2125,13 +2350,9 @@ elif pagina == "🗺️  Roteirização":
         df_rd_sorted = df_rd.sort_values("dt_liberado", ascending=False).reset_index(drop=True) if not df_rd.empty else df_rd
         df_r_sorted  = df_r.sort_values("dt_liberado", ascending=False).reset_index(drop=True) if not df_r.empty else df_r
 
-        # ── Tabela nativa (planilha bonita) ──────────────────────────────────
-        st.dataframe(
-            df_rd_sorted,
-            use_container_width=True,
-            hide_index=True,
-            column_config={k: v for k, v in ROT_CONFIG.items() if k in df_rd_sorted.columns},
-        )
+        # ── DataGrid profissional (paginado) ─────────────────────────────────
+        _rote_defs = [d for d in ROT_DG_DEFS if d["key"] in df_rd_sorted.columns]
+        render_pro_table(df_rd_sorted, _rote_defs, key="roteirizadas_table", page_size=10)
         st.caption(f"{len(df_r)} nota(s)")
 
         # ── Lixeira por linha: selectbox de nota + botão devolver ────────────
@@ -2196,20 +2417,15 @@ elif pagina == "🗺️  Roteirização":
             .reset_index(drop=True)
         )
 
-        PLACA_CONFIG = {
-            "data_registro": st.column_config.TextColumn("Data", width="small"),
-            "placa_veiculo": st.column_config.TextColumn("Placa", width="small"),
-            "qtd_clientes":  st.column_config.NumberColumn("Qtd. Clientes", format="%d", width="small"),
-            "peso":          st.column_config.NumberColumn("Peso (kg)", format="%.3f", width="small"),
-            "valor":         st.column_config.NumberColumn("Valor (R$)", format="R$ %.2f", width="small"),
-        }
+        PLACA_DG_DEFS = [
+            {"key": "data_registro",  "label": "Data",          "align": "left"},
+            {"key": "placa_veiculo",  "label": "Placa",         "align": "left"},
+            {"key": "qtd_clientes",   "label": "Qtd. Clientes", "align": "right", "type": "int"},
+            {"key": "peso",           "label": "Peso (kg)",     "align": "right", "type": "weight"},
+            {"key": "valor",          "label": "Valor (R$)",    "align": "right", "type": "currency"},
+        ]
 
-        st.dataframe(
-            df_placa,
-            use_container_width=True,
-            hide_index=True,
-            column_config={k: v for k, v in PLACA_CONFIG.items() if k in df_placa.columns},
-        )
+        render_pro_table(df_placa, PLACA_DG_DEFS, key="placa_table", page_size=10)
 
         _tot_placas    = df_placa["placa_veiculo"].nunique()
         _tot_clientes  = _df_rep["nomecliente"].nunique()
@@ -2512,17 +2728,18 @@ elif pagina == "📋  Histórico":
 
     _hist_front = ["data_registro", "placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento"]
     _hist_rest  = [c for c in STD_COLS + ["dt_saida", "status", "motivo", "observacao"] if c not in _hist_front]
-    HIST_COLS = [c for c in _hist_front + _hist_rest if c in df_h.columns]
-    HIST_CONFIG = {
-        **STD_CONFIG,
-        "data_registro":   st.column_config.TextColumn("Data de Registro", width="small"),
-        "placa_veiculo":   st.column_config.TextColumn("Nova Placa",   width="small"),
-        "motivo":          st.column_config.TextColumn("Motivo",       width="medium"),
-        "observacao":      st.column_config.TextColumn("Observação",   width="medium"),
-        "numcarregamento": st.column_config.TextColumn("Carregamento", width="small"),
-        "dt_saida":        st.column_config.TextColumn("Dt. Saída",    width="small"),
-        "status":          st.column_config.TextColumn("Status",       width="small"),
-    }
+    HIST_COLS = [c for c in _hist_front + _hist_rest + ["status"] if c in df_h.columns]
+    HIST_DG_DEFS = [
+        {"key": "data_registro",   "label": "Data Registro", "align": "left"},
+        {"key": "placa_road",      "label": "Placa Antiga",  "align": "left"},
+        {"key": "placa_veiculo",   "label": "Nova Placa",    "align": "left"},
+        {"key": "motivo",          "label": "Motivo",        "align": "left",  "width": "180px"},
+        {"key": "observacao",      "label": "Observação",    "align": "left",  "width": "180px"},
+        {"key": "numcarregamento", "label": "Carregamento",  "align": "left"},
+        {"key": "status",          "label": "Status",        "align": "center", "type": "status"},
+    ] + [d for d in STD_DG_DEFS if d["key"] not in (
+        "placa_road", "motivo", "observacao", "numcarregamento", "data_registro"
+    )] + [{"key": "dt_saida", "label": "Dt. Saída", "align": "left"}]
 
     n_pend = int((df_h["status"] == "pendente").sum()) if not df_h.empty else 0
     n_rot  = int((df_h["status"] == "roteirizado").sum()) if not df_h.empty else 0
@@ -2542,12 +2759,11 @@ elif pagina == "📋  Histórico":
         df_hd = dedup_columns(df_h[HIST_COLS].copy())
         if "dt_saida" in df_hd.columns:
             df_hd["dt_saida"] = df_hd["dt_saida"].apply(fmt_date)
-        st.dataframe(
-            df_hd.sort_values("numnota", ascending=False),
-            use_container_width=True,
-            hide_index=True,
-            column_config={k: v for k, v in HIST_CONFIG.items() if k in df_hd.columns},
-        )
+        df_hd_sorted = df_hd.sort_values("numnota", ascending=False).reset_index(drop=True)
+        st.markdown('<div class="card-body" style="padding-top:0">', unsafe_allow_html=True)
+        _hist_defs = [d for d in HIST_DG_DEFS if d["key"] in df_hd_sorted.columns]
+        render_pro_table(df_hd_sorted, _hist_defs, key="historico_table", page_size=15, status_key="status")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
