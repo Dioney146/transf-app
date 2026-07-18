@@ -460,42 +460,47 @@ st.markdown(f"""
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {{
-  --bg:           #080e17;
-  --white:        #ffffff;
-  --sur:          rgba(255,255,255,0.05);
-  --sur2:         rgba(255,255,255,0.03);
-  --bdr:          rgba(255,255,255,0.10);
-  --bdr2:         rgba(255,255,255,0.18);
-  --bdr-hover:    rgba(255,255,255,0.28);
-  --acc:          #4c8cf5;
-  --acc-lt:       rgba(76,140,245,0.12);
-  --acc-mid:      rgba(76,140,245,0.24);
-  --acc-hover:    #2f6fe0;
-  --acc-glow:     rgba(76,140,245,0.35);
-  --grn:          #3ddba0;
-  --grn-dk:       #12b981;
-  --grn-lt:       rgba(61,219,160,0.12);
-  --grn-bdr:      rgba(61,219,160,0.32);
+  --bg:           #060B16;
+  --white:        #F8FAFC;
+  --sur:          rgba(248,250,252,0.05);
+  --sur2:         rgba(248,250,252,0.03);
+  --bdr:          rgba(248,250,252,0.10);
+  --bdr2:         rgba(248,250,252,0.18);
+  --bdr-hover:    rgba(248,250,252,0.28);
+  --acc:          #3B82F6;
+  --acc-lt:       rgba(59,130,246,0.12);
+  --acc-mid:      rgba(59,130,246,0.24);
+  --acc-hover:    #2563EB;
+  --acc-glow:     rgba(59,130,246,0.35);
+  --pur:          #7C3AED;
+  --pur-lt:       rgba(124,58,237,0.12);
+  --pur-mid:      rgba(124,58,237,0.24);
+  --pur-hover:    #6D28D9;
+  --pur-bdr:      rgba(124,58,237,0.32);
+  --grn:          #22C55E;
+  --grn-dk:       #16A34A;
+  --grn-lt:       rgba(34,197,94,0.12);
+  --grn-bdr:      rgba(34,197,94,0.32);
   --red:          #fb7c8f;
   --red-lt:       rgba(251,124,143,0.12);
   --red-bdr:      rgba(251,124,143,0.32);
   --ylw:          #fbc245;
   --ylw-lt:       rgba(251,194,69,0.12);
   --ylw-bdr:      rgba(251,194,69,0.32);
-  --txt:          #f4f8ff;
-  --txt2:         #96acc9;
-  --txt3:         #5d7794;
-  --nav-bg:       rgba(7,13,24,0.92);
-  --nav-txt:      #5d7794;
-  --nav-act:      #ffffff;
-  --nav-acc:      #4c8cf5;
-  --glass:        rgba(13,21,35,0.72);
-  --glass2:       rgba(13,21,35,0.48);
-  --glass-light:  rgba(255,255,255,0.045);
+  --txt:          #F8FAFC;
+  --txt2:         #94A3B8;
+  --txt3:         #64748B;
+  --nav-bg:       rgba(6,11,22,0.92);
+  --nav-txt:      #64748B;
+  --nav-act:      #F8FAFC;
+  --nav-acc:      #3B82F6;
+  --glass:        rgba(15,23,42,0.72);
+  --glass2:       rgba(15,23,42,0.48);
+  --glass-light:  rgba(248,250,252,0.045);
   --shadow-sm:    0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
   --shadow-md:    0 4px 16px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
   --shadow-lg:    0 12px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35);
-  --shadow-acc:   0 0 24px rgba(76,140,245,0.20);
+  --shadow-acc:   0 0 24px rgba(59,130,246,0.20);
 
   /* ── Escala de espaçamento premium (ritmo consistente) ── */
   --space-1:  6px;
@@ -535,8 +540,8 @@ html, body, [class*="css"], .stApp {{
   inset: 0;
   background:
     radial-gradient(ellipse 80% 50% at 10% 0%, rgba(59,130,246,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(16,185,129,0.05) 0%, transparent 60%),
-    linear-gradient(180deg, rgba(6,10,20,0.55) 0%, rgba(6,10,20,0.20) 100%);
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(124,58,237,0.06) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(6,11,22,0.55) 0%, rgba(6,11,22,0.20) 100%);
   z-index: -1;
   pointer-events: none;
 }}
@@ -558,7 +563,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   -webkit-backdrop-filter: blur(26px) saturate(180%);
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg), 0 0 46px rgba(76,140,245,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: var(--shadow-lg), 0 0 46px rgba(59,130,246,0.10), inset 0 1px 0 rgba(248,250,252,0.06);
   margin: 14px 22px 0;
   padding: 14px 22px;
   position: sticky;
@@ -572,7 +577,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   inset: 0;
   border-radius: var(--radius-lg);
   padding: 1px;
-  background: linear-gradient(120deg, rgba(76,140,245,0.35), transparent 30%, transparent 70%, rgba(61,219,160,0.20));
+  background: linear-gradient(120deg, rgba(59,130,246,0.35), transparent 30%, transparent 70%, rgba(124,58,237,0.22));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -596,16 +601,16 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   height: 52px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4c8cf5, #3ddba0);
+  background: linear-gradient(135deg, #3B82F6, #7C3AED);
   padding: 2px;
-  box-shadow: 0 0 22px rgba(76,140,245,0.45), var(--shadow-sm);
+  box-shadow: 0 0 22px rgba(59,130,246,0.45), var(--shadow-sm);
 }}
 .hdr-logo-ring img {{
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid rgba(8,14,23,0.9);
+  border: 2px solid rgba(6,11,22,0.9);
   display: block;
 }}
 .hdr-brand-text {{
@@ -618,13 +623,13 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   font-family: 'Sora', sans-serif;
   font-weight: 800;
   font-size: 1.32rem;
-  color: #f4f8ff;
+  color: #F8FAFC;
   letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }}
-.hdr-title span {{ color: #4c8cf5; }}
+.hdr-title span {{ color: #3B82F6; }}
 .hdr-sub {{
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.60rem;
@@ -650,7 +655,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   justify-content: center !important;
   align-items: center !important;
   gap: 4px !important;
-  background: rgba(255,255,255,0.04);
+  background: rgba(248,250,252,0.04);
   border: 1px solid var(--bdr);
   border-radius: 14px;
   padding: 4px !important;
@@ -676,12 +681,12 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   margin: 0 !important;
 }}
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div > label:hover {{
-  color: rgba(240,246,255,0.85) !important;
-  background: rgba(255,255,255,0.05) !important;
+  color: rgba(248,250,252,0.85) !important;
+  background: rgba(248,250,252,0.05) !important;
 }}
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div > label[data-selected="true"] {{
   color: #fff !important;
-  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
   box-shadow: 0 4px 16px rgba(59,130,246,0.45), 0 1px 3px rgba(0,0,0,0.3) !important;
 }}
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) div[data-testid="stRadio"] > div > label > div:first-child {{
@@ -696,7 +701,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 }}
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) .stButton > button,
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="stPopover"] > div > button {{
-  background: rgba(255,255,255,0.05) !important;
+  background: rgba(248,250,252,0.05) !important;
   border: 1px solid var(--bdr2) !important;
   border-radius: 12px !important;
   color: var(--txt) !important;
@@ -708,10 +713,10 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 }}
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) .stButton > button:hover,
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="stPopover"] > div > button:hover {{
-  background: rgba(255,255,255,0.10) !important;
+  background: rgba(248,250,252,0.10) !important;
   border-color: var(--bdr-hover) !important;
   transform: translateY(-2px) !important;
-  box-shadow: var(--shadow-md), 0 0 14px rgba(76,140,245,0.20) !important;
+  box-shadow: var(--shadow-md), 0 0 14px rgba(59,130,246,0.20) !important;
 }}
 
 /* Avatar circular (5ª coluna do cabeçalho) */
@@ -720,12 +725,12 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   width: 42px !important;
   height: 42px !important;
   padding: 0 !important;
-  background: linear-gradient(135deg, #4c8cf5, #2f6fe0) !important;
+  background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
   color: #fff !important;
   font-weight: 800 !important;
   font-size: 0.82rem !important;
-  border: 2px solid rgba(255,255,255,0.18) !important;
-  box-shadow: 0 0 14px rgba(76,140,245,0.45), var(--shadow-sm) !important;
+  border: 2px solid rgba(248,250,252,0.18) !important;
+  box-shadow: 0 0 14px rgba(59,130,246,0.45), var(--shadow-sm) !important;
 }}
 
 /* Badge de notificações (4ª coluna do cabeçalho) */
@@ -793,7 +798,7 @@ div[data-testid="stPopoverBody"] {{
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(248,250,252,0.05);
   margin: var(--space-3) 22px 0;
   padding: var(--space-3) var(--space-4);
   position: relative;
@@ -806,7 +811,7 @@ div[data-testid="stPopoverBody"] {{
   inset: 0;
   border-radius: var(--radius-lg);
   padding: 1px;
-  background: linear-gradient(120deg, rgba(76,140,245,0.30), transparent 35%, transparent 65%, rgba(61,219,160,0.16));
+  background: linear-gradient(120deg, rgba(59,130,246,0.30), transparent 35%, transparent 65%, rgba(124,58,237,0.18));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -814,13 +819,13 @@ div[data-testid="stPopoverBody"] {{
 }}
 .filter-bar:hover {{
   border-color: var(--bdr-hover);
-  box-shadow: var(--shadow-lg), 0 0 30px rgba(76,140,245,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(59,130,246,0.12), inset 0 1px 0 rgba(248,250,252,0.06);
 }}
 
 /* Inputs de data/texto dentro da filter-bar ganham visual premium */
 .filter-bar [data-testid="stDateInput"] input,
 .filter-bar [data-testid="stTextInput"] input {{
-  background: rgba(255,255,255,0.045) !important;
+  background: rgba(248,250,252,0.045) !important;
   border: 1px solid var(--bdr2) !important;
   border-radius: var(--radius-sm) !important;
   color: var(--txt) !important;
@@ -843,7 +848,7 @@ div[data-testid="stPopoverBody"] {{
   -webkit-backdrop-filter: blur(24px) saturate(170%);
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(248,250,252,0.05);
   margin: 0 22px var(--space-4);
   overflow: hidden;
   position: relative;
@@ -857,7 +862,7 @@ div[data-testid="stPopoverBody"] {{
   z-index: -1;
   border-radius: var(--radius-lg);
   padding: 1px;
-  background: linear-gradient(135deg, rgba(76,140,245,0.30), transparent 40%, transparent 60%, rgba(61,219,160,0.14));
+  background: linear-gradient(135deg, rgba(59,130,246,0.30), transparent 40%, transparent 60%, rgba(124,58,237,0.16));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -866,7 +871,7 @@ div[data-testid="stPopoverBody"] {{
 .card:hover {{
   transform: translateY(-3px);
   border-color: var(--bdr-hover);
-  box-shadow: var(--shadow-lg), 0 0 34px rgba(76,140,245,0.14), inset 0 1px 0 rgba(255,255,255,0.07);
+  box-shadow: var(--shadow-lg), 0 0 34px rgba(59,130,246,0.14), inset 0 1px 0 rgba(248,250,252,0.07);
 }}
 .card-head {{
   display: flex;
@@ -874,7 +879,7 @@ div[data-testid="stPopoverBody"] {{
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--bdr);
-  background: linear-gradient(180deg, rgba(255,255,255,0.035), transparent);
+  background: linear-gradient(180deg, rgba(248,250,252,0.035), transparent);
 }}
 .card-title {{
   font-family: 'Sora', sans-serif;
@@ -891,7 +896,7 @@ div[data-testid="stPopoverBody"] {{
   font-size: 0.68rem;
   font-weight: 700;
   color: var(--txt2);
-  background: rgba(255,255,255,0.05);
+  background: rgba(248,250,252,0.05);
   border: 1px solid var(--bdr);
   border-radius: 999px;
   padding: 4px 12px;
@@ -914,7 +919,7 @@ div[data-testid="stPopoverBody"] {{
   -webkit-backdrop-filter: blur(22px) saturate(170%);
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(248,250,252,0.05);
   padding: var(--space-4);
   overflow: hidden;
   isolation: isolate;
@@ -927,7 +932,7 @@ div[data-testid="stPopoverBody"] {{
   z-index: -2;
   border-radius: var(--radius-lg);
   padding: 1px;
-  background: linear-gradient(135deg, var(--kpi-glow, rgba(76,140,245,0.32)), transparent 45%, transparent 60%, rgba(255,255,255,0.06));
+  background: linear-gradient(135deg, var(--kpi-glow, rgba(59,130,246,0.32)), transparent 45%, transparent 60%, rgba(248,250,252,0.06));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -941,7 +946,7 @@ div[data-testid="stPopoverBody"] {{
   width: 65%;
   height: 65%;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--kpi-glow, rgba(76,140,245,0.22)) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--kpi-glow, rgba(59,130,246,0.22)) 0%, transparent 70%);
   z-index: -1;
   opacity: 0.7;
   transition: opacity .3s ease, transform .3s ease;
@@ -949,15 +954,15 @@ div[data-testid="stPopoverBody"] {{
 .kpi-card:hover {{
   transform: translateY(-4px) scale(1.01);
   border-color: var(--bdr-hover);
-  box-shadow: var(--shadow-lg), 0 0 30px var(--kpi-glow, rgba(76,140,245,0.18)), inset 0 1px 0 rgba(255,255,255,0.08);
+  box-shadow: var(--shadow-lg), 0 0 30px var(--kpi-glow, rgba(59,130,246,0.18)), inset 0 1px 0 rgba(248,250,252,0.08);
 }}
 .kpi-card:hover::after {{
   opacity: 1;
   transform: scale(1.15);
 }}
-.kpi-card-accent {{ --kpi-glow: rgba(76,140,245,0.32); }}
-.kpi-card-green  {{ --kpi-glow: rgba(61,219,160,0.30); }}
-.kpi-card-yellow {{ --kpi-glow: rgba(251,194,69,0.30); }}
+.kpi-card-accent {{ --kpi-glow: rgba(59,130,246,0.32); }}
+.kpi-card-green  {{ --kpi-glow: rgba(34,197,94,0.30); }}
+.kpi-card-yellow {{ --kpi-glow: rgba(124,58,237,0.30); }}
 .kpi-card-red    {{ --kpi-glow: rgba(251,124,143,0.30); }}
 .kpi-card-icon {{
   display: inline-flex;
@@ -966,7 +971,7 @@ div[data-testid="stPopoverBody"] {{
   width: 40px;
   height: 40px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--kpi-glow, rgba(76,140,245,0.28)), transparent);
+  background: linear-gradient(135deg, var(--kpi-glow, rgba(59,130,246,0.28)), transparent);
   border: 1px solid var(--bdr2);
   font-size: 1.15rem;
   margin-bottom: var(--space-2);
@@ -1002,7 +1007,7 @@ div[data-testid="stPopoverBody"] {{
   -webkit-backdrop-filter: blur(22px) saturate(170%);
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(248,250,252,0.05);
   overflow: hidden;
   position: relative;
   isolation: isolate;
@@ -1015,7 +1020,7 @@ div[data-testid="stPopoverBody"] {{
   z-index: -1;
   border-radius: var(--radius-lg);
   padding: 1px;
-  background: linear-gradient(135deg, rgba(76,140,245,0.26), transparent 45%, transparent 60%, rgba(251,124,143,0.14));
+  background: linear-gradient(135deg, rgba(59,130,246,0.26), transparent 45%, transparent 60%, rgba(124,58,237,0.16));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -1024,12 +1029,12 @@ div[data-testid="stPopoverBody"] {{
 .chart-wrap:hover {{
   transform: translateY(-2px);
   border-color: var(--bdr-hover);
-  box-shadow: var(--shadow-lg), 0 0 26px rgba(76,140,245,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: var(--shadow-lg), 0 0 26px rgba(59,130,246,0.12), inset 0 1px 0 rgba(248,250,252,0.06);
 }}
 .chart-head {{
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--bdr);
-  background: linear-gradient(180deg, rgba(255,255,255,0.035), transparent);
+  background: linear-gradient(180deg, rgba(248,250,252,0.035), transparent);
 }}
 .chart-title {{
   font-family: 'Sora', sans-serif;
@@ -1061,7 +1066,7 @@ div[data-testid="stPopoverBody"] {{
   color: var(--txt2);
   white-space: nowrap;
   padding: 4px 12px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(248,250,252,0.04);
   border: 1px solid var(--bdr);
   border-radius: 999px;
 }}
@@ -1087,7 +1092,7 @@ div[data-testid="stPopoverBody"] {{
 .al-s {{ background: var(--grn-lt); border: 1px solid var(--grn-bdr); color: #a7f3d8; }}
 .al-e {{ background: var(--red-lt); border: 1px solid var(--red-bdr); color: #fecdd6; }}
 .al-w {{ background: var(--ylw-lt); border: 1px solid var(--ylw-bdr); color: #fde9b8; }}
-.al-i {{ background: var(--acc-lt); border: 1px solid rgba(76,140,245,0.32); color: #bcd6ff; }}
+.al-i {{ background: var(--acc-lt); border: 1px solid rgba(59,130,246,0.32); color: #bcd6ff; }}
 
 /* ── page-body wrapper ── */
 .page-body {{
@@ -1103,7 +1108,7 @@ div[data-testid="stPopoverBody"] {{
   -webkit-backdrop-filter: blur(24px) saturate(170%);
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(248,250,252,0.05);
   padding: var(--space-4) var(--space-4) var(--space-3);
   margin-bottom: var(--space-4);
   position: relative;
@@ -1117,7 +1122,7 @@ div[data-testid="stPopoverBody"] {{
   z-index: -1;
   border-radius: var(--radius-lg);
   padding: 1px;
-  background: linear-gradient(135deg, rgba(76,140,245,0.34), transparent 45%, transparent 60%, rgba(61,219,160,0.16));
+  background: linear-gradient(135deg, rgba(59,130,246,0.34), transparent 45%, transparent 60%, rgba(124,58,237,0.18));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -1145,8 +1150,8 @@ div[data-testid="stPopoverBody"] {{
   padding: 0 20px 0 52px !important;
   border-radius: 14px !important;
   border: 1.5px solid var(--bdr2) !important;
-  background-color: rgba(255,255,255,0.045) !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2396acc9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") !important;
+  background-color: rgba(248,250,252,0.045) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: 18px center !important;
   color: var(--txt) !important;
@@ -1161,12 +1166,12 @@ div[data-testid="stPopoverBody"] {{
 .search-card .st-key-nota_inp input:hover,
 .search-card [data-testid="stTextInput"] input[aria-label="Número da Nota Fiscal"]:hover {{
   border-color: var(--bdr-hover) !important;
-  background-color: rgba(255,255,255,0.065) !important;
+  background-color: rgba(248,250,252,0.065) !important;
 }}
 .search-card .st-key-nota_inp input:focus,
 .search-card [data-testid="stTextInput"] input[aria-label="Número da Nota Fiscal"]:focus {{
   border-color: var(--acc) !important;
-  background-color: rgba(255,255,255,0.075) !important;
+  background-color: rgba(248,250,252,0.075) !important;
   box-shadow: 0 0 0 4px var(--acc-lt), var(--shadow-md) !important;
 }}
 
@@ -1177,22 +1182,22 @@ div[data-testid="stPopoverBody"] {{
   min-height: 56px !important;
   border-radius: 14px !important;
   border: none !important;
-  background: linear-gradient(135deg, #5b98f7 0%, #2f6fe0 100%) !important;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
   color: #fff !important;
   font-weight: 700 !important;
   font-size: 0.92rem !important;
   letter-spacing: 0.02em !important;
-  box-shadow: 0 6px 22px rgba(47,111,224,0.40), var(--shadow-sm) !important;
+  box-shadow: 0 6px 22px rgba(37,99,235,0.40), var(--shadow-sm) !important;
   transition: all .25s cubic-bezier(0.4,0,0.2,1) !important;
 }}
 .search-card .st-key-buscar_btn button:hover {{
   transform: translateY(-2px) !important;
-  background: linear-gradient(135deg, #6ba4f9 0%, #3b7ce8 100%) !important;
-  box-shadow: 0 10px 30px rgba(47,111,224,0.55), var(--shadow-md) !important;
+  background: linear-gradient(135deg, #5B9BF8 0%, #3B7CE8 100%) !important;
+  box-shadow: 0 10px 30px rgba(37,99,235,0.55), var(--shadow-md) !important;
 }}
 .search-card .st-key-buscar_btn button:active {{
   transform: translateY(0) !important;
-  box-shadow: 0 4px 14px rgba(47,111,224,0.45) !important;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.45) !important;
 }}
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1202,7 +1207,7 @@ div[data-testid="stPopoverBody"] {{
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: rgba(255,255,255,0.015);
+  background: rgba(248,250,252,0.015);
   box-shadow: var(--shadow-sm);
 }}
 .dg-scroll {{
@@ -1211,7 +1216,7 @@ div[data-testid="stPopoverBody"] {{
   overflow-x: auto;
 }}
 .dg-scroll::-webkit-scrollbar {{ width: 8px; height: 8px; }}
-.dg-scroll::-webkit-scrollbar-thumb {{ background: rgba(255,255,255,0.14); border-radius: 8px; }}
+.dg-scroll::-webkit-scrollbar-thumb {{ background: rgba(248,250,252,0.14); border-radius: 8px; }}
 .dg-scroll::-webkit-scrollbar-track {{ background: transparent; }}
 .dg-table {{
   width: 100%;
@@ -1224,7 +1229,7 @@ div[data-testid="stPopoverBody"] {{
   position: sticky;
   top: 0;
   z-index: 5;
-  background: rgba(13,21,35,0.97);
+  background: rgba(15,23,42,0.97);
   backdrop-filter: blur(8px);
   color: var(--txt2);
   font-family: 'JetBrains Mono', monospace;
@@ -1242,7 +1247,7 @@ div[data-testid="stPopoverBody"] {{
 .dg-table tbody td {{
   padding: 11px 16px;
   color: var(--txt);
-  border-bottom: 1px solid rgba(255,255,255,0.045);
+  border-bottom: 1px solid rgba(248,250,252,0.045);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1252,7 +1257,7 @@ div[data-testid="stPopoverBody"] {{
 .dg-td-right  {{ text-align: right; font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }}
 .dg-td-center {{ text-align: center; }}
 .dg-table tbody tr {{ transition: background .15s ease; }}
-.dg-table tbody tr:nth-child(even) {{ background: rgba(255,255,255,0.018); }}
+.dg-table tbody tr:nth-child(even) {{ background: rgba(248,250,252,0.018); }}
 .dg-table tbody tr:hover {{ background: var(--acc-lt) !important; }}
 .dg-table tbody tr:last-child td {{ border-bottom: none; }}
 
@@ -1282,7 +1287,7 @@ div[data-testid="stPopoverBody"] {{
   min-height: 34px !important;
   padding: 0 !important;
   border-radius: 8px !important;
-  background: rgba(255,255,255,0.045) !important;
+  background: rgba(248,250,252,0.045) !important;
   border: 1px solid var(--bdr2) !important;
   color: var(--txt) !important;
   font-weight: 700 !important;
@@ -1364,9 +1369,9 @@ with hcol_notif:
     def _render_notif():
         st.markdown('<div class="hdr-pop-title">Notificações</div>', unsafe_allow_html=True)
         st.markdown(
-            '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#fbc245"></span>'
+            '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#7C3AED"></span>'
             'Existem notas pendentes de roteirização hoje.</div>'
-            '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#4c8cf5"></span>'
+            '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#3B82F6"></span>'
             'Sincronização com a base ROAD concluída.</div>',
             unsafe_allow_html=True,
         )
@@ -1389,7 +1394,7 @@ with hcol_user:
 # DATAGRID PROFISSIONAL — helpers de renderização (chips, células, paginação)
 # ══════════════════════════════════════════════════════════════════════════
 STATUS_CHIP_STYLES = {
-    "roteirizado": ("#3ddba0", "rgba(61,219,160,0.14)", "rgba(61,219,160,0.35)", "Roteirizado"),
+    "roteirizado": ("#22C55E", "rgba(34,197,94,0.14)", "rgba(34,197,94,0.35)", "Roteirizado"),
     "pendente":    ("#fbc245", "rgba(251,194,69,0.14)", "rgba(251,194,69,0.35)", "Pendente"),
     "cancelado":   ("#fb7c8f", "rgba(251,124,143,0.14)", "rgba(251,124,143,0.35)", "Cancelado"),
 }
@@ -1399,7 +1404,7 @@ def _status_chip(value):
     if v in ("", "nan", "none"):
         v = "pendente"
     color, bg, bdr, label = STATUS_CHIP_STYLES.get(
-        v, ("#96acc9", "rgba(255,255,255,0.06)", "rgba(255,255,255,0.16)", str(value) or "—")
+        v, ("#94A3B8", "rgba(248,250,252,0.06)", "rgba(248,250,252,0.16)", str(value) or "—")
     )
     return f'<span class="dg-chip" style="color:{color};background:{bg};border-color:{bdr}">{label}</span>'
 
@@ -1542,9 +1547,9 @@ with fc2:
     st.markdown("<br>", unsafe_allow_html=True)
     _vt_ativo = st.session_state.get("_ver_todas", False)
     _label_toggle = ("✓ Todas as datas") if _vt_ativo else "Todas as datas"
-    _bg    = "rgba(59,130,246,0.2)"  if _vt_ativo else "rgba(255,255,255,0.05)"
-    _borda = "#3b82f6"               if _vt_ativo else "rgba(255,255,255,0.12)"
-    _color = "#93c5fd"               if _vt_ativo else "rgba(255,255,255,0.38)"
+    _bg    = "rgba(59,130,246,0.2)"  if _vt_ativo else "rgba(248,250,252,0.05)"
+    _borda = "#3B82F6"               if _vt_ativo else "rgba(248,250,252,0.12)"
+    _color = "#93c5fd"               if _vt_ativo else "rgba(248,250,252,0.38)"
     st.markdown(f"""<style>
     div[data-testid="stButton"] button[kind="secondary"]#btn_ver_todas,
     div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button {{
@@ -1564,7 +1569,7 @@ with fc2:
     }}
     div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button:hover {{
         transform: translateY(-1px) !important;
-        box-shadow: 0 0 12px rgba(76,140,245,0.25) !important;
+        box-shadow: 0 0 12px rgba(59,130,246,0.25) !important;
     }}
     </style>""", unsafe_allow_html=True)
     if st.button(_label_toggle, key="btn_ver_todas"):
@@ -1698,7 +1703,7 @@ _vl_pend = _df_pend_all["vltotal"].sum() if not _df_pend_all.empty else 0
 # ── Helper: gráfico de barras horizontal em HTML puro ─────────────────────────
 def _bar_chart_html(rows, label_key, value_key, color, fmt_val=None):
     if not rows:
-        return '<div style="padding:.75rem;color:#5d7794;font-size:.78rem;text-align:center">Sem dados</div>'
+        return '<div style="padding:.75rem;color:#64748B;font-size:.78rem;text-align:center">Sem dados</div>'
     max_v = max(r[value_key] for r in rows) or 1
     bars = ""
     for i, r in enumerate(rows):
@@ -1707,19 +1712,19 @@ def _bar_chart_html(rows, label_key, value_key, color, fmt_val=None):
         pct   = int(val / max_v * 100)
         shown = fmt_val(val) if fmt_val else str(val)
         bars += f'''
-        <div style="display:grid;grid-template-columns:140px 1fr 70px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-          <div style="font-size:.75rem;color:#96acc9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{lbl}">{lbl}</div>
-          <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:140px 1fr 70px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(248,250,252,0.04)">
+          <div style="font-size:.75rem;color:#94A3B8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{lbl}">{lbl}</div>
+          <div style="background:rgba(248,250,252,0.05);border-radius:4px;height:8px;overflow:hidden">
             <div style="width:{pct}%;height:100%;background:{color};border-radius:4px;transition:width .4s ease"></div>
           </div>
-          <div style="font-size:.75rem;font-weight:700;color:#f0f6ff;text-align:right;white-space:nowrap">{shown}</div>
+          <div style="font-size:.75rem;font-weight:700;color:#F8FAFC;text-align:right;white-space:nowrap">{shown}</div>
         </div>'''
     return bars
 
 # ── Helper: gráfico de colunas verticais em HTML puro ─────────────────────────
 def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
     if not rows:
-        return '<div style="padding:.75rem;color:#5d7794;font-size:.78rem;text-align:center">Sem dados</div>'
+        return '<div style="padding:.75rem;color:#64748B;font-size:.78rem;text-align:center">Sem dados</div>'
     max_v = max(r[value_key] for r in rows) or 1
     cols_html = ""
     for r in rows:
@@ -1732,21 +1737,21 @@ def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
         shown = fmt_val(val) if fmt_val else str(val)
         cols_html += f'''
         <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:0">
-          <div style="font-size:.68rem;font-weight:700;color:#f0f6ff">{shown}</div>
+          <div style="font-size:.68rem;font-weight:700;color:#F8FAFC">{shown}</div>
           <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;height:{height}px">
             <div style="width:70%;background:{color};border-radius:4px 4px 0 0;height:{bar_h}px;min-height:4px;box-shadow:0 0 8px {color}55"></div>
           </div>
-          <div style="font-size:.62rem;color:#96acc9;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px" title="{lbl}">{short}</div>
+          <div style="font-size:.62rem;color:#94A3B8;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px" title="{lbl}">{short}</div>
         </div>'''
     return f'<div style="display:flex;gap:4px;align-items:flex-end;padding:.5rem .25rem 0">{cols_html}</div>'
 
 
 
 # ── Helper: gera SVG de colunas verticais com linha de qtd ────────────────────
-def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#fbbf24", fmt_val=None):
+def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#7C3AED", fmt_val=None):
     """Retorna string SVG: barras verticais + polyline de quantidade."""
     if not rows:
-        return '<p style="color:#5d7794;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
+        return '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
     MIN_SLOT = 60   # largura mínima por coluna para não ficar espremido
     SVG_W    = max(560, n * MIN_SLOT)
@@ -1778,14 +1783,14 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         # valor dentro da barra (10px abaixo do topo), só mostra fora se barra for muito pequena
         val_ty = by + 14
         if bh >= 18:
-            rects += f'<text x="{cx:.1f}" y="{val_ty}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{shown}</text>'
+            rects += f'<text x="{cx:.1f}" y="{val_ty}" text-anchor="middle" font-size="11" font-weight="700" fill="#F8FAFC">{shown}</text>'
         else:
-            rects += f'<text x="{cx:.1f}" y="{by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{shown}</text>'
-        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 16}" text-anchor="middle" font-size="11" font-weight="600" fill="#a9bfd9">{short}</text>'
+            rects += f'<text x="{cx:.1f}" y="{by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#F8FAFC">{shown}</text>'
+        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 16}" text-anchor="middle" font-size="11" font-weight="600" fill="#94A3B8">{short}</text>'
 
         if qtd_key:
             qtd    = int(r[qtd_key])
-            # linha amarela flutua 18px acima do topo de cada barra
+            # linha roxa flutua 18px acima do topo de cada barra
             dot_y  = by - 20
             pts.append((cx, dot_y, qtd))
 
@@ -1795,7 +1800,7 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         poly_str = " ".join(f"{x:.1f},{y}" for x, y, _ in pts)
         poly = f'<polyline points="{poly_str}" fill="none" stroke="{line_color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
         for x, y, q in pts:
-            dots += f'<circle cx="{x:.1f}" cy="{y}" r="5" fill="{line_color}" stroke="#141e2b" stroke-width="1.5"/>'
+            dots += f'<circle cx="{x:.1f}" cy="{y}" r="5" fill="{line_color}" stroke="#0F172A" stroke-width="1.5"/>'
             dots += f'<text x="{x:.1f}" y="{y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="{line_color}">{q}</text>'
 
     return (
@@ -1809,7 +1814,7 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
 def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=None):
     """Retorna string SVG: barras horizontais."""
     if not rows:
-        return '<p style="color:#5d7794;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
+        return '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
     LABEL_W  = 70   # largura da coluna de rótulos
     BAR_H    = 10   # altura de cada barra
@@ -1833,13 +1838,13 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
         shown = fmt_val(val) if fmt_val else str(int(val))
 
         # linha de fundo
-        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{BAR_AREA}" height="{BAR_H}" rx="3" fill="rgba(255,255,255,0.05)"/>'
+        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{BAR_AREA}" height="{BAR_H}" rx="3" fill="rgba(248,250,252,0.05)"/>'
         # barra colorida
         els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{bw}" height="{BAR_H}" rx="3" fill="url(#gbar)" opacity="0.9"/>'
         # rótulo esquerdo
-        els += f'<text x="{LABEL_W - 4}" y="{y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="8.5" fill="#96acc9">{short}</text>'
+        els += f'<text x="{LABEL_W - 4}" y="{y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="8.5" fill="#94A3B8">{short}</text>'
         # valor direito
-        els += f'<text x="{LABEL_W + BAR_AREA + 4}" y="{y_mid:.1f}" dominant-baseline="middle" font-size="8.5" font-weight="700" fill="#f0f6ff">{shown}</text>'
+        els += f'<text x="{LABEL_W + BAR_AREA + 4}" y="{y_mid:.1f}" dominant-baseline="middle" font-size="8.5" font-weight="700" fill="#F8FAFC">{shown}</text>'
 
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}" '
@@ -2037,7 +2042,7 @@ if pagina == "📝  Registro":
             st.markdown("</div></div>", unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div class="card" style="border-style:dashed;border-color:rgba(255,255,255,0.15)">
+            <div class="card" style="border-style:dashed;border-color:rgba(248,250,252,0.15)">
               <div class="card-body" style="text-align:center;padding:2.5rem;color:var(--txt3)">
                 <div style="font-size:2.5rem;margin-bottom:.6rem">🧾</div>
                 <div style="font-size:.85rem">Informe o número da nota e clique em <strong style="color:var(--acc)">Buscar</strong></div>
@@ -2104,10 +2109,10 @@ elif pagina == "🗺️  Roteirização":
 
 
 
-    st.markdown('<div class="card" style="border-top:3px solid #f87171">', unsafe_allow_html=True)
+    st.markdown('<div class="card" style="border-top:3px solid #fb7c8f">', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="card-head">
-      <span class="card-title" style="color:#f87171">⏳ Notas Pendentes</span>
+      <span class="card-title" style="color:#fb7c8f">⏳ Notas Pendentes</span>
       <span class="card-count">{len(pend)} · {periodo_txt}</span>
     </div>
     """, unsafe_allow_html=True)
@@ -2206,15 +2211,15 @@ elif pagina == "🗺️  Roteirização":
                 st.markdown(f"""
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.5rem 0 .75rem">
                   <div style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#93c5fd">
-                    <span style="font-weight:700;font-size:1rem;color:#f0f6ff">{n_sel}</span> &nbsp;nota(s) selecionada(s)
+                    <span style="font-weight:700;font-size:1rem;color:#F8FAFC">{n_sel}</span> &nbsp;nota(s) selecionada(s)
                   </div>
-                  <div style="background:rgba(167,139,250,0.10);border:1px solid rgba(167,139,250,0.30);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#c4b5fd">
-                    👤 <span style="font-weight:700;font-size:1rem;color:#f0f6ff">{_n_clientes}</span> &nbsp;cliente(s)
+                  <div style="background:rgba(124,58,237,0.10);border:1px solid rgba(124,58,237,0.30);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#c4b5fd">
+                    👤 <span style="font-weight:700;font-size:1rem;color:#F8FAFC">{_n_clientes}</span> &nbsp;cliente(s)
                   </div>
-                  <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#6ee7b7">
+                  <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#6ee7b7">
                     ⚖️ <span style="font-weight:700">{_peso_fmt}</span>
                   </div>
-                  <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#fde68a">
+                  <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#93c5fd">
                     💰 <span style="font-weight:700">{_valor_fmt}</span>
                   </div>
                 </div>
@@ -2303,10 +2308,10 @@ elif pagina == "🗺️  Roteirização":
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div style="height:var(--space-4)"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="card" style="border-top:3px solid #10b981">', unsafe_allow_html=True)
+    st.markdown('<div class="card" style="border-top:3px solid #22C55E">', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="card-head">
-      <span class="card-title" style="color:#10b981">✅ Notas Roteirizadas</span>
+      <span class="card-title" style="color:#22C55E">✅ Notas Roteirizadas</span>
       <span class="card-count">{len(rote)} · {periodo_txt}</span>
     </div>
     """, unsafe_allow_html=True)
@@ -2384,7 +2389,7 @@ elif pagina == "🗺️  Roteirização":
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div style="height:var(--space-4)"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="card" style="border-top:3px solid #3b82f6">', unsafe_allow_html=True)
+    st.markdown('<div class="card" style="border-top:3px solid #3B82F6">', unsafe_allow_html=True)
     st.markdown(f"""
     <div class="card-head">
       <span class="card-title" style="color:#60a5fa">📊 Relatório por Placa</span>
@@ -2491,7 +2496,7 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
             '<div class="chart-head">'
-            '<span class="chart-title" style="color:#ef4444;font-size:.78rem">🚛 Por Veículo</span>'
+            '<span class="chart-title" style="color:#A78BFA;font-size:.78rem">🚛 Por Veículo</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2517,17 +2522,17 @@ elif pagina == "📋  Histórico":
             _svg_col_line(
                 _rows_vend2,
                 label_key="veiculo", val_key="valor", qtd_key="qtd",
-                bar_color_1="#ef4444", bar_color_2="#b91c1c",
-                line_color="#fbbf24",
+                bar_color_1="#7C3AED", bar_color_2="#5B21B6",
+                line_color="#3B82F6",
                 fmt_val=_fmt_brl,
             ),
             unsafe_allow_html=True,
         )
         st.markdown(
             '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
-            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
-            '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
-            '<span style="font-size:.68rem;color:#96acc9">Linha = quantidade de NFs</span>'
+            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#3B82F6" stroke-width="2"/>'
+            '<circle cx="18" cy="5" r="3.5" fill="#3B82F6"/></svg>'
+            '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2538,7 +2543,7 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
             '<div class="chart-head">'
-            '<span class="chart-title" style="color:#ef4444;font-size:.78rem">📋 Por Motivos</span>'
+            '<span class="chart-title" style="color:#A78BFA;font-size:.78rem">📋 Por Motivos</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2579,8 +2584,8 @@ elif pagina == "📋  Histórico":
 
             _defs_m = (
                 '<defs><linearGradient id="gmotv" x1="0" y1="0" x2="0" y2="1">'
-                '<stop offset="0%" stop-color="#ef4444"/>'
-                '<stop offset="100%" stop-color="#b91c1c"/>'
+                '<stop offset="0%" stop-color="#7C3AED"/>'
+                '<stop offset="100%" stop-color="#5B21B6"/>'
                 '</linearGradient></defs>'
             )
             _rects_m = ""
@@ -2598,21 +2603,21 @@ elif pagina == "📋  Histórico":
                 _rects_m += f'<rect x="{_bx:.1f}" y="{_by}" width="{_barw_m:.1f}" height="{_bh}" rx="3" fill="url(#gmotv)" opacity="0.9"/>'
                 _vty = _by + 14
                 if _bh >= 18:
-                    _rects_m += f'<text x="{_cx:.1f}" y="{_vty}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
+                    _rects_m += f'<text x="{_cx:.1f}" y="{_vty}" text-anchor="middle" font-size="11" font-weight="700" fill="#F8FAFC">{_qtd}</text>'
                 else:
-                    _rects_m += f'<text x="{_cx:.1f}" y="{_by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#f0f6ff">{_qtd}</text>'
+                    _rects_m += f'<text x="{_cx:.1f}" y="{_by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#F8FAFC">{_qtd}</text>'
 
-                _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="11" font-weight="600" fill="#a9bfd9">{_lbl}</text>'
+                _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="11" font-weight="600" fill="#94A3B8">{_lbl}</text>'
                 _pts_m.append((_cx, _by - 20, _qtd))
 
             _poly_m = ""
             _dots_m = ""
             if _pts_m:
                 _ps = " ".join(f"{x:.1f},{y}" for x, y, _ in _pts_m)
-                _poly_m = f'<polyline points="{_ps}" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
+                _poly_m = f'<polyline points="{_ps}" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
                 for _x, _y, _q in _pts_m:
-                    _dots_m += f'<circle cx="{_x:.1f}" cy="{_y}" r="5" fill="#fbbf24" stroke="#141e2b" stroke-width="1.5"/>'
-                    _dots_m += f'<text x="{_x:.1f}" y="{_y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="#fbbf24">{_q}</text>'
+                    _dots_m += f'<circle cx="{_x:.1f}" cy="{_y}" r="5" fill="#3B82F6" stroke="#0F172A" stroke-width="1.5"/>'
+                    _dots_m += f'<text x="{_x:.1f}" y="{_y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="#3B82F6">{_q}</text>'
 
             _svg_m = (
                 f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W_M} {_SVG_H_M}" '
@@ -2622,15 +2627,15 @@ elif pagina == "📋  Histórico":
             st.markdown(_svg_m, unsafe_allow_html=True)
             st.markdown(
                 '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
-                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#fbbf24" stroke-width="2"/>'
-                '<circle cx="18" cy="5" r="3.5" fill="#fbbf24"/></svg>'
-                '<span style="font-size:.68rem;color:#96acc9">Linha = quantidade de NFs</span>'
+                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#3B82F6" stroke-width="2"/>'
+                '<circle cx="18" cy="5" r="3.5" fill="#3B82F6"/></svg>'
+                '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
                 '</div>',
                 unsafe_allow_html=True,
             )
         else:
             st.markdown(
-                '<p style="color:#5d7794;font-size:.78rem;text-align:center;padding:1.5rem 0">'
+                '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
                 'Nenhum motivo registrado no período.</p>',
                 unsafe_allow_html=True,
             )
@@ -2661,8 +2666,8 @@ elif pagina == "📋  Histórico":
     # ── Linha 2 de filtros: data de saída ────────────────────────────────────
     st.markdown(
         '<div style="margin-top:10px;margin-bottom:2px;display:flex;align-items:center;gap:8px">'
-        '<span style="font-size:.68rem;font-weight:600;color:#96acc9;text-transform:uppercase;letter-spacing:.08em">&#128197; Filtrar por Data de Sa&#237;da</span>'
-        '<div style="flex:1;height:1px;background:rgba(255,255,255,0.07)"></div>'
+        '<span style="font-size:.68rem;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em">&#128197; Filtrar por Data de Sa&#237;da</span>'
+        '<div style="flex:1;height:1px;background:rgba(248,250,252,0.07)"></div>'
         '</div>',
         unsafe_allow_html=True,
     )
