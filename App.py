@@ -454,6 +454,24 @@ LOGO_PATH = find_first_existing(
 BG_B64 = img_to_base64(BG_PATH)
 LOGO_B64 = img_to_base64(LOGO_PATH)
 
+# ─── Partículas do fundo tecnológico (geradas uma vez, posições fixas) ───────
+import random as _bgrandom
+_bgrandom.seed(42)
+
+def _gen_star_shadows(n, min_op, max_op, size_px=1):
+    """Gera uma lista de box-shadow (x y color) espalhados pela viewport para
+    simular um campo de partículas/estrelas discreto via CSS puro."""
+    parts = []
+    for _ in range(n):
+        x = round(_bgrandom.uniform(0, 100), 2)
+        y = round(_bgrandom.uniform(0, 100), 2)
+        op = round(_bgrandom.uniform(min_op, max_op), 2)
+        parts.append(f"{x}vw {y}vh 0 rgba(148,197,255,{op})")
+    return ",\n    ".join(parts)
+
+_STARS_FAR  = _gen_star_shadows(70, 0.10, 0.28)
+_STARS_NEAR = _gen_star_shadows(30, 0.20, 0.42)
+
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
 <style>
@@ -533,29 +551,197 @@ html, body, [class*="css"], .stApp {{
   font-size: var(--fs-base);
 }}
 
-/* ── Fundo com imagem desfocada + overlay gradiente ── */
+/* ══════════════════════════════════════════════════════════════════════════
+   FUNDO TECNOLÓGICO — Terra (região Amazônica), gradientes azuis,
+   iluminação sutil e partículas discretas. Camadas 100% CSS, fixas,
+   atrás de todo o conteúdo (z-index negativo) para não afetar leitura.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Camada 0 — base do espaço profundo (gradiente azul-marinho) */
 .stApp::before {{
   content: '';
   position: fixed;
   inset: 0;
-  background-image: url('data:image/png;base64,{BG_B64}');
-  background-size: cover;
-  background-position: center;
-  filter: blur(6px) brightness(0.25) saturate(0.6);
-  transform: scale(1.06);
-  z-index: -2;
+  background:
+    radial-gradient(ellipse 90% 60% at 78% 18%, rgba(37,99,235,0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 8% 92%, rgba(124,58,237,0.08) 0%, transparent 60%),
+    linear-gradient(160deg, #050914 0%, #060B16 38%, #071021 68%, #050914 100%);
+  z-index: -6;
 }}
+
+/* Camada 1 — grade tecnológica sutil (perspectiva de "painel de controle") */
 .stApp::after {{
   content: '';
   position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(59,130,246,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(124,58,237,0.06) 0%, transparent 60%),
-    linear-gradient(180deg, rgba(6,11,22,0.55) 0%, rgba(6,11,22,0.20) 100%);
-  z-index: -1;
+  inset: -10%;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 40%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 40%, #000 30%, transparent 78%);
+  opacity: 0.55;
+  z-index: -5;
   pointer-events: none;
 }}
+
+/* Campo de partículas — estrelas distantes (estáticas, bem discretas) */
+.bg-stars-far {{
+  content: '';
+  position: fixed;
+  inset: 0;
+  width: 1px; height: 1px;
+  background: transparent;
+  box-shadow: {_STARS_FAR};
+  z-index: -4;
+  pointer-events: none;
+  animation: bgTwinkleFar 9s ease-in-out infinite alternate;
+}}
+/* Campo de partículas — mais próximas, leve brilho e cintilação */
+.bg-stars-near {{
+  content: '';
+  position: fixed;
+  inset: 0;
+  width: 2px; height: 2px;
+  background: transparent;
+  box-shadow: {_STARS_NEAR};
+  border-radius: 50%;
+  z-index: -4;
+  pointer-events: none;
+  animation: bgTwinkleNear 6s ease-in-out infinite alternate;
+}}
+@keyframes bgTwinkleFar {{
+  0%   {{ opacity: 0.5; }}
+  100% {{ opacity: 1; }}
+}}
+@keyframes bgTwinkleNear {{
+  0%   {{ opacity: 0.6; transform: translateY(0); }}
+  100% {{ opacity: 1; transform: translateY(-3px); }}
+}}
+
+/* Planeta Terra — esfera 100% CSS, com oceano azul, continente
+   (América do Sul) e um brilho verde-esmeralda sutil sobre a região
+   Amazônica, além de anel de atmosfera e halo tecnológico. */
+.bg-earth-wrap {{
+  position: fixed;
+  right: -14vw;
+  bottom: -20vw;
+  width: min(52vw, 720px);
+  height: min(52vw, 720px);
+  z-index: -3;
+  pointer-events: none;
+  animation: bgEarthFloat 14s ease-in-out infinite;
+}}
+@keyframes bgEarthFloat {{
+  0%, 100% {{ transform: translateY(0); }}
+  50%      {{ transform: translateY(-14px); }}
+}}
+.bg-earth-atmo {{
+  position: absolute;
+  inset: -6%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(96,165,250,0.35), transparent 62%);
+  filter: blur(18px);
+  opacity: 0.8;
+}}
+.bg-earth-globe {{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(191,219,254,0.55) 0%, transparent 12%),
+    radial-gradient(circle at 34% 30%, #1d4ed8 0%, #1e3a8a 42%, #0b1533 78%, #050a17 100%);
+  box-shadow:
+    inset -60px -50px 110px rgba(0,0,0,0.65),
+    inset 22px 18px 60px rgba(147,197,253,0.18),
+    0 0 90px 20px rgba(59,130,246,0.20);
+}}
+/* Manchas de "continente" — silhueta estilizada da América do Sul,
+   com destaque verde-esmeralda pulsante sobre a Amazônia. */
+.bg-earth-continent {{
+  position: absolute;
+  width: 46%;
+  height: 58%;
+  left: 27%;
+  top: 18%;
+  background:
+    radial-gradient(ellipse 60% 70% at 45% 30%, rgba(34,197,94,0.55) 0%, rgba(21,128,61,0.42) 45%, transparent 72%),
+    radial-gradient(ellipse 50% 40% at 55% 62%, rgba(101,163,13,0.35) 0%, transparent 70%);
+  border-radius: 46% 54% 50% 50% / 55% 50% 55% 45%;
+  filter: blur(1.5px);
+  opacity: 0.92;
+  transform: rotate(-8deg);
+}}
+.bg-earth-amazon-glow {{
+  position: absolute;
+  width: 26%;
+  height: 20%;
+  left: 38%;
+  top: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74,222,128,0.85) 0%, rgba(34,197,94,0.35) 45%, transparent 75%);
+  filter: blur(4px);
+  mix-blend-mode: screen;
+  animation: bgAmazonPulse 4.5s ease-in-out infinite;
+}}
+@keyframes bgAmazonPulse {{
+  0%, 100% {{ opacity: 0.55; transform: scale(1); }}
+  50%      {{ opacity: 0.95; transform: scale(1.12); }}
+}}
+/* Nuvens finas / terminador (sombra do lado noturno) */
+.bg-earth-clouds {{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 70% 30% at 60% 15%, rgba(248,250,252,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 20% at 30% 70%, rgba(248,250,252,0.06) 0%, transparent 65%);
+  mix-blend-mode: screen;
+}}
+.bg-earth-terminator {{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 72% 68%, transparent 30%, rgba(2,6,18,0.82) 68%);
+}}
+/* Anel tecnológico orbital, tracejado, girando lentamente */
+.bg-earth-ring {{
+  position: absolute;
+  inset: -9%;
+  border-radius: 50%;
+  border: 1px dashed rgba(96,165,250,0.28);
+  animation: bgRingSpin 60s linear infinite;
+}}
+.bg-earth-ring::before {{
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: #60a5fa;
+  box-shadow: 0 0 10px 3px rgba(96,165,250,0.8);
+}}
+@keyframes bgRingSpin {{
+  from {{ transform: rotate(0deg); }}
+  to   {{ transform: rotate(360deg); }}
+}}
+
+/* Camada final — véu de contraste para preservar a leitura do conteúdo
+   por cima do fundo tecnológico (mantém cards e textos nítidos). */
+.bg-scrim {{
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(6,11,22,0.62) 0%, rgba(6,11,22,0.30) 22%, rgba(6,11,22,0.42) 100%),
+    radial-gradient(ellipse 65% 45% at 50% 0%, rgba(6,11,22,0.35) 0%, transparent 60%);
+  z-index: -2;
+  pointer-events: none;
+}}
+
 .stApp {{
   background: transparent !important;
 }}
@@ -1435,6 +1621,20 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   transition: all 300ms cubic-bezier(0.4,0,0.2,1) !important;
 }}
 </style>
+
+<div class="bg-stars-far"></div>
+<div class="bg-stars-near"></div>
+<div class="bg-earth-wrap">
+  <div class="bg-earth-atmo"></div>
+  <div class="bg-earth-globe">
+    <div class="bg-earth-continent"></div>
+    <div class="bg-earth-amazon-glow"></div>
+    <div class="bg-earth-clouds"></div>
+    <div class="bg-earth-terminator"></div>
+  </div>
+  <div class="bg-earth-ring"></div>
+</div>
+<div class="bg-scrim"></div>
 """, unsafe_allow_html=True)
 
 
