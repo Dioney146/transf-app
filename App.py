@@ -502,9 +502,9 @@ st.markdown(f"""
   --shadow-lg:    0 12px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.35);
   --shadow-acc:   0 0 24px rgba(59,130,246,0.20);
 
-  /* ── Escala de espaçamento premium (ritmo consistente) ── */
-  --space-1:  6px;
-  --space-2:  10px;
+  /* ── Escala de espaçamento premium (ritmo consistente, base 4px) ── */
+  --space-1:  4px;
+  --space-2:  8px;
   --space-3:  16px;
   --space-4:  24px;
   --space-5:  32px;
@@ -513,6 +513,16 @@ st.markdown(f"""
   --radius-md: 16px;
   --radius-lg: 20px;
   --content-max: 1400px;
+
+  /* ── Escala tipográfica premium (proporção ~1.15, base 13px) ── */
+  --fs-2xs: 0.60rem;
+  --fs-xs:  0.68rem;
+  --fs-sm:  0.76rem;
+  --fs-base: 0.84rem;
+  --fs-md:  0.92rem;
+  --fs-lg:  1.05rem;
+  --fs-xl:  1.32rem;
+  --fs-2xl: 1.75rem;
 }}
 
 *, *::before, *::after {{ box-sizing: border-box; }}
@@ -520,6 +530,7 @@ st.markdown(f"""
 html, body, [class*="css"], .stApp {{
   font-family: 'Sora', sans-serif !important;
   color: var(--txt) !important;
+  font-size: var(--fs-base);
 }}
 
 /* ── Fundo com imagem desfocada + overlay gradiente ── */
@@ -554,6 +565,12 @@ html, body, [class*="css"], .stApp {{
 section[data-testid="stSidebar"] {{ display: none !important; }}
 .main .block-container {{ padding: 0 !important; max-width: 100% !important; }}
 
+/* Ritmo vertical consistente entre blocos gerados pelo Streamlit */
+.main .block-container [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"] {{
+  margin-bottom: 0 !important;
+}}
+div[data-testid="stMarkdownContainer"] > p {{ margin-bottom: 0; }}
+
 /* ══════════════════════════════════════════════════════════════════════════
    CABEÇALHO PREMIUM — logo, título, abas, avatar, notificações, tema
    ══════════════════════════════════════════════════════════════════════════ */
@@ -564,8 +581,8 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg), 0 0 46px rgba(59,130,246,0.10), inset 0 1px 0 rgba(248,250,252,0.06);
-  margin: 14px 22px 0;
-  padding: 14px 22px;
+  margin: var(--space-3) 22px 0;
+  padding: var(--space-3) var(--space-4);
   position: sticky;
   top: 12px;
   z-index: 999;
@@ -585,7 +602,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 }}
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5)) [data-testid="stHorizontalBlock"] {{
   align-items: center !important;
-  gap: 0.5rem !important;
+  gap: var(--space-2) !important;
 }}
 
 /* Marca / logo */
@@ -616,13 +633,13 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 .hdr-brand-text {{
   display: flex;
   flex-direction: column;
-  line-height: 1.18;
+  line-height: 1.2;
   min-width: 0;
 }}
 .hdr-title {{
   font-family: 'Sora', sans-serif;
   font-weight: 800;
-  font-size: 1.32rem;
+  font-size: var(--fs-xl);
   color: #F8FAFC;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -632,12 +649,12 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 .hdr-title span {{ color: #3B82F6; }}
 .hdr-sub {{
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.60rem;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--txt2);
-  margin-top: 2px;
+  margin-top: 3px;
 }}
 
 /* Abas (st.radio) estilizadas como pill-tabs dentro do cabeçalho */
@@ -667,7 +684,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   align-items: center !important;
   gap: 6px !important;
   padding: 9px 20px !important;
-  font-size: 0.66rem !important;
+  font-size: var(--fs-xs) !important;
   font-weight: 700 !important;
   cursor: pointer !important;
   border: none !important;
@@ -705,7 +722,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   border: 1px solid var(--bdr2) !important;
   border-radius: 12px !important;
   color: var(--txt) !important;
-  font-size: 0.95rem !important;
+  font-size: var(--fs-md) !important;
   padding: 8px 12px !important;
   min-width: 0 !important;
   box-shadow: var(--shadow-sm) !important;
@@ -728,7 +745,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   background: linear-gradient(135deg, #3B82F6, #2563EB) !important;
   color: #fff !important;
   font-weight: 800 !important;
-  font-size: 0.82rem !important;
+  font-size: var(--fs-sm) !important;
   border: 2px solid rgba(248,250,252,0.18) !important;
   box-shadow: 0 0 14px rgba(59,130,246,0.45), var(--shadow-sm) !important;
 }}
@@ -766,12 +783,12 @@ div[data-testid="stPopoverBody"] {{
   box-shadow: var(--shadow-lg) !important;
 }}
 .hdr-pop-title {{
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.10em;
   color: var(--txt);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-2);
 }}
 .hdr-notif-item {{
   display: flex;
@@ -779,15 +796,16 @@ div[data-testid="stPopoverBody"] {{
   gap: 9px;
   padding: 7px 0;
   border-bottom: 1px solid var(--bdr);
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
   color: var(--txt2);
+  line-height: 1.45;
 }}
 .hdr-notif-item:last-child {{ border-bottom: none; }}
 .hdr-notif-dot {{
   width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
 }}
-.hdr-user-name {{ font-size: 0.86rem; font-weight: 700; color: var(--txt); }}
-.hdr-user-mail {{ font-size: 0.70rem; color: var(--txt3); margin-bottom: 8px; }}
+.hdr-user-name {{ font-size: var(--fs-md); font-weight: 700; color: var(--txt); }}
+.hdr-user-mail {{ font-size: var(--fs-xs); color: var(--txt3); margin-bottom: var(--space-3); }}
 
 /* ══════════════════════════════════════════════════════════════════════════
    FILTER BAR PREMIUM — glassmorphism, borda luminosa, hover
@@ -799,7 +817,7 @@ div[data-testid="stPopoverBody"] {{
   border: 1px solid var(--bdr2);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md), inset 0 1px 0 rgba(248,250,252,0.05);
-  margin: var(--space-3) 22px 0;
+  margin: var(--space-4) 22px 0;
   padding: var(--space-3) var(--space-4);
   position: relative;
   overflow: hidden;
@@ -836,6 +854,11 @@ div[data-testid="stPopoverBody"] {{
 .filter-bar [data-testid="stTextInput"] input:focus {{
   border-color: var(--acc) !important;
   box-shadow: 0 0 0 3px var(--acc-lt), var(--shadow-sm) !important;
+}}
+.filter-bar label p {{
+  font-size: var(--fs-xs) !important;
+  font-weight: 600 !important;
+  color: var(--txt2) !important;
 }}
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -884,7 +907,7 @@ div[data-testid="stPopoverBody"] {{
 .card-title {{
   font-family: 'Sora', sans-serif;
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: var(--fs-md);
   color: var(--txt);
   letter-spacing: -0.01em;
   display: flex;
@@ -893,7 +916,7 @@ div[data-testid="stPopoverBody"] {{
 }}
 .card-count {{
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--txt2);
   background: rgba(248,250,252,0.05);
@@ -910,7 +933,7 @@ div[data-testid="stPopoverBody"] {{
 .dash-grid {{
   display: grid;
   gap: var(--space-3);
-  margin: var(--space-3) 22px 0;
+  margin: var(--space-4) 22px 0;
 }}
 .kpi-card {{
   position: relative;
@@ -979,7 +1002,7 @@ div[data-testid="stPopoverBody"] {{
 }}
 .kpi-card-label {{
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.10em;
@@ -989,15 +1012,15 @@ div[data-testid="stPopoverBody"] {{
 .kpi-card-value {{
   font-family: 'Sora', sans-serif;
   font-weight: 800;
-  font-size: 1.7rem;
+  font-size: var(--fs-2xl);
   color: var(--txt);
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  line-height: 1.15;
 }}
 .kpi-card-sub {{
-  font-size: 0.68rem;
+  font-size: var(--fs-xs);
   color: var(--txt3);
-  margin-top: 4px;
+  margin-top: 5px;
 }}
 
 /* ── Chart wrap (containers de gráficos) ── */
@@ -1011,6 +1034,7 @@ div[data-testid="stPopoverBody"] {{
   overflow: hidden;
   position: relative;
   isolation: isolate;
+  height: 100%;
   transition: transform .28s cubic-bezier(0.4,0,0.2,1), box-shadow .28s cubic-bezier(0.4,0,0.2,1), border-color .28s ease;
 }}
 .chart-wrap::before {{
@@ -1035,11 +1059,15 @@ div[data-testid="stPopoverBody"] {{
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--bdr);
   background: linear-gradient(180deg, rgba(248,250,252,0.035), transparent);
+  display: flex;
+  align-items: center;
 }}
 .chart-title {{
   font-family: 'Sora', sans-serif;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 }}
 .chart-body {{
   padding: var(--space-3) var(--space-4) var(--space-4);
@@ -1050,7 +1078,7 @@ div[data-testid="stPopoverBody"] {{
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: var(--space-3) 22px;
+  margin: var(--space-4) 22px var(--space-3);
 }}
 .sec-div-line {{
   flex: 1;
@@ -1059,7 +1087,7 @@ div[data-testid="stPopoverBody"] {{
 }}
 .sec-div-txt {{
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.64rem;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1078,8 +1106,9 @@ div[data-testid="stPopoverBody"] {{
   gap: 10px;
   padding: 12px 16px;
   border-radius: var(--radius-sm);
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   font-weight: 500;
+  line-height: 1.5;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow: var(--shadow-sm);
@@ -1130,12 +1159,12 @@ div[data-testid="stPopoverBody"] {{
 }}
 .search-card-label {{
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.64rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--txt2);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1145,7 +1174,7 @@ div[data-testid="stPopoverBody"] {{
 .search-card .st-key-nota_inp input,
 .search-card [data-testid="stTextInput"] input[aria-label="Número da Nota Fiscal"] {{
   height: 56px !important;
-  font-size: 1.02rem !important;
+  font-size: var(--fs-lg) !important;
   font-weight: 500 !important;
   padding: 0 20px 0 52px !important;
   border-radius: 14px !important;
@@ -1185,7 +1214,7 @@ div[data-testid="stPopoverBody"] {{
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
   color: #fff !important;
   font-weight: 700 !important;
-  font-size: 0.92rem !important;
+  font-size: var(--fs-md) !important;
   letter-spacing: 0.02em !important;
   box-shadow: 0 6px 22px rgba(37,99,235,0.40), var(--shadow-sm) !important;
   transition: all .25s cubic-bezier(0.4,0,0.2,1) !important;
@@ -1223,7 +1252,7 @@ div[data-testid="stPopoverBody"] {{
   border-collapse: separate;
   border-spacing: 0;
   font-family: 'Sora', sans-serif;
-  font-size: 0.80rem;
+  font-size: var(--fs-sm);
 }}
 .dg-table thead th {{
   position: sticky;
@@ -1233,11 +1262,11 @@ div[data-testid="stPopoverBody"] {{
   backdrop-filter: blur(8px);
   color: var(--txt2);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.64rem;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 12px 16px;
+  padding: 13px 16px;
   border-bottom: 1px solid var(--bdr2);
   white-space: nowrap;
 }}
@@ -1245,13 +1274,14 @@ div[data-testid="stPopoverBody"] {{
 .dg-th-right  {{ text-align: right; }}
 .dg-th-center {{ text-align: center; }}
 .dg-table tbody td {{
-  padding: 11px 16px;
+  padding: 12px 16px;
   color: var(--txt);
   border-bottom: 1px solid rgba(248,250,252,0.045);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 260px;
+  line-height: 1.4;
 }}
 .dg-td-left   {{ text-align: left; }}
 .dg-td-right  {{ text-align: right; font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }}
@@ -1264,9 +1294,9 @@ div[data-testid="stPopoverBody"] {{
 .dg-chip {{
   display: inline-flex;
   align-items: center;
-  padding: 3px 11px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 0.66rem;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   letter-spacing: 0.03em;
   border: 1px solid;
@@ -1274,12 +1304,12 @@ div[data-testid="stPopoverBody"] {{
 }}
 
 .dg-pageinfo {{
-  font-size: 0.72rem;
+  font-size: var(--fs-sm);
   color: var(--txt2);
   padding-top: 8px;
 }}
 .dg-pager-marker + div[data-testid="stHorizontalBlock"] {{
-  margin-top: 4px;
+  margin-top: var(--space-2);
   align-items: center !important;
 }}
 .dg-pager-marker + div[data-testid="stHorizontalBlock"] button {{
@@ -1338,6 +1368,7 @@ div[data-testid="stPopoverBody"] {{
               background-color 300ms ease,
               border-color 300ms ease,
               filter 300ms ease !important;
+  font-weight: 600 !important;
 }}
 .stButton > button:hover:not(:disabled),
 [data-testid="stDownloadButton"] > button:hover:not(:disabled),
@@ -1351,12 +1382,24 @@ div[data-testid="stPopoverBody"] {{
   transform: translateY(0);
 }}
 
-/* Inputs / selects / date pickers: transição suave em foco e hover */
+/* Inputs / selects / date pickers: transição suave em foco e hover, altura e raio consistentes */
 [data-testid="stTextInput"] input,
 [data-testid="stDateInput"] input,
 [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
 [data-testid="stTextArea"] textarea {{
   transition: border-color 300ms ease, box-shadow 300ms ease, background-color 300ms ease !important;
+  border-radius: var(--radius-sm) !important;
+}}
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover,
+[data-testid="stTextInput"] input:hover,
+[data-testid="stDateInput"] input:hover {{
+  border-color: var(--bdr-hover) !important;
+}}
+label p, [data-testid="stWidgetLabel"] p {{
+  font-size: var(--fs-xs) !important;
+  font-weight: 600 !important;
+  color: var(--txt2) !important;
+  letter-spacing: 0.01em;
 }}
 
 /* Chips de status: leve elevação + glow no hover dentro das tabelas */
@@ -1633,27 +1676,27 @@ with fc1:
         format="DD/MM/YYYY",
     )
 with fc2:
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div style="height:29px"></div>', unsafe_allow_html=True)
     _vt_ativo = st.session_state.get("_ver_todas", False)
     _label_toggle = ("✓ Todas as datas") if _vt_ativo else "Todas as datas"
     _bg    = "rgba(59,130,246,0.2)"  if _vt_ativo else "rgba(248,250,252,0.05)"
-    _borda = "#3B82F6"               if _vt_ativo else "rgba(248,250,252,0.12)"
-    _color = "#93c5fd"               if _vt_ativo else "rgba(248,250,252,0.38)"
+    _borda = "#3B82F6"               if _vt_ativo else "rgba(248,250,252,0.14)"
+    _color = "#93c5fd"               if _vt_ativo else "rgba(248,250,252,0.55)"
     st.markdown(f"""<style>
     div[data-testid="stButton"] button[kind="secondary"]#btn_ver_todas,
     div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button {{
         background: {_bg} !important;
         border: 1px solid {_borda} !important;
         color: {_color} !important;
-        font-size: 0.7rem !important;
-        font-weight: 500 !important;
-        padding: 3px 10px !important;
-        height: auto !important;
-        min-height: 0 !important;
-        border-radius: 6px !important;
-        margin-top: 20px !important;
+        font-size: var(--fs-xs) !important;
+        font-weight: 600 !important;
+        padding: 6px 14px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        border-radius: 8px !important;
+        margin-top: 0 !important;
         box-shadow: none !important;
-        letter-spacing: .04em !important;
+        letter-spacing: .03em !important;
         transition: all .2s cubic-bezier(0.4,0,0.2,1) !important;
     }}
     div[data-testid="column"]:nth-child(3) div[data-testid="stButton"] > button:hover {{
@@ -1945,7 +1988,6 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
 # ── Gráficos movidos para a aba Histórico (ver abaixo) ────────────────────────
 
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # REGISTRO
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2039,7 +2081,7 @@ if pagina == "📝  Registro":
             st.markdown('<div class="al-i">ℹ️ A nova placa e data de saída serão informadas pela <strong>Roteirização</strong>.</div>', unsafe_allow_html=True)
 
             st.markdown("""
-            <div class="sec-div" style="margin-top:1.1rem">
+            <div class="sec-div" style="margin:1.25rem 0 .85rem 0">
               <div class="sec-div-line"></div>
               <div class="sec-div-txt">📋 Motivo da Transferência</div>
               <div class="sec-div-line"></div>
@@ -2078,7 +2120,7 @@ if pagina == "📝  Registro":
                 motivo_input = motivo_sel
 
             st.markdown("""
-            <div class="sec-div" style="margin-top:1.1rem">
+            <div class="sec-div" style="margin:1.25rem 0 .85rem 0">
               <div class="sec-div-line"></div>
               <div class="sec-div-txt">💬 Observação (opcional)</div>
               <div class="sec-div-line"></div>
@@ -2092,7 +2134,7 @@ if pagina == "📝  Registro":
                 label_visibility="collapsed",
             )
 
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
             if st.button("🚛 Confirmar Transferência", type="primary", use_container_width=True, key="confirm_btn"):
                 if not motivo_input or motivo_input == "— Selecione um motivo —":
                     if motivo_sel == "✏️ Outro (digitar)":
@@ -2132,9 +2174,9 @@ if pagina == "📝  Registro":
         else:
             st.markdown("""
             <div class="card" style="border-style:dashed;border-color:rgba(248,250,252,0.15)">
-              <div class="card-body" style="text-align:center;padding:2.5rem;color:var(--txt3)">
-                <div style="font-size:2.5rem;margin-bottom:.6rem">🧾</div>
-                <div style="font-size:.85rem">Informe o número da nota e clique em <strong style="color:var(--acc)">Buscar</strong></div>
+              <div class="card-body" style="text-align:center;padding:3rem 2rem">
+                <div style="font-size:2.5rem;margin-bottom:.75rem;opacity:.85">🧾</div>
+                <div style="font-size:var(--fs-md);color:var(--txt2)">Informe o número da nota e clique em <strong style="color:var(--acc)">Buscar</strong></div>
               </div>
             </div>
             """, unsafe_allow_html=True)
@@ -2161,13 +2203,13 @@ if pagina == "📝  Registro":
         _lista_defs = [d for d in STD_DG_DEFS if d["key"] in df_show.columns]
         render_pro_table(df_show, _lista_defs, key="lista_completa", page_size=10)
         st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('<div style="padding:.75rem 1.25rem;border-top:1px solid var(--bdr)">', unsafe_allow_html=True)
+        st.markdown('<div style="padding:.85rem 1.5rem;border-top:1px solid var(--bdr)">', unsafe_allow_html=True)
         ids_hj = df_hj["id"].astype(str).tolist()
         cd1, cd2, _ = st.columns([2, 1, 3], gap="medium")
         with cd1:
             del_id = st.selectbox("Excluir por ID", ["—"] + ids_hj, key="del_id", label_visibility="visible")
         with cd2:
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown('<div style="height:29px"></div>', unsafe_allow_html=True)
             if del_id != "—" and st.button("🗑️ Excluir", key="del_btn"):
                 delete_transf(int(del_id))
                 st.success("Registro excluído.")
@@ -2207,7 +2249,7 @@ elif pagina == "🗺️  Roteirização":
     """, unsafe_allow_html=True)
 
     if pend.empty:
-        st.markdown('<div style="padding:1.5rem;text-align:center"><span class="al-s" style="justify-content:center">✅ Nenhuma nota pendente!</span></div>', unsafe_allow_html=True)
+        st.markdown('<div style="padding:1.75rem;text-align:center"><span class="al-s" style="justify-content:center;display:inline-flex">✅ Nenhuma nota pendente!</span></div>', unsafe_allow_html=True)
     else:
         st.markdown('<div class="card-body" style="padding-bottom:.5rem">', unsafe_allow_html=True)
         pb1, pb2 = st.columns([3, 1], gap="medium")
@@ -2238,7 +2280,7 @@ elif pagina == "🗺️  Roteirização":
         ] if c in df_p.columns]
 
         if df_p.empty:
-            st.markdown('<div class="al-i" style="margin:1rem 1.25rem">Nenhuma nota pendente nos filtros.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="al-i" style="margin:1rem 1.5rem">Nenhuma nota pendente nos filtros.</div>', unsafe_allow_html=True)
         else:
             df_p_sorted = df_p.sort_values("dt_liberado", ascending=False).reset_index(drop=True)
             df_p_display = dedup_columns(df_p_sorted[PEND_COLS].copy()) if PEND_COLS else df_p_sorted
@@ -2248,7 +2290,7 @@ elif pagina == "🗺️  Roteirização":
             render_pro_table(df_p_display, _pend_defs, key="pend_table", page_size=10)
             st.markdown('</div>', unsafe_allow_html=True)
 
-            st.markdown('<div class="sec-div" style="margin-top:.5rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar notas</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-div" style="margin-top:.75rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar notas</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
             # ── Monta tabela de seleção com checkbox ─────────────────────────
             df_sel = df_p_sorted[["numnota", "numped", "nomecliente", "observacao", "numcarregamento", "placa_road", "pesobrutotot", "vltotal", "praca", "id"]].copy()
@@ -2298,23 +2340,23 @@ elif pagina == "🗺️  Roteirização":
                 _valor_fmt   = f"R$ {_valor_sel:,.2f}".replace(",","X").replace(".",",").replace("X",".")
                 _peso_fmt    = f"{_peso_sel:,.0f} kg".replace(",",".")
                 st.markdown(f"""
-                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.5rem 0 .75rem">
-                  <div style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#93c5fd">
+                <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin:.75rem 0 1rem">
+                  <div style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:.45rem 1rem;font-size:.75rem;color:#93c5fd">
                     <span style="font-weight:700;font-size:1rem;color:#F8FAFC">{n_sel}</span> &nbsp;nota(s) selecionada(s)
                   </div>
-                  <div style="background:rgba(124,58,237,0.10);border:1px solid rgba(124,58,237,0.30);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#c4b5fd">
+                  <div style="background:rgba(124,58,237,0.10);border:1px solid rgba(124,58,237,0.30);border-radius:8px;padding:.45rem 1rem;font-size:.75rem;color:#c4b5fd">
                     👤 <span style="font-weight:700;font-size:1rem;color:#F8FAFC">{_n_clientes}</span> &nbsp;cliente(s)
                   </div>
-                  <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#6ee7b7">
+                  <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:.45rem 1rem;font-size:.75rem;color:#6ee7b7">
                     ⚖️ <span style="font-weight:700">{_peso_fmt}</span>
                   </div>
-                  <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:.4rem .9rem;font-size:.75rem;color:#93c5fd">
+                  <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:.45rem 1rem;font-size:.75rem;color:#93c5fd">
                     💰 <span style="font-weight:700">{_valor_fmt}</span>
                   </div>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.markdown('<div class="al-i" style="margin:.4rem 0 .75rem">☝️ Marque uma ou mais notas na tabela acima para roteirizar em lote.</div>', unsafe_allow_html=True)
+                st.markdown('<div class="al-i" style="margin:.5rem 0 1rem">☝️ Marque uma ou mais notas na tabela acima para roteirizar em lote.</div>', unsafe_allow_html=True)
 
             # ── Placa + Data de saída compartilhadas ─────────────────────────
             c_nova_pl, c_dt_saida, c_btn = st.columns([1.4, 1.1, 0.8], gap="medium")
@@ -2323,7 +2365,7 @@ elif pagina == "🗺️  Roteirização":
             with c_dt_saida:
                 dt_saida_i = st.date_input("Data de Saída", value=None, key="dt_lote", format="DD/MM/YYYY")
             with c_btn:
-                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown('<div style="height:29px"></div>', unsafe_allow_html=True)
                 _btn_label = f"✅ Roteirizar {n_sel} nota(s)" if n_sel > 0 else "✅ Roteirizar"
                 roteirizar_btn = st.button(_btn_label, key="btn_lote", use_container_width=True, type="primary")
 
@@ -2406,7 +2448,7 @@ elif pagina == "🗺️  Roteirização":
     """, unsafe_allow_html=True)
 
     if rote.empty:
-        st.markdown(f'<div style="padding:1.25rem"><div class="al-i">Nenhuma nota roteirizada em {periodo_txt}.</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="padding:1.5rem"><div class="al-i">Nenhuma nota roteirizada em {periodo_txt}.</div></div>', unsafe_allow_html=True)
     else:
         st.markdown('<div class="card-body" style="padding-bottom:.5rem">', unsafe_allow_html=True)
         br_input = st.text_input("Buscar roteirizadas", key="rbr", label_visibility="collapsed", placeholder="🔍 Nota, cliente, placa...")
@@ -2451,7 +2493,7 @@ elif pagina == "🗺️  Roteirização":
 
         # ── Lixeira por linha: selectbox de nota + botão devolver ────────────
         if not df_r_sorted.empty:
-            st.markdown('<div class="sec-div" style="margin:.6rem 0 .4rem"><div class="sec-div-line"></div><div class="sec-div-txt">↩️ Devolver para pendente</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-div" style="margin:.85rem 0 .5rem"><div class="sec-div-line"></div><div class="sec-div-txt">↩️ Devolver para pendente</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
             _nota_opts = [
                 f"🗑️  {str(row['numnota'])} — {str(row.get('nomecliente', ''))[:28]}"
                 for _, row in df_r_sorted.iterrows()
@@ -2487,7 +2529,7 @@ elif pagina == "🗺️  Roteirização":
     """, unsafe_allow_html=True)
 
     if rote.empty:
-        st.markdown(f'<div style="padding:1.25rem"><div class="al-i">Nenhum dado roteirizado em {periodo_txt}.</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="padding:1.5rem"><div class="al-i">Nenhum dado roteirizado em {periodo_txt}.</div></div>', unsafe_allow_html=True)
     else:
         st.markdown('<div class="card-body" style="padding-bottom:.5rem">', unsafe_allow_html=True)
 
@@ -2585,7 +2627,7 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
             '<div class="chart-head">'
-            '<span class="chart-title" style="color:#A78BFA;font-size:.78rem">🚛 Por Veículo</span>'
+            '<span class="chart-title" style="color:#A78BFA">🚛 Por Veículo</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2618,7 +2660,7 @@ elif pagina == "📋  Histórico":
             unsafe_allow_html=True,
         )
         st.markdown(
-            '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
+            '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
             '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#3B82F6" stroke-width="2"/>'
             '<circle cx="18" cy="5" r="3.5" fill="#3B82F6"/></svg>'
             '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
@@ -2632,7 +2674,7 @@ elif pagina == "📋  Histórico":
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
             '<div class="chart-head">'
-            '<span class="chart-title" style="color:#A78BFA;font-size:.78rem">📋 Por Motivos</span>'
+            '<span class="chart-title" style="color:#A78BFA">📋 Por Motivos</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -2715,7 +2757,7 @@ elif pagina == "📋  Histórico":
             )
             st.markdown(_svg_m, unsafe_allow_html=True)
             st.markdown(
-                '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding:0 .25rem">'
+                '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
                 '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#3B82F6" stroke-width="2"/>'
                 '<circle cx="18" cy="5" r="3.5" fill="#3B82F6"/></svg>'
                 '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
@@ -2731,7 +2773,7 @@ elif pagina == "📋  Histórico":
 
         st.markdown("</div></div>", unsafe_allow_html=True)
 
-    st.markdown('<div style="margin-top:16px"></div>', unsafe_allow_html=True)
+    st.markdown('<div style="margin-top:20px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
     # ── Linha 1 de filtros: busca + excel ────────────────────────────────────
     fst  = "Todos"
@@ -2754,8 +2796,8 @@ elif pagina == "📋  Histórico":
 
     # ── Linha 2 de filtros: data de saída ────────────────────────────────────
     st.markdown(
-        '<div style="margin-top:10px;margin-bottom:2px;display:flex;align-items:center;gap:8px">'
-        '<span style="font-size:.68rem;font-weight:600;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em">&#128197; Filtrar por Data de Sa&#237;da</span>'
+        '<div style="margin-top:14px;margin-bottom:4px;display:flex;align-items:center;gap:8px">'
+        '<span style="font-size:.68rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em">&#128197; Filtrar por Data de Sa&#237;da</span>'
         '<div style="flex:1;height:1px;background:rgba(248,250,252,0.07)"></div>'
         '</div>',
         unsafe_allow_html=True,
