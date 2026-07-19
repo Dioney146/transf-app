@@ -2079,87 +2079,239 @@ def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
 
 
 
-# ── Helper: gera SVG de colunas verticais com linha de qtd ────────────────────
-def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#7C3AED", fmt_val=None):
-    """Retorna string SVG: barras verticais + polyline de quantidade."""
+# ── Helper: gera SVG de colunas verticais 3D (glassmorphism) com linha de qtd ─
+def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#3B82F6", fmt_val=None, rotate_labels=False):
+    """Retorna string SVG: barras verticais extrudadas (3D + glass) + linha com glow."""
     if not rows:
         return '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
-    n        = len(rows)
-    MIN_SLOT = 60   # largura mínima por coluna para não ficar espremido
-    SVG_W    = max(560, n * MIN_SLOT)
-    TOP_PAD  = 56   # espaço acima das barras (rótulos de valor)
-    BAR_AREA = 160  # altura da área de barras
-    BOT_PAD  = 30   # espaço abaixo para rótulos de nome
-    SVG_H    = TOP_PAD + BAR_AREA + BOT_PAD
-    slot_w   = SVG_W / max(n, 1)
-    bar_w    = min(slot_w * 0.55, 80)  # máx 80px para não estourar com poucos itens
-    max_val  = max(r[val_key] for r in rows) or 1
-    max_qtd  = max(r[qtd_key] for r in rows) if qtd_key else 1
 
-    defs  = f'<defs><linearGradient id="gcol" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{bar_color_1}"/><stop offset="100%" stop-color="{bar_color_2}"/></linearGradient></defs>'
-    rects = ""
-    labels= ""
-    pts   = []
+    n = len(rows)
+    max_lbl_len = max(len(str(r[label_key])) for r in rows)
+
+    MIN_SLOT   = 64
+    DEPTH_X    = 11    # deslocamento da extrusão 3D (elegante, não exagerado)
+    DEPTH_Y    = -9
+    TOP_PAD    = 64
+    BAR_AREA   = 156
+    BOT_PAD    = max(130, int(max_lbl_len * 6 * 0.64) + 20) if rotate_labels else 32
+    LEFT_PAD   = max(14, int(max_lbl_len * 6 * 0.77) - 16) if rotate_labels else (DEPTH_X + 6)
+    RIGHT_PAD  = DEPTH_X + 12
+
+    SVG_W  = max(560, n * MIN_SLOT) + LEFT_PAD + RIGHT_PAD
+    SVG_H  = TOP_PAD + BAR_AREA + BOT_PAD
+    slot_w = (SVG_W - LEFT_PAD - RIGHT_PAD) / max(n, 1)
+    bar_w  = min(slot_w * 0.5, 60)
+    max_val = max(r[val_key] for r in rows) or 1
+    base_y  = TOP_PAD + BAR_AREA
+
+    uid = f"g{abs(hash((label_key, val_key))) % 99999}"
+
+    defs = f'''<defs>
+      <linearGradient id="{uid}front" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="{bar_color_1}"/>
+        <stop offset="100%" stop-color="{bar_color_2}"/>
+      </linearGradient>
+      <linearGradient id="{uid}top" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#DDD6FE"/>
+        <stop offset="100%" stop-color="{bar_color_1}"/>
+      </linearGradient>
+      <linearGradient id="{uid}side" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="{bar_color_2}"/>
+        <stop offset="100%" stop-color="#3B0764"/>
+      </linearGradient>
+      <linearGradient id="{uid}glass" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.32"/>
+        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="{uid}dot" cx="35%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#EFF6FF"/>
+        <stop offset="45%" stop-color="{line_color}"/>
+        <stop offset="100%" stop-color="{line_color}" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="{uid}shadow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="3.4"/>
+      </filter>
+      <filter id="{uid}glow" x="-90%" y="-90%" width="280%" height="280%">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <style>
+        .{uid}bar {{
+          transform-box: fill-box;
+          transform-origin: 50% 100%;
+          animation: {uid}grow .65s cubic-bezier(.34,1.56,.64,1) both;
+          transition: transform .25s cubic-bezier(0.4,0,0.2,1), filter .25s ease;
+          cursor: default;
+        }}
+        .{uid}bar:hover {{
+          transform: translateY(-5px);
+          filter: brightness(1.12) drop-shadow(0 10px 12px rgba(124,58,237,0.45));
+        }}
+        @keyframes {uid}grow {{ from {{ transform: scaleY(0.04); opacity:0; }} to {{ transform: scaleY(1); opacity:1; }} }}
+        .{uid}line {{
+          stroke-dasharray: 2000;
+          stroke-dashoffset: 2000;
+          animation: {uid}draw 1.2s ease-out .35s forwards;
+        }}
+        @keyframes {uid}draw {{ to {{ stroke-dashoffset: 0; }} }}
+        .{uid}pt {{
+          transform-box: fill-box;
+          transform-origin: center;
+          animation: {uid}pop .45s cubic-bezier(.34,1.56,.64,1) both;
+        }}
+        @keyframes {uid}pop {{ from {{ transform: scale(0); opacity:0; }} to {{ transform: scale(1); opacity:1; }} }}
+      </style>
+    </defs>'''
+
+    rects  = ""
+    labels = ""
+    pts    = []
 
     for i, r in enumerate(rows):
         lbl   = str(r[label_key])
-        short = (lbl[:9] + "…") if len(lbl) > 10 else lbl
+        short = (lbl[:9] + "…") if (not rotate_labels and len(lbl) > 10) else lbl
         val   = r[val_key]
-        bh    = max(4, int(val / max_val * BAR_AREA))
-        cx    = slot_w * i + slot_w / 2
+        bh    = max(6, int(val / max_val * BAR_AREA))
+        cx    = LEFT_PAD + slot_w * i + slot_w / 2
         bx    = cx - bar_w / 2
-        by    = TOP_PAD + BAR_AREA - bh
+        by    = base_y - bh
         shown = fmt_val(val) if fmt_val else str(int(val))
+        delay = round(i * 0.05, 2)
 
-        rects += f'<rect x="{bx:.1f}" y="{by}" width="{bar_w:.1f}" height="{bh}" rx="3" fill="url(#gcol)" opacity="0.9"/>'
-        # valor dentro da barra (10px abaixo do topo), só mostra fora se barra for muito pequena
-        val_ty = by + 14
-        if bh >= 18:
-            rects += f'<text x="{cx:.1f}" y="{val_ty}" text-anchor="middle" font-size="11" font-weight="700" fill="#F8FAFC">{shown}</text>'
+        # sombra suave projetada no "chão" do gráfico
+        rects += (
+            f'<ellipse cx="{cx:.1f}" cy="{base_y + 6}" rx="{bar_w * 0.62:.1f}" ry="5" '
+            f'fill="#020617" opacity="0.40" filter="url(#{uid}shadow)"/>'
+        )
+
+        # grupo 3D (lateral + topo + frente + glass) — anima e recebe hover-lift
+        rects += f'<g class="{uid}bar" style="animation-delay:{delay}s">'
+        rects += (
+            f'<polygon points="{bx+bar_w:.1f},{by:.1f} {bx+bar_w+DEPTH_X:.1f},{by+DEPTH_Y:.1f} '
+            f'{bx+bar_w+DEPTH_X:.1f},{base_y+DEPTH_Y:.1f} {bx+bar_w:.1f},{base_y:.1f}" '
+            f'fill="url(#{uid}side)"/>'
+        )
+        rects += (
+            f'<polygon points="{bx:.1f},{by:.1f} {bx+DEPTH_X:.1f},{by+DEPTH_Y:.1f} '
+            f'{bx+bar_w+DEPTH_X:.1f},{by+DEPTH_Y:.1f} {bx+bar_w:.1f},{by:.1f}" '
+            f'fill="url(#{uid}top)"/>'
+        )
+        rects += (
+            f'<rect x="{bx:.1f}" y="{by:.1f}" width="{bar_w:.1f}" height="{bh}" rx="2.5" '
+            f'fill="url(#{uid}front)"/>'
+        )
+        _gh = max(8, int(bh * 0.4))
+        rects += (
+            f'<rect x="{bx:.1f}" y="{by:.1f}" width="{bar_w:.1f}" height="{_gh}" rx="2.5" '
+            f'fill="url(#{uid}glass)"/>'
+        )
+        rects += '</g>'
+
+        val_ty = by + 15 if bh >= 20 else by - 5
+        rects += (
+            f'<text x="{cx:.1f}" y="{val_ty:.1f}" text-anchor="middle" font-size="11" '
+            f'font-weight="700" fill="#F8FAFC">{shown}</text>'
+        )
+
+        if rotate_labels:
+            labels += (
+                f'<text transform="translate({cx:.1f},{base_y + 12}) rotate(-40)" '
+                f'text-anchor="end" font-size="11" font-weight="600" fill="#94A3B8">{lbl}</text>'
+            )
         else:
-            rects += f'<text x="{cx:.1f}" y="{by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#F8FAFC">{shown}</text>'
-        labels+= f'<text x="{cx:.1f}" y="{TOP_PAD + BAR_AREA + 16}" text-anchor="middle" font-size="11" font-weight="600" fill="#94A3B8">{short}</text>'
+            labels += (
+                f'<text x="{cx:.1f}" y="{base_y + 16}" text-anchor="middle" font-size="11" '
+                f'font-weight="600" fill="#94A3B8">{short}</text>'
+            )
 
         if qtd_key:
-            qtd    = int(r[qtd_key])
-            # linha roxa flutua 18px acima do topo de cada barra
-            dot_y  = by - 20
-            pts.append((cx, dot_y, qtd))
+            qtd   = int(r[qtd_key])
+            dot_y = by - 20
+            pts.append((cx, dot_y, qtd, delay))
 
     poly = ""
     dots = ""
     if pts:
-        poly_str = " ".join(f"{x:.1f},{y}" for x, y, _ in pts)
-        poly = f'<polyline points="{poly_str}" fill="none" stroke="{line_color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
-        for x, y, q in pts:
-            dots += f'<circle cx="{x:.1f}" cy="{y}" r="5" fill="{line_color}" stroke="#0F172A" stroke-width="1.5"/>'
-            dots += f'<text x="{x:.1f}" y="{y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="{line_color}">{q}</text>'
+        path_d = f"M {pts[0][0]:.1f} {pts[0][1]:.1f} "
+        for k in range(1, len(pts)):
+            x0, y0, _, _ = pts[k - 1]
+            x1, y1, _, _ = pts[k]
+            mx = (x0 + x1) / 2
+            path_d += f"Q {x0:.1f} {y0:.1f} {mx:.1f} {(y0 + y1) / 2:.1f} "
+        path_d += f"T {pts[-1][0]:.1f} {pts[-1][1]:.1f}"
+
+        poly += (
+            f'<path d="{path_d}" fill="none" stroke="{line_color}" stroke-width="7" '
+            f'opacity="0.22" filter="url(#{uid}shadow)"/>'
+        )
+        poly += (
+            f'<path class="{uid}line" d="{path_d}" fill="none" stroke="{line_color}" '
+            f'stroke-width="2.5" stroke-linecap="round"/>'
+        )
+
+        for x, y, q, delay in pts:
+            dots += (
+                f'<circle class="{uid}pt" style="animation-delay:{delay + 0.4}s" '
+                f'cx="{x:.1f}" cy="{y}" r="9" fill="url(#{uid}dot)"/>'
+            )
+            dots += (
+                f'<circle cx="{x:.1f}" cy="{y}" r="3.4" fill="#FFFFFF" filter="url(#{uid}glow)"/>'
+            )
+            dots += (
+                f'<text x="{x:.1f}" y="{y - 11}" text-anchor="middle" font-size="11" '
+                f'font-weight="700" fill="{line_color}">{q}</text>'
+            )
 
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}" '
-        f'style="width:100%;height:auto;display:block">'
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W:.0f} {SVG_H:.0f}" '
+        f'style="width:100%;height:auto;display:block;overflow:visible">'
         f'{defs}{rects}{labels}{poly}{dots}</svg>'
     )
 
 
-# ── Helper: gera SVG de barras horizontais ────────────────────────────────────
+# ── Helper: gera SVG de barras horizontais 3D (glassmorphism) ─────────────────
 def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=None):
-    """Retorna string SVG: barras horizontais."""
+    """Retorna string SVG: barras horizontais extrudadas com leve profundidade e glass."""
     if not rows:
         return '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
     n        = len(rows)
-    LABEL_W  = 70   # largura da coluna de rótulos
-    BAR_H    = 10   # altura de cada barra
-    ROW_H    = 28   # altura por linha
-    VAL_W    = 55   # largura coluna de valores
+    LABEL_W  = 74
+    BAR_H    = 11
+    ROW_H    = 30
+    VAL_W    = 58
+    DEPTH    = 5
     SVG_W    = 400
-    SVG_H    = n * ROW_H + 8
-    BAR_AREA = SVG_W - LABEL_W - VAL_W - 8
+    SVG_H    = n * ROW_H + 10
+    BAR_AREA = SVG_W - LABEL_W - VAL_W - 10 - DEPTH
     max_val  = max(r[val_key] for r in rows) or 1
 
-    defs = f'<defs><linearGradient id="gbar" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="{bar_color_1}"/><stop offset="100%" stop-color="{bar_color_2}"/></linearGradient></defs>'
-    els  = ""
+    uid = f"h{abs(hash((label_key, val_key))) % 99999}"
 
+    defs = f'''<defs>
+      <linearGradient id="{uid}bar" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="{bar_color_1}"/>
+        <stop offset="100%" stop-color="{bar_color_2}"/>
+      </linearGradient>
+      <linearGradient id="{uid}glass" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.30"/>
+        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="{uid}shadow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="2.2"/>
+      </filter>
+      <style>
+        .{uid}row {{
+          transform-box: fill-box;
+          transform-origin: 0% 50%;
+          animation: {uid}grow .55s cubic-bezier(.34,1.56,.64,1) both;
+          transition: transform .22s ease, filter .22s ease;
+        }}
+        .{uid}row:hover {{ transform: translateX(3px); filter: brightness(1.1); }}
+        @keyframes {uid}grow {{ from {{ transform: scaleX(0.05); opacity:0; }} to {{ transform: scaleX(1); opacity:1; }} }}
+      </style>
+    </defs>'''
+
+    els = ""
     for i, r in enumerate(rows):
         lbl   = str(r[label_key])
         short = (lbl[:9] + "…") if len(lbl) > 10 else lbl
@@ -2168,15 +2320,24 @@ def _svg_bar_horiz(rows, label_key, val_key, bar_color_1, bar_color_2, fmt_val=N
         y_mid = i * ROW_H + ROW_H / 2 + 4
         bar_y = y_mid - BAR_H / 2
         shown = fmt_val(val) if fmt_val else str(int(val))
+        delay = round(i * 0.05, 2)
 
-        # linha de fundo
-        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{BAR_AREA}" height="{BAR_H}" rx="3" fill="rgba(248,250,252,0.05)"/>'
-        # barra colorida
-        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{bw}" height="{BAR_H}" rx="3" fill="url(#gbar)" opacity="0.9"/>'
-        # rótulo esquerdo
-        els += f'<text x="{LABEL_W - 4}" y="{y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="8.5" fill="#94A3B8">{short}</text>'
-        # valor direito
-        els += f'<text x="{LABEL_W + BAR_AREA + 4}" y="{y_mid:.1f}" dominant-baseline="middle" font-size="8.5" font-weight="700" fill="#F8FAFC">{shown}</text>'
+        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{BAR_AREA + DEPTH}" height="{BAR_H}" rx="4" fill="rgba(248,250,252,0.05)"/>'
+        els += (
+            f'<ellipse cx="{LABEL_W}" cy="{y_mid:.1f}" rx="2" ry="{BAR_H/2:.1f}" '
+            f'fill="#000" opacity="0.25" filter="url(#{uid}shadow)"/>'
+        )
+        els += f'<g class="{uid}row" style="animation-delay:{delay}s">'
+        # lateral (extrusão inferior, sombra)
+        els += f'<rect x="{LABEL_W}" y="{bar_y+2:.1f}" width="{bw}" height="{BAR_H}" rx="4" fill="{bar_color_2}" opacity="0.55"/>'
+        # frente
+        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{bw}" height="{BAR_H}" rx="4" fill="url(#{uid}bar)"/>'
+        # glass sheen
+        els += f'<rect x="{LABEL_W}" y="{bar_y:.1f}" width="{bw}" height="{BAR_H*0.45:.1f}" rx="4" fill="url(#{uid}glass)"/>'
+        els += '</g>'
+
+        els += f'<text x="{LABEL_W - 6}" y="{y_mid:.1f}" text-anchor="end" dominant-baseline="middle" font-size="9" fill="#94A3B8">{short}</text>'
+        els += f'<text x="{LABEL_W + BAR_AREA + DEPTH + 6}" y="{y_mid:.1f}" dominant-baseline="middle" font-size="9" font-weight="700" fill="#F8FAFC">{shown}</text>'
 
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}" '
@@ -2898,64 +3059,16 @@ elif pagina == "📋  Histórico":
                 _rows_motivo = _top_mot.to_dict("records")
 
         if _rows_motivo:
-            _nm_m      = len(_rows_motivo)
-            # calcula BOT_PAD dinamicamente: texto rotacionado -40° projetado no eixo X
-            # comprimento máximo do label * ~6px por char * sin(40°) ≈ * 0.64
-            _max_lbl_len = max(len(str(r["motivo"])) for r in _rows_motivo)
-            _BOT_M     = max(130, int(_max_lbl_len * 6 * 0.64) + 20)
-            # margem esquerda para o primeiro rótulo não ser cortado
-            _LEFT_PAD  = max(10, int(_max_lbl_len * 6 * 0.77) - 20)
-            _SVG_W_M   = 560 + _LEFT_PAD
-            _TOP_M     = 56
-            _BAR_M     = 160
-            _SVG_H_M   = _TOP_M + _BAR_M + _BOT_M
-            _slot_m    = (_SVG_W_M - _LEFT_PAD) / max(_nm_m, 1)
-            _barw_m    = min(_slot_m * 0.55, 80)
-            _max_qtd_m = max(r["qtd"] for r in _rows_motivo) or 1
-
-            _defs_m = (
-                '<defs><linearGradient id="gmotv" x1="0" y1="0" x2="0" y2="1">'
-                '<stop offset="0%" stop-color="#7C3AED"/>'
-                '<stop offset="100%" stop-color="#5B21B6"/>'
-                '</linearGradient></defs>'
+            st.markdown(
+                _svg_col_line(
+                    _rows_motivo,
+                    label_key="motivo", val_key="qtd", qtd_key="qtd",
+                    bar_color_1="#7C3AED", bar_color_2="#5B21B6",
+                    line_color="#3B82F6",
+                    rotate_labels=True,
+                ),
+                unsafe_allow_html=True,
             )
-            _rects_m = ""
-            _lbls_m  = ""
-            _pts_m   = []
-
-            for _i, _r in enumerate(_rows_motivo):
-                _lbl  = str(_r["motivo"])
-                _qtd  = int(_r["qtd"])
-                _bh   = max(4, int(_qtd / _max_qtd_m * _BAR_M))
-                _cx   = _LEFT_PAD + _slot_m * _i + _slot_m / 2
-                _bx   = _cx - _barw_m / 2
-                _by   = _TOP_M + _BAR_M - _bh
-
-                _rects_m += f'<rect x="{_bx:.1f}" y="{_by}" width="{_barw_m:.1f}" height="{_bh}" rx="3" fill="url(#gmotv)" opacity="0.9"/>'
-                _vty = _by + 14
-                if _bh >= 18:
-                    _rects_m += f'<text x="{_cx:.1f}" y="{_vty}" text-anchor="middle" font-size="11" font-weight="700" fill="#F8FAFC">{_qtd}</text>'
-                else:
-                    _rects_m += f'<text x="{_cx:.1f}" y="{_by - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="#F8FAFC">{_qtd}</text>'
-
-                _lbls_m += f'<text transform="translate({_cx:.1f},{_TOP_M + _BAR_M + 10}) rotate(-40)" text-anchor="end" font-size="11" font-weight="600" fill="#94A3B8">{_lbl}</text>'
-                _pts_m.append((_cx, _by - 20, _qtd))
-
-            _poly_m = ""
-            _dots_m = ""
-            if _pts_m:
-                _ps = " ".join(f"{x:.1f},{y}" for x, y, _ in _pts_m)
-                _poly_m = f'<polyline points="{_ps}" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>'
-                for _x, _y, _q in _pts_m:
-                    _dots_m += f'<circle cx="{_x:.1f}" cy="{_y}" r="5" fill="#3B82F6" stroke="#0F172A" stroke-width="1.5"/>'
-                    _dots_m += f'<text x="{_x:.1f}" y="{_y - 9}" text-anchor="middle" font-size="11" font-weight="700" fill="#3B82F6">{_q}</text>'
-
-            _svg_m = (
-                f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_SVG_W_M} {_SVG_H_M}" '
-                f'style="width:100%;height:auto;display:block">'
-                f'{_defs_m}{_rects_m}{_lbls_m}{_poly_m}{_dots_m}</svg>'
-            )
-            st.markdown(_svg_m, unsafe_allow_html=True)
             st.markdown(
                 '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
                 '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#3B82F6" stroke-width="2"/>'
