@@ -3049,22 +3049,26 @@ elif pagina == "📋  Histórico":
                 (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
             ]
             if not _df_mot.empty:
-                _top_mot = (
-                    _df_mot.groupby("motivo")["numnota"]
-                    .count()
-                    .sort_values(ascending=False)
-                    .reset_index()
-                )
-                _top_mot.columns = ["motivo", "qtd"]
+                _mot_qtd = _df_mot.groupby("motivo")["numnota"].count().reset_index()
+                _mot_qtd.columns = ["motivo", "qtd"]
+                _mot_val = _df_mot.groupby("motivo")["vltotal"].sum().reset_index()
+                _mot_val.columns = ["motivo", "valor"]
+                _top_mot = _mot_qtd.merge(_mot_val, on="motivo", how="left").fillna(0)
+                _top_mot = _top_mot.sort_values("valor", ascending=False)
                 _rows_motivo = _top_mot.to_dict("records")
+
+        def _fmt_brl_mot(v):
+            s = f"{int(round(v)):,}".replace(",", ".")
+            return f"R {s}"
 
         if _rows_motivo:
             st.markdown(
                 _svg_col_line(
                     _rows_motivo,
-                    label_key="motivo", val_key="qtd", qtd_key="qtd",
+                    label_key="motivo", val_key="valor", qtd_key="qtd",
                     bar_color_1="#7C3AED", bar_color_2="#5B21B6",
                     line_color="#3B82F6",
+                    fmt_val=_fmt_brl_mot,
                     rotate_labels=True,
                 ),
                 unsafe_allow_html=True,
