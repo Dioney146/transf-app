@@ -460,8 +460,12 @@ def find_first_existing(*candidates):
 # Ajuste os caminhos abaixo para onde os arquivos realmente estão no seu repositório.
 # Procura em "assets/" e também na raiz do projeto, como fallback.
 BG_PATH = find_first_existing(
+    "assets/fundo.webp",
+    "assets/background.webp",
     "assets/fundo.png",
     "assets/background.png",
+    "fundo.webp",
+    "background.webp",
     "fundo.png",
     "background.png",
 )
@@ -472,7 +476,18 @@ LOGO_PATH = find_first_existing(
     "logo.png",
 )
 
-BG_B64 = img_to_base64(BG_PATH)
+def _mime_for_path(path):
+    """Detecta o content-type correto para embutir a imagem como data URI."""
+    ext = Path(path).suffix.lower()
+    return {
+        ".webp": "image/webp",
+        ".png":  "image/png",
+        ".jpg":  "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }.get(ext, "image/png")
+
+BG_B64  = img_to_base64(BG_PATH)
+BG_MIME = _mime_for_path(BG_PATH)
 LOGO_B64 = img_to_base64(LOGO_PATH)
 
 # ─── Partículas do fundo tecnológico (geradas uma vez, posições fixas) ───────
@@ -490,27 +505,8 @@ def _gen_star_shadows(n, min_op, max_op, size_px=1):
         parts.append(f"{x}vw {y}vh 0 rgba(148,197,255,{op})")
     return ",\n    ".join(parts)
 
-_STARS_FAR   = _gen_star_shadows(55, 0.08, 0.22)
-_STARS_NEAR  = _gen_star_shadows(20, 0.14, 0.32)
-
-def _gen_light_shadows(n, x_range, y_range, min_op, max_op, color):
-    """Gera pontos de 'luzes de cidade' (estilo Earth at Night) dentro de uma
-    região percentual (x_range, y_range), para posicionar via box-shadow
-    sobre a superfície do planeta (coordenadas relativas ao próprio globo)."""
-    parts = []
-    for _ in range(n):
-        x = round(_bgrandom.uniform(*x_range), 2)
-        y = round(_bgrandom.uniform(*y_range), 2)
-        op = round(_bgrandom.uniform(min_op, max_op), 2)
-        parts.append(f"{x}% {y}% 0 rgba({color},{op})")
-    return ",\n    ".join(parts)
-
-# Luzes concentradas (núcleos urbanos maiores) + luzes dispersas (cidades
-# menores), dentro da faixa da superfície visível do planeta no canto
-# superior direito da tela.
-_CITY_LIGHTS_MAIN = _gen_light_shadows(85,  (6, 62), (14, 60), 0.35, 0.85, "255,201,133")
-_CITY_LIGHTS_DIM   = _gen_light_shadows(140, (4, 66), (12, 64), 0.10, 0.28, "255,183,110")
-_CITY_LIGHTS_METRO = _gen_light_shadows(9,   (8, 58), (16, 56), 0.55, 0.85, "255,214,158")
+_STARS_FAR   = _gen_star_shadows(40, 0.06, 0.16)
+_STARS_NEAR  = _gen_star_shadows(14, 0.10, 0.22)
 
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
@@ -592,28 +588,24 @@ html, body, [class*="css"], .stApp {{
 }}
 
 /* ══════════════════════════════════════════════════════════════════════════
-   FUNDO — "Earth at Night" estilo NASA/ISS: horizonte amplo da Terra à
-   noite no canto superior direito, com luzes de cidades, atmosfera azul
-   intensa acompanhando a curvatura e um nascer do sol cinematográfico bem
-   sobre o horizonte. Espaço profundo, estrelas discretas, nebulosa sutil.
-   Camadas 100% CSS, fixas, sempre atrás de todo o conteúdo, baixa opacidade
+   FUNDO — fotografia real da Terra (Amazônia/Norte do Brasil vista do
+   espaço) integrada ao layout de forma discreta, no canto inferior direito.
+   Espaço profundo minimalista ao redor, sem elementos futuristas por cima
+   da foto. Camadas fixas, sempre atrás de todo o conteúdo, baixa opacidade
    para não competir com a interface.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* Camada 0 — espaço profundo: gradiente preto → azul-marinho, com nebulosa
-   azul-escura muito sutil para dar profundidade. */
+/* Camada 0 — espaço profundo minimalista: gradiente preto → azul-marinho */
 .stApp::before {{
   content: '';
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(ellipse 50% 40% at 10% 85%, rgba(20,40,74,0.14) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 70% 65%, rgba(30,55,95,0.10) 0%, transparent 62%),
-    linear-gradient(165deg, #000000 0%, #04070d 45%, #050a16 75%, #000000 100%);
+  background: linear-gradient(165deg, #000000 0%, #04070d 45%, #050a16 75%, #000000 100%);
   z-index: -9;
 }}
 
-/* Camada 1 — estrelas discretas, dois planos de profundidade */
+/* Camada 1 — estrelas bem discretas (não exageradas), só no espaço ao
+   redor da fotografia. */
 .bg-stars-far {{
   content: '';
   position: fixed;
@@ -623,7 +615,7 @@ html, body, [class*="css"], .stApp {{
   box-shadow: {_STARS_FAR};
   z-index: -8;
   pointer-events: none;
-  animation: bgTwinkleFar 11s ease-in-out infinite alternate;
+  opacity: 0.7;
 }}
 .bg-stars-near {{
   content: '';
@@ -635,176 +627,68 @@ html, body, [class*="css"], .stApp {{
   border-radius: 50%;
   z-index: -8;
   pointer-events: none;
-  animation: bgTwinkleNear 8s ease-in-out infinite alternate;
-}}
-@keyframes bgTwinkleFar {{
-  0%   {{ opacity: 0.45; }}
-  100% {{ opacity: 0.85; }}
-}}
-@keyframes bgTwinkleNear {{
-  0%   {{ opacity: 0.5; }}
-  100% {{ opacity: 0.9; }}
-}}
-
-/* Camada 2 — Terra: horizonte amplo no canto inferior direito. Círculo
-   grande (bem maior que a tela), a maior parte fora da área visível, para
-   que apareça só a curva do horizonte — nunca o globo inteiro. Ancorado em
-   right+bottom (sem max-width, para não desalinhar o deslocamento em
-   telas largas). */
-.bg-earth-wrap {{
-  position: fixed;
-  right: -28vw;
-  bottom: -32vw;
-  width: 100vw;
-  height: 100vw;
-  z-index: -6;
-  pointer-events: none;
-  animation: bgEarthFloat 24s ease-in-out infinite;
-}}
-@keyframes bgEarthFloat {{
-  0%, 100% {{ transform: translateY(0); }}
-  50%      {{ transform: translateY(-6px); }}
-}}
-/* Halo atmosférico externo — brilho azul ao redor da curvatura, contido
-   (para não "lavar" o contraste entre o espaço e o planeta). */
-.bg-earth-atmo {{
-  position: absolute;
-  inset: -0.6%;
-  border-radius: 50%;
-  box-shadow:
-    0 0 0.9vw 0.2vw rgba(224,242,255,0.55),
-    0 0 2.4vw 0.6vw rgba(165,213,255,0.30),
-    0 0 5vw 1.4vw rgba(96,165,250,0.16),
-    0 0 9vw 2.4vw rgba(59,130,246,0.08);
-  pointer-events: none;
-}}
-.bg-earth-globe {{
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse 60% 50% at 62% 24% , rgba(42,68,108,0.65) 0%, transparent 44%),
-    radial-gradient(ellipse 45% 35% at 40% 18%, rgba(22,36,60,0.6) 0%, transparent 48%),
-    radial-gradient(ellipse 75% 65% at 55% 30%, rgba(24,40,68,0.95) 0%, transparent 55%),
-    linear-gradient(200deg, #101c38 0%, #0b1526 30%, #070d1a 55%, #03060d 78%, #00030a 100%);
-  /* brilho interno acompanhando toda a curvatura (linha do horizonte),
-     gradação branco-azulada → azul profundo — bem definida, sem vazar */
-  box-shadow:
-    inset 0 0 0.7vw 0.2vw rgba(255,255,255,0.70),
-    inset 0 0 1.6vw 0.4vw rgba(224,242,254,0.55),
-    inset 0 0 3.6vw 1vw rgba(147,197,253,0.40),
-    inset 0 0 7vw 2vw rgba(59,130,246,0.28),
-    inset 0 0 14vw 4vw rgba(8,14,28,0.55);
-}}
-/* Realce quente perto do nascer do sol — o brilho ao longo da curvatura
-   passa de azul-branco para dourado bem próximo ao ponto do sol. */
-.bg-earth-warmlimb {{
-  position: absolute;
-  left: 52%;
-  top: 12%;
-  width: 16%;
-  height: 13%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse 60% 60% at 50% 40%, rgba(255,214,153,0.60) 0%, rgba(255,170,90,0.22) 45%, transparent 75%);
-  filter: blur(1vw);
-  mix-blend-mode: screen;
-}}
-/* Luzes de cidades — metrópoles com brilho difuso, núcleos maiores e luzes
-   dispersas, sobre a superfície noturna visível (recortadas automaticamente
-   pelo círculo do globo). */
-.bg-earth-lights-metro {{
-  position: absolute;
-  inset: 0;
-  width: 5px; height: 5px;
-  box-shadow: {_CITY_LIGHTS_METRO};
-  border-radius: 50%;
-  filter: blur(2.5px);
   opacity: 0.75;
 }}
-.bg-earth-lights-main {{
-  position: absolute;
-  inset: 0;
-  width: 2px; height: 2px;
-  box-shadow: {_CITY_LIGHTS_MAIN};
-  border-radius: 50%;
-  opacity: 0.9;
+
+/* Camada 2 — fotografia real da Terra, canto inferior direito. Sem esticar
+   nem recortar a perspectiva original: usa a proporção nativa da imagem
+   (largura definida, altura automática). */
+.bg-photo-wrap {{
+  position: fixed;
+  right: -5vw;
+  bottom: -5vw;
+  width: 40vw;
+  max-width: 620px;
+  min-width: 320px;
+  z-index: -6;
+  pointer-events: none;
+  opacity: 0.30;
+  /* degradê: a foto desaparece suavemente em direção ao centro da tela
+     (canto oposto ao de ancoragem, aqui o canto superior-esquerdo do
+     próprio recorte) */
+  -webkit-mask-image: linear-gradient(to top left, #000 40%, transparent 88%);
+  mask-image: linear-gradient(to top left, #000 40%, transparent 88%);
 }}
-.bg-earth-lights-dim {{
-  position: absolute;
-  inset: 0;
-  width: 1px; height: 1px;
-  box-shadow: {_CITY_LIGHTS_DIM};
-  border-radius: 50%;
-  opacity: 0.8;
+.bg-photo-inner {{
+  position: relative;
+  width: 100%;
+  line-height: 0;
 }}
-/* Nuvens finas e orgânicas sobre as luzes, para realismo fotográfico */
-.bg-earth-clouds {{
+/* Cópia desfocada, visível apenas nas bordas externas (via máscara) */
+.bg-photo-blurred {{
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: blur(7px);
+  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, transparent 55%, #000 92%);
+  mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, transparent 55%, #000 92%);
+}}
+/* Cópia nítida, visível apenas no "núcleo" central (preserva os detalhes
+   originais da fotografia) */
+.bg-photo-sharp {{
+  display: block;
+  width: 100%;
+  height: auto;
   position: absolute;
   inset: 0;
-  border-radius: 50%;
+  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, #000 55%, transparent 92%);
+  mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, #000 55%, transparent 92%);
+}}
+/* Gradiente escuro por cima da foto, para integrar ao tema dark */
+.bg-photo-overlay {{
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(ellipse 38% 14% at 28% 8%, rgba(255,255,255,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 26% 10% at 12% 16%, rgba(255,255,255,0.05) 0%, transparent 65%),
-    radial-gradient(ellipse 30% 11% at 42% 4%, rgba(255,255,255,0.045) 0%, transparent 62%),
-    radial-gradient(ellipse 20% 8% at 6% 22%, rgba(255,255,255,0.04) 0%, transparent 68%);
+    linear-gradient(205deg, rgba(2,4,10,0.10) 0%, rgba(2,4,10,0.42) 55%, rgba(2,4,10,0.72) 100%);
+  pointer-events: none;
+}}
+/* Brilho azul bem sutil acompanhando a curvatura visível na fotografia */
+.bg-photo-glow {{
+  position: absolute;
+  inset: -4%;
+  background: radial-gradient(ellipse 70% 34% at 42% 10%, rgba(125,211,252,0.22) 0%, transparent 62%);
   mix-blend-mode: screen;
-}}
-
-/* Camada 3 — nascer do sol sobre o horizonte: brilho intenso e discreto
-   raiar de luz, efeito cinematográfico sem exageros. */
-.bg-sunrise {{
-  position: fixed;
-  right: 12vw;
-  top: 5vw;
-  width: 15vw;
-  height: 15vw;
-  max-width: 230px;
-  max-height: 230px;
-  z-index: -5;
   pointer-events: none;
-  background: radial-gradient(circle,
-    rgba(255,250,235,0.95) 0%,
-    rgba(255,221,163,0.55) 14%,
-    rgba(255,180,110,0.22) 32%,
-    rgba(147,197,253,0.08) 55%,
-    transparent 76%);
-  filter: blur(2px);
-}}
-.bg-sunrise::before {{
-  /* núcleo brilhante do sol, bem definido */
-  content: '';
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 10%; height: 10%;
-  margin: -5% 0 0 -5%;
-  border-radius: 50%;
-  background: #fffdf6;
-  box-shadow: 0 0 3vw 0.6vw rgba(255,244,214,0.9);
-}}
-.bg-sunrise::after {{
-  /* raios sutis do flare, discretos */
-  content: '';
-  position: absolute;
-  inset: -40%;
-  background:
-    linear-gradient(90deg, transparent 46%, rgba(255,244,214,0.10) 50%, transparent 54%),
-    linear-gradient(0deg, transparent 46%, rgba(255,244,214,0.07) 50%, transparent 54%);
-  opacity: 0.6;
-}}
-
-/* Camada 4 — grão fotográfico sutil sobre todo o fundo: quebra o aspecto
-   "vetorial liso" dos gradientes CSS e aproxima do aspecto de uma foto
-   espacial real (textura de sensor/filme, bem discreta). */
-.bg-grain {{
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.05;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
 }}
 
 /* Camada final — véu de contraste, preserva a leitura do conteúdo por cima
@@ -813,8 +697,8 @@ html, body, [class*="css"], .stApp {{
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(1,3,8,0.50) 0%, rgba(1,3,8,0.20) 24%, rgba(1,3,8,0.34) 100%),
-    radial-gradient(ellipse 60% 42% at 46% 0%, rgba(1,3,8,0.26) 0%, transparent 60%);
+    linear-gradient(180deg, rgba(1,3,8,0.42) 0%, rgba(1,3,8,0.14) 26%, rgba(1,3,8,0.30) 100%),
+    radial-gradient(ellipse 58% 40% at 46% 0%, rgba(1,3,8,0.22) 0%, transparent 60%);
   z-index: -2;
   pointer-events: none;
 }}
@@ -1702,18 +1586,14 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 
 <div class="bg-stars-far"></div>
 <div class="bg-stars-near"></div>
-<div class="bg-sunrise"></div>
-<div class="bg-earth-wrap">
-  <div class="bg-earth-globe">
-    <div class="bg-earth-lights-dim"></div>
-    <div class="bg-earth-lights-main"></div>
-    <div class="bg-earth-lights-metro"></div>
-    <div class="bg-earth-warmlimb"></div>
-    <div class="bg-earth-clouds"></div>
+<div class="bg-photo-wrap">
+  <div class="bg-photo-inner">
+    {f'<img class="bg-photo-blurred" src="data:{BG_MIME};base64,{BG_B64}" alt="" />' if BG_B64 else ''}
+    {f'<img class="bg-photo-sharp" src="data:{BG_MIME};base64,{BG_B64}" alt="" />' if BG_B64 else ''}
+    <div class="bg-photo-overlay"></div>
+    <div class="bg-photo-glow"></div>
   </div>
-  <div class="bg-earth-atmo"></div>
 </div>
-<div class="bg-grain"></div>
 <div class="bg-scrim"></div>
 """, unsafe_allow_html=True)
 
