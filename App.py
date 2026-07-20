@@ -723,7 +723,7 @@ html, body, [class*="css"], .stApp {{
   overflow: hidden;
   background:
     radial-gradient(circle at 30% 26%, rgba(224,242,254,0.65) 0%, transparent 12%),
-    radial-gradient(circle at 34% 30%, #3b82f6 0%, #1d4ed8 32%, #14276b 62%, #060b1f 92%, #030612 100%);
+    radial-gradient(circle at 34% 30%, #60a5fa 0%, #2563eb 26%, #1d4ed8 46%, #14276b 68%, #060b1f 92%, #030612 100%);
   box-shadow:
     inset -70px -55px 120px rgba(0,0,0,0.78),
     inset 24px 20px 54px rgba(191,219,254,0.28);
@@ -740,37 +740,42 @@ html, body, [class*="css"], .stApp {{
   mix-blend-mode: screen;
   opacity: 0.35;
 }}
-/* Manchas de "continente" — silhueta estilizada da América do Sul,
-   com destaque verde-esmeralda pulsante sobre a Amazônia. */
+/* Manchas de "continente" — silhueta recortada lembrando a América do Sul,
+   com destaque verde-esmeralda pulsante e concentrado sobre a Amazônia. */
 .bg-earth-continent {{
   position: absolute;
-  width: 46%;
-  height: 58%;
-  left: 27%;
-  top: 18%;
+  width: 44%;
+  height: 62%;
+  left: 30%;
+  top: 14%;
   background:
-    radial-gradient(ellipse 60% 70% at 45% 30%, rgba(74,222,128,0.85) 0%, rgba(21,128,61,0.62) 45%, transparent 74%),
-    radial-gradient(ellipse 50% 40% at 55% 62%, rgba(163,230,53,0.50) 0%, transparent 70%);
-  border-radius: 46% 54% 50% 50% / 55% 50% 55% 45%;
-  filter: blur(0.5px);
-  opacity: 1;
-  transform: rotate(-8deg);
+    radial-gradient(ellipse 65% 55% at 42% 22%, rgba(101,163,105,0.95) 0%, rgba(45,110,60,0.85) 40%, rgba(20,70,40,0.75) 68%, transparent 92%),
+    radial-gradient(ellipse 45% 35% at 60% 55%, rgba(163,199,90,0.55) 0%, transparent 75%);
+  clip-path: polygon(
+    36% 0%, 55% 3%, 71% 11%, 84% 23%, 79% 34%,
+    87% 41%, 74% 54%, 64% 59%, 57% 74%, 50% 77%,
+    45% 90%, 40% 100%, 31% 94%, 29% 80%, 20% 65%,
+    15% 49%, 10% 34%, 16% 19%, 24% 7%
+  );
+  filter: blur(0.4px);
+  opacity: 0.96;
+  transform: rotate(-6deg);
 }}
 .bg-earth-amazon-glow {{
   position: absolute;
-  width: 26%;
-  height: 20%;
-  left: 38%;
-  top: 34%;
+  width: 15%;
+  height: 11%;
+  left: 42%;
+  top: 30%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(110,231,183,0.90) 0%, rgba(34,197,94,0.40) 45%, transparent 75%);
-  filter: blur(4px);
+  background: radial-gradient(circle, rgba(134,239,172,0.95) 0%, rgba(34,197,94,0.45) 48%, transparent 78%);
+  filter: blur(3px);
   mix-blend-mode: screen;
   animation: bgAmazonPulse 4.5s ease-in-out infinite;
 }}
 @keyframes bgAmazonPulse {{
   0%, 100% {{ opacity: 0.55; transform: scale(1); }}
-  50%      {{ opacity: 0.95; transform: scale(1.12); }}
+  50%      {{ opacity: 0.95; transform: scale(1.15); }}
 }}
 /* Marcador de Manaus — ponto de referência pulsante com anéis de radar,
    posicionado sobre o brilho da Amazônia (leitura direta da região). */
@@ -779,7 +784,7 @@ html, body, [class*="css"], .stApp {{
   width: 8px;
   height: 8px;
   left: 49%;
-  top: 42%;
+  top: 34%;
   border-radius: 50%;
   background: #eafff3;
   box-shadow: 0 0 8px 2px rgba(74,222,128,0.9);
