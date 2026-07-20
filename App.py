@@ -740,33 +740,40 @@ html, body, [class*="css"], .stApp {{
   mix-blend-mode: screen;
   opacity: 0.35;
 }}
-/* Manchas de "continente" — silhueta recortada lembrando a América do Sul,
-   com destaque verde-esmeralda pulsante e concentrado sobre a Amazônia. */
+/* Mancha de "continente" — pequena massa de terra orgânica (não cobre a
+   esfera toda), deixando o oceano azul visível e reconhecível como planeta.
+   O brilho verde-esmeralda da Amazônia fica concentrado dentro dela. */
 .bg-earth-continent {{
   position: absolute;
-  width: 44%;
-  height: 62%;
-  left: 30%;
-  top: 14%;
+  width: 30%;
+  height: 26%;
+  left: 34%;
+  top: 30%;
   background:
-    radial-gradient(ellipse 65% 55% at 42% 22%, rgba(101,163,105,0.95) 0%, rgba(45,110,60,0.85) 40%, rgba(20,70,40,0.75) 68%, transparent 92%),
-    radial-gradient(ellipse 45% 35% at 60% 55%, rgba(163,199,90,0.55) 0%, transparent 75%);
-  clip-path: polygon(
-    36% 0%, 55% 3%, 71% 11%, 84% 23%, 79% 34%,
-    87% 41%, 74% 54%, 64% 59%, 57% 74%, 50% 77%,
-    45% 90%, 40% 100%, 31% 94%, 29% 80%, 20% 65%,
-    15% 49%, 10% 34%, 16% 19%, 24% 7%
-  );
-  filter: blur(0.4px);
-  opacity: 0.96;
-  transform: rotate(-6deg);
+    radial-gradient(ellipse 70% 65% at 40% 35%, rgba(74,140,82,0.92) 0%, rgba(38,94,52,0.85) 45%, rgba(18,58,32,0.65) 72%, transparent 90%),
+    radial-gradient(ellipse 50% 40% at 65% 65%, rgba(148,180,90,0.40) 0%, transparent 78%);
+  border-radius: 58% 42% 51% 49% / 46% 55% 45% 54%;
+  filter: blur(2px);
+  opacity: 0.94;
+  transform: rotate(-12deg);
+}}
+.bg-earth-continent::after {{
+  content: '';
+  position: absolute;
+  width: 42%;
+  height: 34%;
+  left: -14%;
+  top: 46%;
+  background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(64,120,72,0.75) 0%, transparent 80%);
+  border-radius: 55% 45% 60% 40% / 50% 50% 50% 50%;
+  filter: blur(2px);
 }}
 .bg-earth-amazon-glow {{
   position: absolute;
-  width: 15%;
-  height: 11%;
-  left: 42%;
-  top: 30%;
+  width: 11%;
+  height: 8%;
+  left: 43%;
+  top: 40%;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(134,239,172,0.95) 0%, rgba(34,197,94,0.45) 48%, transparent 78%);
   filter: blur(3px);
@@ -783,8 +790,8 @@ html, body, [class*="css"], .stApp {{
   position: absolute;
   width: 8px;
   height: 8px;
-  left: 49%;
-  top: 34%;
+  left: 48%;
+  top: 43%;
   border-radius: 50%;
   background: #eafff3;
   box-shadow: 0 0 8px 2px rgba(74,222,128,0.9);
