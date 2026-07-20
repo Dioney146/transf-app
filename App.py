@@ -595,16 +595,41 @@ html, body, [class*="css"], .stApp {{
    para não competir com a interface.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* Camada 0 — espaço profundo minimalista: gradiente preto → azul-marinho */
+/* Camada 0 — espaço profundo: gradiente preto → azul-marinho, com camadas
+   extras de luz azul para reforçar a sensação tecnológica. */
 .stApp::before {{
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 65% 55% at 78% 88%, rgba(30,58,95,0.16) 0%, transparent 62%),
-    radial-gradient(ellipse 50% 40% at 12% 20%, rgba(20,40,74,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 55% at 78% 88%, rgba(30,58,95,0.18) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 40% at 12% 20%, rgba(20,40,74,0.11) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 35% at 88% 8%, rgba(56,130,246,0.08) 0%, transparent 58%),
     linear-gradient(165deg, #000000 0%, #04070d 45%, #050a16 75%, #000000 100%);
   z-index: -9;
+}}
+
+/* Camada 0b — leve varredura de luz azul-ciano, movimento lento e discreto,
+   confinada ao espaço (nunca sobre a fotografia da Terra). */
+.bg-aurora {{
+  position: fixed;
+  inset: -15% -10%;
+  background: linear-gradient(105deg,
+    transparent 35%,
+    rgba(96,165,250,0.05) 47%,
+    rgba(125,211,252,0.07) 50%,
+    rgba(96,165,250,0.05) 53%,
+    transparent 65%);
+  background-size: 220% 220%;
+  z-index: -8;
+  pointer-events: none;
+  animation: bgAuroraSweep 26s ease-in-out infinite;
+  mix-blend-mode: screen;
+}}
+@keyframes bgAuroraSweep {{
+  0%   {{ background-position: 0% 25%; opacity: 0.5; }}
+  50%  {{ background-position: 100% 75%; opacity: 1; }}
+  100% {{ background-position: 0% 25%; opacity: 0.5; }}
 }}
 
 /* Camada 1 — estrelas bem discretas (não exageradas), só no espaço ao
@@ -1586,6 +1611,7 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 }}
 </style>
 
+<div class="bg-aurora"></div>
 <div class="bg-stars-far"></div>
 <div class="bg-stars-near"></div>
 <div class="bg-photo-wrap">
