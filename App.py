@@ -505,8 +505,8 @@ def _gen_star_shadows(n, min_op, max_op, size_px=1):
         parts.append(f"{x}vw {y}vh 0 rgba(148,197,255,{op})")
     return ",\n    ".join(parts)
 
-_STARS_FAR   = _gen_star_shadows(40, 0.06, 0.16)
-_STARS_NEAR  = _gen_star_shadows(14, 0.10, 0.22)
+_STARS_FAR   = _gen_star_shadows(75, 0.10, 0.26)
+_STARS_NEAR  = _gen_star_shadows(30, 0.16, 0.34)
 
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
@@ -600,7 +600,10 @@ html, body, [class*="css"], .stApp {{
   content: '';
   position: fixed;
   inset: 0;
-  background: linear-gradient(165deg, #000000 0%, #04070d 45%, #050a16 75%, #000000 100%);
+  background:
+    radial-gradient(ellipse 65% 55% at 78% 88%, rgba(30,58,95,0.16) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 40% at 12% 20%, rgba(20,40,74,0.09) 0%, transparent 60%),
+    linear-gradient(165deg, #000000 0%, #04070d 45%, #050a16 75%, #000000 100%);
   z-index: -9;
 }}
 
@@ -643,11 +646,10 @@ html, body, [class*="css"], .stApp {{
   z-index: -6;
   pointer-events: none;
   opacity: 0.65;
-  /* degradê: a foto desaparece suavemente em direção ao centro da tela
-     (canto oposto ao de ancoragem, aqui o canto superior-esquerdo do
-     próprio recorte) */
-  -webkit-mask-image: linear-gradient(to top left, #000 58%, transparent 97%);
-  mask-image: linear-gradient(to top left, #000 58%, transparent 97%);
+  /* degradê: a foto desaparece suavemente em todas as direções a partir do
+     canto de ancoragem (inferior-direito), evitando qualquer borda "cortada" */
+  -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0%, #000 46%, transparent 92%);
+  mask-image: radial-gradient(circle at 100% 100%, #000 0%, #000 46%, transparent 92%);
 }}
 .bg-photo-inner {{
   position: relative;
@@ -685,8 +687,8 @@ html, body, [class*="css"], .stApp {{
 /* Brilho azul bem sutil acompanhando a curvatura visível na fotografia */
 .bg-photo-glow {{
   position: absolute;
-  inset: -4%;
-  background: radial-gradient(ellipse 70% 34% at 42% 10%, rgba(125,211,252,0.22) 0%, transparent 62%);
+  inset: -22%;
+  background: radial-gradient(ellipse 75% 55% at 46% 30%, rgba(125,211,252,0.16) 0%, transparent 68%);
   mix-blend-mode: screen;
   pointer-events: none;
 }}
