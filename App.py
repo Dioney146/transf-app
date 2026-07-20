@@ -457,6 +457,18 @@ def find_first_existing(*candidates):
             return c
     return candidates[0]  # devolve o primeiro mesmo que não exista (vai gerar "")
 
+# Ajuste os caminhos abaixo para onde os arquivos realmente estão no seu repositório.
+# Procura em "assets/" e também na raiz do projeto, como fallback.
+BG_PATH = find_first_existing(
+    "assets/fundo.webp",
+    "assets/background.webp",
+    "assets/fundo.png",
+    "assets/background.png",
+    "fundo.webp",
+    "background.webp",
+    "fundo.png",
+    "background.png",
+)
 LOGO_PATH = find_first_existing(
     "assets/logo.webp",
     "assets/logo.png",
@@ -464,6 +476,18 @@ LOGO_PATH = find_first_existing(
     "logo.png",
 )
 
+def _mime_for_path(path):
+    """Detecta o content-type correto para embutir a imagem como data URI."""
+    ext = Path(path).suffix.lower()
+    return {
+        ".webp": "image/webp",
+        ".png":  "image/png",
+        ".jpg":  "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }.get(ext, "image/png")
+
+BG_B64  = img_to_base64(BG_PATH)
+BG_MIME = _mime_for_path(BG_PATH)
 LOGO_B64 = img_to_base64(LOGO_PATH)
 
 # ─── Partículas do fundo tecnológico (geradas uma vez, posições fixas) ───────
@@ -685,6 +709,68 @@ html, body, [class*="css"], .stApp {{
   z-index: -6;
   pointer-events: none;
   background: linear-gradient(180deg, transparent 0%, transparent 40%, rgba(1,3,8,0.55) 78%, rgba(1,3,8,0.85) 100%);
+}}
+
+/* Camada 3 — fotografia real da Terra (Amazônia), canto inferior direito.
+   Sem esticar nem recortar a perspectiva original: usa a proporção nativa
+   da imagem (largura definida, altura automática). Fica na frente da
+   aurora, como o "primeiro plano" da composição. */
+.bg-photo-wrap {{
+  position: fixed;
+  right: -5vw;
+  bottom: -5vw;
+  width: 42vw;
+  max-width: 660px;
+  min-width: 340px;
+  z-index: -5;
+  pointer-events: none;
+  opacity: 0.68;
+  /* degradê: a foto desaparece suavemente em todas as direções a partir do
+     canto de ancoragem (inferior-direito), evitando qualquer borda "cortada" */
+  -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0%, #000 46%, transparent 92%);
+  mask-image: radial-gradient(circle at 100% 100%, #000 0%, #000 46%, transparent 92%);
+}}
+.bg-photo-inner {{
+  position: relative;
+  width: 100%;
+  line-height: 0;
+}}
+/* Cópia desfocada, visível apenas nas bordas externas (via máscara) */
+.bg-photo-blurred {{
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: blur(7px);
+  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, transparent 55%, #000 92%);
+  mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, transparent 55%, #000 92%);
+}}
+/* Cópia nítida, visível apenas no "núcleo" central (preserva os detalhes
+   originais da fotografia) */
+.bg-photo-sharp {{
+  display: block;
+  width: 100%;
+  height: auto;
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, #000 55%, transparent 92%);
+  mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, #000 55%, transparent 92%);
+}}
+/* Gradiente escuro por cima da foto, para integrar ao tema dark */
+.bg-photo-overlay {{
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(205deg, rgba(2,4,10,0.02) 0%, rgba(2,4,10,0.16) 55%, rgba(2,4,10,0.32) 100%);
+  pointer-events: none;
+}}
+/* Brilho azul sutil acompanhando a curvatura visível na fotografia,
+   conectando visualmente a foto com a aurora e o restante do fundo. */
+.bg-photo-glow {{
+  position: absolute;
+  inset: -22%;
+  background: radial-gradient(ellipse 75% 55% at 46% 30%, rgba(125,211,252,0.18) 0%, transparent 68%);
+  mix-blend-mode: screen;
+  pointer-events: none;
 }}
 
 /* Camada final — véu de contraste, preserva a leitura do conteúdo por cima
@@ -1588,6 +1674,14 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   <div class="bg-aurora-band bg-aurora-band-3"></div>
 </div>
 <div class="bg-aurora-fade"></div>
+<div class="bg-photo-wrap">
+  <div class="bg-photo-inner">
+    {f'<img class="bg-photo-blurred" src="data:{BG_MIME};base64,{BG_B64}" alt="" />' if BG_B64 else ''}
+    {f'<img class="bg-photo-sharp" src="data:{BG_MIME};base64,{BG_B64}" alt="" />' if BG_B64 else ''}
+    <div class="bg-photo-overlay"></div>
+    <div class="bg-photo-glow"></div>
+  </div>
+</div>
 <div class="bg-scrim"></div>
 """, unsafe_allow_html=True)
 
