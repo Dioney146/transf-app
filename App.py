@@ -508,9 +508,9 @@ def _gen_light_shadows(n, x_range, y_range, min_op, max_op, color):
 # Luzes concentradas (núcleos urbanos maiores) + luzes dispersas (cidades
 # menores), dentro da faixa da superfície visível do planeta no canto
 # superior direito da tela.
-_CITY_LIGHTS_MAIN = _gen_light_shadows(85,  (8, 52), (0, 24), 0.35, 0.85, "255,201,133")
-_CITY_LIGHTS_DIM   = _gen_light_shadows(140, (5, 56), (0, 27), 0.10, 0.28, "255,183,110")
-_CITY_LIGHTS_METRO = _gen_light_shadows(9,   (10, 48), (2, 22), 0.55, 0.85, "255,214,158")
+_CITY_LIGHTS_MAIN = _gen_light_shadows(85,  (6, 62), (14, 60), 0.35, 0.85, "255,201,133")
+_CITY_LIGHTS_DIM   = _gen_light_shadows(140, (4, 66), (12, 64), 0.10, 0.28, "255,183,110")
+_CITY_LIGHTS_METRO = _gen_light_shadows(9,   (8, 58), (16, 56), 0.55, 0.85, "255,214,158")
 
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
@@ -646,17 +646,17 @@ html, body, [class*="css"], .stApp {{
   100% {{ opacity: 0.9; }}
 }}
 
-/* Camada 2 — Terra: horizonte amplo no canto superior direito. Círculo
-   enorme (bem maior que a tela), quase todo fora da área visível, para que
-   a borda apareça como uma curva ampla e suave — nunca o globo inteiro. */
+/* Camada 2 — Terra: horizonte amplo no canto inferior direito. Círculo
+   grande (bem maior que a tela), a maior parte fora da área visível, para
+   que apareça só a curva do horizonte — nunca o globo inteiro. Ancorado em
+   right+bottom (sem max-width, para não desalinhar o deslocamento em
+   telas largas). */
 .bg-earth-wrap {{
   position: fixed;
-  top: 5vw;
-  right: -116vw;
-  width: 230vw;
-  height: 230vw;
-  max-width: 3400px;
-  max-height: 3400px;
+  right: -28vw;
+  bottom: -32vw;
+  width: 100vw;
+  height: 100vw;
   z-index: -6;
   pointer-events: none;
   animation: bgEarthFloat 24s ease-in-out infinite;
@@ -665,19 +665,17 @@ html, body, [class*="css"], .stApp {{
   0%, 100% {{ transform: translateY(0); }}
   50%      {{ transform: translateY(-6px); }}
 }}
-/* Halo atmosférico externo — brilho azul intenso ao redor de toda a curvatura,
-   com gradação de cor (branco-azulado bem colado à borda, azul mais profundo
-   se afastando), simulando o espalhamento atmosférico real. */
+/* Halo atmosférico externo — brilho azul ao redor da curvatura, contido
+   (para não "lavar" o contraste entre o espaço e o planeta). */
 .bg-earth-atmo {{
   position: absolute;
-  inset: -1.2%;
+  inset: -0.6%;
   border-radius: 50%;
   box-shadow:
-    0 0 1.4vw 0.3vw rgba(224,242,255,0.45),
-    0 0 4vw 1vw rgba(165,213,255,0.32),
-    0 0 8vw 2.4vw rgba(96,165,250,0.22),
-    0 0 15vw 4.5vw rgba(59,130,246,0.14),
-    0 0 26vw 8vw rgba(29,78,216,0.07);
+    0 0 0.9vw 0.2vw rgba(224,242,255,0.55),
+    0 0 2.4vw 0.6vw rgba(165,213,255,0.30),
+    0 0 5vw 1.4vw rgba(96,165,250,0.16),
+    0 0 9vw 2.4vw rgba(59,130,246,0.08);
   pointer-events: none;
 }}
 .bg-earth-globe {{
@@ -686,30 +684,30 @@ html, body, [class*="css"], .stApp {{
   border-radius: 50%;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 55% 45% at 22% 6%, rgba(35,58,92,0.55) 0%, transparent 42%),
-    radial-gradient(ellipse 40% 30% at 44% 4%, rgba(18,30,52,0.55) 0%, transparent 48%),
-    radial-gradient(ellipse 65% 55% at 30% 12%, rgba(20,35,60,0.85) 0%, transparent 46%),
-    linear-gradient(200deg, #0d1830 0%, #0a1424 22%, #060c18 42%, #03060d 66%, #000103 100%);
+    radial-gradient(ellipse 60% 50% at 62% 24% , rgba(42,68,108,0.65) 0%, transparent 44%),
+    radial-gradient(ellipse 45% 35% at 40% 18%, rgba(22,36,60,0.6) 0%, transparent 48%),
+    radial-gradient(ellipse 75% 65% at 55% 30%, rgba(24,40,68,0.95) 0%, transparent 55%),
+    linear-gradient(200deg, #101c38 0%, #0b1526 30%, #070d1a 55%, #03060d 78%, #00030a 100%);
   /* brilho interno acompanhando toda a curvatura (linha do horizonte),
-     gradação branco-azulada → azul profundo, como espalhamento real de luz */
+     gradação branco-azulada → azul profundo — bem definida, sem vazar */
   box-shadow:
-    inset 0 0 1vw 0.25vw rgba(255,255,255,0.55),
-    inset 0 0 2.2vw 0.5vw rgba(224,242,254,0.48),
-    inset 0 0 5vw 1.4vw rgba(147,197,253,0.36),
-    inset 0 0 11vw 3vw rgba(59,130,246,0.26),
-    inset 0 0 22vw 6vw rgba(15,23,42,0.65);
+    inset 0 0 0.7vw 0.2vw rgba(255,255,255,0.70),
+    inset 0 0 1.6vw 0.4vw rgba(224,242,254,0.55),
+    inset 0 0 3.6vw 1vw rgba(147,197,253,0.40),
+    inset 0 0 7vw 2vw rgba(59,130,246,0.28),
+    inset 0 0 14vw 4vw rgba(8,14,28,0.55);
 }}
 /* Realce quente perto do nascer do sol — o brilho ao longo da curvatura
    passa de azul-branco para dourado bem próximo ao ponto do sol. */
 .bg-earth-warmlimb {{
   position: absolute;
-  left: 30%;
-  top: 0%;
-  width: 18%;
-  height: 7%;
+  left: 52%;
+  top: 12%;
+  width: 16%;
+  height: 13%;
   border-radius: 50%;
-  background: radial-gradient(ellipse 60% 60% at 50% 30%, rgba(255,214,153,0.65) 0%, rgba(255,170,90,0.25) 45%, transparent 75%);
-  filter: blur(1.5vw);
+  background: radial-gradient(ellipse 60% 60% at 50% 40%, rgba(255,214,153,0.60) 0%, rgba(255,170,90,0.22) 45%, transparent 75%);
+  filter: blur(1vw);
   mix-blend-mode: screen;
 }}
 /* Luzes de cidades — metrópoles com brilho difuso, núcleos maiores e luzes
@@ -757,8 +755,8 @@ html, body, [class*="css"], .stApp {{
    raiar de luz, efeito cinematográfico sem exageros. */
 .bg-sunrise {{
   position: fixed;
-  right: 24vw;
-  top: 7vw;
+  right: 12vw;
+  top: 5vw;
   width: 15vw;
   height: 15vw;
   max-width: 230px;
