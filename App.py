@@ -490,8 +490,9 @@ def _gen_star_shadows(n, min_op, max_op, size_px=1):
         parts.append(f"{x}vw {y}vh 0 rgba(148,197,255,{op})")
     return ",\n    ".join(parts)
 
-_STARS_FAR  = _gen_star_shadows(70, 0.10, 0.28)
-_STARS_NEAR = _gen_star_shadows(30, 0.20, 0.42)
+_STARS_FAR   = _gen_star_shadows(70, 0.10, 0.28)
+_STARS_NEAR  = _gen_star_shadows(30, 0.20, 0.42)
+_STARS_MICRO = _gen_star_shadows(110, 0.05, 0.16)
 
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
@@ -578,16 +579,41 @@ html, body, [class*="css"], .stApp {{
    atrás de todo o conteúdo (z-index negativo) para não afetar leitura.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* Camada 0 — base do espaço profundo (gradiente azul-marinho) */
+/* Camada 0 — base do espaço profundo (gradiente azul-marinho, multi-camadas) */
 .stApp::before {{
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 90% 60% at 78% 18%, rgba(37,99,235,0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 40% at 82% 6%, rgba(96,165,250,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 60% at 78% 18%, rgba(37,99,235,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 45% at 4% 22%, rgba(56,189,248,0.07) 0%, transparent 58%),
     radial-gradient(ellipse 70% 50% at 8% 92%, rgba(124,58,237,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 120% 90% at 50% 50%, transparent 40%, rgba(2,6,16,0.35) 100%),
     linear-gradient(160deg, #050914 0%, #060B16 38%, #071021 68%, #050914 100%);
   z-index: -6;
+}}
+
+/* Camada 0b — leve varredura de luz azul-ciano, movimento lento e discreto */
+.bg-aurora {{
+  position: fixed;
+  inset: -20% -10%;
+  background: linear-gradient(100deg,
+    transparent 30%,
+    rgba(96,165,250,0.05) 45%,
+    rgba(125,211,252,0.08) 50%,
+    rgba(96,165,250,0.05) 55%,
+    transparent 70%);
+  background-size: 220% 220%;
+  z-index: -6;
+  pointer-events: none;
+  animation: bgAuroraSweep 22s ease-in-out infinite;
+  mix-blend-mode: screen;
+}}
+@keyframes bgAuroraSweep {{
+  0%   {{ background-position: 0% 20%; opacity: 0.5; }}
+  50%  {{ background-position: 100% 80%; opacity: 1; }}
+  100% {{ background-position: 0% 20%; opacity: 0.5; }}
 }}
 
 /* Camada 1 — grade tecnológica sutil (perspectiva de "painel de controle") */
@@ -596,9 +622,11 @@ html, body, [class*="css"], .stApp {{
   position: fixed;
   inset: -10%;
   background-image:
-    linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
-  background-size: 46px 46px;
+    linear-gradient(rgba(59,130,246,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.06) 1px, transparent 1px),
+    linear-gradient(rgba(96,165,250,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96,165,250,0.03) 1px, transparent 1px);
+  background-size: 46px 46px, 46px 46px, 138px 138px, 138px 138px;
   -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 40%, #000 30%, transparent 78%);
   mask-image: radial-gradient(ellipse 75% 70% at 50% 40%, #000 30%, transparent 78%);
   opacity: 0.55;
@@ -639,6 +667,18 @@ html, body, [class*="css"], .stApp {{
   0%   {{ opacity: 0.6; transform: translateY(0); }}
   100% {{ opacity: 1; transform: translateY(-3px); }}
 }}
+/* Campo de partículas — camada micro, densa e muito discreta, para profundidade extra */
+.bg-stars-micro {{
+  content: '';
+  position: fixed;
+  inset: 0;
+  width: 1px; height: 1px;
+  background: transparent;
+  box-shadow: {_STARS_MICRO};
+  z-index: -4;
+  pointer-events: none;
+  opacity: 0.7;
+}}
 
 /* Planeta Terra — esfera 100% CSS, com oceano azul, continente
    (América do Sul) e um brilho verde-esmeralda sutil sobre a região
@@ -661,9 +701,16 @@ html, body, [class*="css"], .stApp {{
   position: absolute;
   inset: -6%;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, rgba(96,165,250,0.35), transparent 62%);
+  background: radial-gradient(circle at 38% 32%, rgba(125,211,252,0.40), transparent 62%);
   filter: blur(18px);
-  opacity: 0.8;
+  opacity: 0.85;
+}}
+.bg-earth-rim {{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 10px 8px 26px rgba(191,219,254,0.30);
+  pointer-events: none;
 }}
 .bg-earth-globe {{
   position: absolute;
@@ -672,11 +719,23 @@ html, body, [class*="css"], .stApp {{
   overflow: hidden;
   background:
     radial-gradient(circle at 30% 26%, rgba(191,219,254,0.55) 0%, transparent 12%),
-    radial-gradient(circle at 34% 30%, #1d4ed8 0%, #1e3a8a 42%, #0b1533 78%, #050a17 100%);
+    radial-gradient(circle at 34% 30%, #2563eb 0%, #1e3a8a 40%, #0b1533 78%, #050a17 100%);
   box-shadow:
     inset -60px -50px 110px rgba(0,0,0,0.65),
-    inset 22px 18px 60px rgba(147,197,253,0.18),
-    0 0 90px 20px rgba(59,130,246,0.20);
+    inset 22px 18px 60px rgba(147,197,253,0.20),
+    0 0 100px 22px rgba(59,130,246,0.24);
+}}
+/* Grade de latitude/longitude — leve overlay "HUD" sobre o globo, reforçando a
+   sensação tecnológica sem competir com o continente. */
+.bg-earth-hud {{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    repeating-linear-gradient(0deg, rgba(191,219,254,0.10) 0 1px, transparent 1px 13%),
+    repeating-linear-gradient(90deg, rgba(191,219,254,0.07) 0 1px, transparent 1px 16%);
+  mix-blend-mode: screen;
+  opacity: 0.5;
 }}
 /* Manchas de "continente" — silhueta estilizada da América do Sul,
    com destaque verde-esmeralda pulsante sobre a Amazônia. */
@@ -701,7 +760,7 @@ html, body, [class*="css"], .stApp {{
   left: 38%;
   top: 34%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(74,222,128,0.85) 0%, rgba(34,197,94,0.35) 45%, transparent 75%);
+  background: radial-gradient(circle, rgba(110,231,183,0.90) 0%, rgba(34,197,94,0.40) 45%, transparent 75%);
   filter: blur(4px);
   mix-blend-mode: screen;
   animation: bgAmazonPulse 4.5s ease-in-out infinite;
@@ -709,6 +768,38 @@ html, body, [class*="css"], .stApp {{
 @keyframes bgAmazonPulse {{
   0%, 100% {{ opacity: 0.55; transform: scale(1); }}
   50%      {{ opacity: 0.95; transform: scale(1.12); }}
+}}
+/* Marcador de Manaus — ponto de referência pulsante com anéis de radar,
+   posicionado sobre o brilho da Amazônia (leitura direta da região). */
+.bg-earth-marker {{
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  left: 49%;
+  top: 42%;
+  border-radius: 50%;
+  background: #eafff3;
+  box-shadow: 0 0 8px 2px rgba(74,222,128,0.9);
+  z-index: 2;
+}}
+.bg-earth-marker::before,
+.bg-earth-marker::after {{
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(74,222,128,0.65);
+  animation: bgMarkerPing 3.2s ease-out infinite;
+}}
+.bg-earth-marker::after {{
+  animation-delay: 1.6s;
+}}
+@keyframes bgMarkerPing {{
+  0%   {{ width: 8px; height: 8px; margin: -4px 0 0 -4px; opacity: 0.9; }}
+  100% {{ width: 46px; height: 46px; margin: -23px 0 0 -23px; opacity: 0; }}
 }}
 /* Nuvens finas / terminador (sombra do lado noturno) */
 .bg-earth-clouds {{
@@ -757,8 +848,9 @@ html, body, [class*="css"], .stApp {{
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(6,11,22,0.62) 0%, rgba(6,11,22,0.30) 22%, rgba(6,11,22,0.42) 100%),
-    radial-gradient(ellipse 65% 45% at 50% 0%, rgba(6,11,22,0.35) 0%, transparent 60%);
+    linear-gradient(180deg, rgba(6,11,22,0.68) 0%, rgba(6,11,22,0.36) 20%, rgba(6,11,22,0.48) 100%),
+    radial-gradient(ellipse 68% 48% at 50% 0%, rgba(6,11,22,0.40) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 55% at 50% 45%, rgba(6,11,22,0.22) 0%, transparent 65%);
   z-index: -2;
   pointer-events: none;
 }}
@@ -1643,16 +1735,21 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 }}
 </style>
 
+<div class="bg-aurora"></div>
 <div class="bg-stars-far"></div>
 <div class="bg-stars-near"></div>
+<div class="bg-stars-micro"></div>
 <div class="bg-earth-wrap">
   <div class="bg-earth-atmo"></div>
   <div class="bg-earth-globe">
     <div class="bg-earth-continent"></div>
     <div class="bg-earth-amazon-glow"></div>
+    <div class="bg-earth-marker"></div>
+    <div class="bg-earth-hud"></div>
     <div class="bg-earth-clouds"></div>
     <div class="bg-earth-terminator"></div>
   </div>
+  <div class="bg-earth-rim"></div>
   <div class="bg-earth-ring"></div>
 </div>
 <div class="bg-scrim"></div>
