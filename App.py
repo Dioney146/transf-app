@@ -2132,12 +2132,12 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         <stop offset="100%" stop-color="{bar_color_2}"/>
       </linearGradient>
       <linearGradient id="{uid}top" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#DDD6FE"/>
+        <stop offset="0%" stop-color="#D9FBE3"/>
         <stop offset="100%" stop-color="{bar_color_1}"/>
       </linearGradient>
       <linearGradient id="{uid}side" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0%" stop-color="{bar_color_2}"/>
-        <stop offset="100%" stop-color="#3B0764"/>
+        <stop offset="100%" stop-color="#0F5132"/>
       </linearGradient>
       <linearGradient id="{uid}glass" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.32"/>
@@ -2165,7 +2165,7 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         }}
         .{uid}bar:hover {{
           transform: translateY(-5px);
-          filter: brightness(1.12) drop-shadow(0 10px 12px rgba(124,58,237,0.45));
+          filter: brightness(1.12) drop-shadow(0 10px 12px rgba(34,197,94,0.45));
         }}
         @keyframes {uid}grow {{ from {{ transform: scaleY(0.04); opacity:0; }} to {{ transform: scaleY(1); opacity:1; }} }}
         .{uid}line {{
@@ -3036,16 +3036,16 @@ elif pagina == "📋  Histórico":
             _svg_col_line(
                 _rows_vend2,
                 label_key="veiculo", val_key="valor", qtd_key="qtd",
-                bar_color_1="#7C3AED", bar_color_2="#5B21B6",
-                line_color="#3B82F6",
+                bar_color_1="#86EFAC", bar_color_2="#22C55E",
+                line_color="#FACC15",
                 fmt_val=_fmt_brl,
             ),
             unsafe_allow_html=True,
         )
         st.markdown(
             '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
-            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#3B82F6" stroke-width="2"/>'
-            '<circle cx="18" cy="5" r="3.5" fill="#3B82F6"/></svg>'
+            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
+            '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
             '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
             '</div>',
             unsafe_allow_html=True,
@@ -3088,8 +3088,8 @@ elif pagina == "📋  Histórico":
                 _svg_col_line(
                     _rows_motivo,
                     label_key="motivo", val_key="valor", qtd_key="qtd",
-                    bar_color_1="#7C3AED", bar_color_2="#5B21B6",
-                    line_color="#3B82F6",
+                    bar_color_1="#86EFAC", bar_color_2="#22C55E",
+                    line_color="#FACC15",
                     fmt_val=_fmt_brl_mot,
                     rotate_labels=True,
                 ),
@@ -3097,8 +3097,8 @@ elif pagina == "📋  Histórico":
             )
             st.markdown(
                 '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
-                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#3B82F6" stroke-width="2"/>'
-                '<circle cx="18" cy="5" r="3.5" fill="#3B82F6"/></svg>'
+                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
+                '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
                 '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
                 '</div>',
                 unsafe_allow_html=True,
@@ -3111,6 +3111,66 @@ elif pagina == "📋  Histórico":
             )
 
         st.markdown("</div></div>", unsafe_allow_html=True)
+
+    # — Gráfico Bairro —
+    st.markdown('<div style="height:var(--space-4)"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="chart-head">'
+        '<span class="chart-title" style="color:#A78BFA">📍 Por Bairro</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+    _rows_bairro = []
+    if not df.empty and "bairro" in df.columns:
+        _df_bai = df[
+            df["bairro"].notna() &
+            (df["bairro"].astype(str).str.strip() != "") &
+            (df["bairro"].astype(str).str.strip() != "— Selecione ou digite o bairro —")
+        ]
+        if not _df_bai.empty:
+            _bai_qtd = _df_bai.groupby("bairro")["numnota"].count().reset_index()
+            _bai_qtd.columns = ["bairro", "qtd"]
+            _bai_val = _df_bai.groupby("bairro")["vltotal"].sum().reset_index()
+            _bai_val.columns = ["bairro", "valor"]
+            _top_bai = _bai_qtd.merge(_bai_val, on="bairro", how="left").fillna(0)
+            _top_bai = _top_bai.sort_values("valor", ascending=False)
+            _rows_bairro = _top_bai.to_dict("records")
+
+    def _fmt_brl_bai(v):
+        s = f"{int(round(v)):,}".replace(",", ".")
+        return f"R {s}"
+
+    if _rows_bairro:
+        st.markdown(
+            _svg_col_line(
+                _rows_bairro,
+                label_key="bairro", val_key="valor", qtd_key="qtd",
+                bar_color_1="#86EFAC", bar_color_2="#22C55E",
+                line_color="#FACC15",
+                fmt_val=_fmt_brl_bai,
+                rotate_labels=True,
+            ),
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
+            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
+            '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
+            '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
+            'Nenhum bairro registrado no período.</p>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.markdown('<div style="margin-top:20px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
