@@ -505,8 +505,8 @@ def _gen_star_shadows(n, min_op, max_op, size_px=1):
         parts.append(f"{x}vw {y}vh 0 rgba(148,197,255,{op})")
     return ",\n    ".join(parts)
 
-_STARS_FAR   = _gen_star_shadows(75, 0.10, 0.26)
-_STARS_NEAR  = _gen_star_shadows(30, 0.16, 0.34)
+_STARS_FAR   = _gen_star_shadows(90, 0.16, 0.38)
+_STARS_NEAR  = _gen_star_shadows(38, 0.24, 0.50)
 
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
@@ -609,27 +609,27 @@ html, body, [class*="css"], .stApp {{
   z-index: -9;
 }}
 
-/* Camada 0b — leve varredura de luz azul-ciano, movimento lento e discreto,
-   confinada ao espaço (nunca sobre a fotografia da Terra). */
+/* Camada 0b — varredura de luz azul-ciano, movimento lento, confinada ao
+   espaço (nunca sobre a fotografia da Terra). */
 .bg-aurora {{
   position: fixed;
   inset: -15% -10%;
   background: linear-gradient(105deg,
-    transparent 35%,
-    rgba(96,165,250,0.05) 47%,
-    rgba(125,211,252,0.07) 50%,
-    rgba(96,165,250,0.05) 53%,
-    transparent 65%);
+    transparent 30%,
+    rgba(96,165,250,0.12) 45%,
+    rgba(125,211,252,0.18) 50%,
+    rgba(96,165,250,0.12) 55%,
+    transparent 70%);
   background-size: 220% 220%;
   z-index: -8;
   pointer-events: none;
-  animation: bgAuroraSweep 26s ease-in-out infinite;
+  animation: bgAuroraSweep 16s ease-in-out infinite;
   mix-blend-mode: screen;
 }}
 @keyframes bgAuroraSweep {{
-  0%   {{ background-position: 0% 25%; opacity: 0.5; }}
+  0%   {{ background-position: 0% 25%; opacity: 0.65; }}
   50%  {{ background-position: 100% 75%; opacity: 1; }}
-  100% {{ background-position: 0% 25%; opacity: 0.5; }}
+  100% {{ background-position: 0% 25%; opacity: 0.65; }}
 }}
 
 /* Camada 1 — estrelas bem discretas (não exageradas), só no espaço ao
