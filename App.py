@@ -457,18 +457,6 @@ def find_first_existing(*candidates):
             return c
     return candidates[0]  # devolve o primeiro mesmo que não exista (vai gerar "")
 
-# Ajuste os caminhos abaixo para onde os arquivos realmente estão no seu repositório.
-# Procura em "assets/" e também na raiz do projeto, como fallback.
-BG_PATH = find_first_existing(
-    "assets/fundo.webp",
-    "assets/background.webp",
-    "assets/fundo.png",
-    "assets/background.png",
-    "fundo.webp",
-    "background.webp",
-    "fundo.png",
-    "background.png",
-)
 LOGO_PATH = find_first_existing(
     "assets/logo.webp",
     "assets/logo.png",
@@ -476,18 +464,6 @@ LOGO_PATH = find_first_existing(
     "logo.png",
 )
 
-def _mime_for_path(path):
-    """Detecta o content-type correto para embutir a imagem como data URI."""
-    ext = Path(path).suffix.lower()
-    return {
-        ".webp": "image/webp",
-        ".png":  "image/png",
-        ".jpg":  "image/jpeg",
-        ".jpeg": "image/jpeg",
-    }.get(ext, "image/png")
-
-BG_B64  = img_to_base64(BG_PATH)
-BG_MIME = _mime_for_path(BG_PATH)
 LOGO_B64 = img_to_base64(LOGO_PATH)
 
 # ─── Partículas do fundo tecnológico (geradas uma vez, posições fixas) ───────
@@ -609,31 +585,7 @@ html, body, [class*="css"], .stApp {{
   z-index: -9;
 }}
 
-/* Camada 0b — varredura de luz azul-ciano, movimento lento, confinada ao
-   espaço (nunca sobre a fotografia da Terra). */
-.bg-aurora {{
-  position: fixed;
-  inset: -15% -10%;
-  background: linear-gradient(105deg,
-    transparent 30%,
-    rgba(96,165,250,0.12) 45%,
-    rgba(125,211,252,0.18) 50%,
-    rgba(96,165,250,0.12) 55%,
-    transparent 70%);
-  background-size: 220% 220%;
-  z-index: -8;
-  pointer-events: none;
-  animation: bgAuroraSweep 16s ease-in-out infinite;
-  mix-blend-mode: screen;
-}}
-@keyframes bgAuroraSweep {{
-  0%   {{ background-position: 0% 25%; opacity: 0.65; }}
-  50%  {{ background-position: 100% 75%; opacity: 1; }}
-  100% {{ background-position: 0% 25%; opacity: 0.65; }}
-}}
-
-/* Camada 1 — estrelas bem discretas (não exageradas), só no espaço ao
-   redor da fotografia. */
+/* Camada 1 — estrelas discretas, campo de fundo */
 .bg-stars-far {{
   content: '';
   position: fixed;
@@ -658,64 +610,81 @@ html, body, [class*="css"], .stApp {{
   opacity: 0.75;
 }}
 
-/* Camada 2 — fotografia real da Terra, canto inferior direito. Sem esticar
-   nem recortar a perspectiva original: usa a proporção nativa da imagem
-   (largura definida, altura automática). */
-.bg-photo-wrap {{
+/* Camada 2 — Aurora Boreal animada: faixas de luz longas e suaves (verde,
+   ciano, violeta) fluindo pela parte superior da tela, como o fenômeno
+   real. Blend "screen" para o brilho aditivo característico, movimento
+   lento e orgânico (cada faixa com velocidade/atraso próprios). */
+.bg-aurora-wrap {{
   position: fixed;
-  right: -5vw;
-  bottom: -5vw;
-  width: 42vw;
-  max-width: 660px;
-  min-width: 340px;
+  inset: 0;
+  height: 62vh;
+  z-index: -7;
+  pointer-events: none;
+  overflow: hidden;
+  mix-blend-mode: screen;
+}}
+.bg-aurora-band {{
+  position: absolute;
+  left: -20%;
+  width: 140%;
+  height: 100%;
+  background-repeat: no-repeat;
+  filter: blur(28px);
+  will-change: transform, opacity;
+}}
+.bg-aurora-band-1 {{
+  top: -18%;
+  background:
+    radial-gradient(ellipse 40% 55% at 20% 30%, rgba(34,197,94,0.55) 0%, transparent 62%),
+    radial-gradient(ellipse 35% 50% at 55% 20%, rgba(52,211,153,0.45) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 60% at 82% 35%, rgba(45,212,191,0.40) 0%, transparent 65%);
+  animation: auroraDrift1 19s ease-in-out infinite;
+}}
+.bg-aurora-band-2 {{
+  top: -8%;
+  background:
+    radial-gradient(ellipse 38% 50% at 35% 40%, rgba(125,211,252,0.42) 0%, transparent 60%),
+    radial-gradient(ellipse 42% 55% at 68% 25%, rgba(94,234,212,0.38) 0%, transparent 62%),
+    radial-gradient(ellipse 30% 45% at 90% 45%, rgba(167,139,250,0.32) 0%, transparent 60%);
+  animation: auroraDrift2 25s ease-in-out infinite;
+  animation-delay: -6s;
+}}
+.bg-aurora-band-3 {{
+  top: 2%;
+  background:
+    radial-gradient(ellipse 34% 46% at 12% 45%, rgba(167,139,250,0.30) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 52% at 48% 30%, rgba(74,222,128,0.36) 0%, transparent 62%),
+    radial-gradient(ellipse 36% 48% at 78% 50%, rgba(45,212,191,0.30) 0%, transparent 60%);
+  animation: auroraDrift3 31s ease-in-out infinite;
+  animation-delay: -14s;
+}}
+@keyframes auroraDrift1 {{
+  0%   {{ transform: translateX(0%)   translateY(0)    scaleY(1);    opacity: 0.55; }}
+  30%  {{ transform: translateX(6%)   translateY(-3%)  scaleY(1.08); opacity: 0.85; }}
+  60%  {{ transform: translateX(-4%)  translateY(2%)   scaleY(0.95); opacity: 0.65; }}
+  100% {{ transform: translateX(0%)   translateY(0)    scaleY(1);    opacity: 0.55; }}
+}}
+@keyframes auroraDrift2 {{
+  0%   {{ transform: translateX(0%)   translateY(0)   scaleY(1);    opacity: 0.5;  }}
+  35%  {{ transform: translateX(-7%)  translateY(3%)  scaleY(1.1);  opacity: 0.8;  }}
+  70%  {{ transform: translateX(5%)   translateY(-2%) scaleY(0.92); opacity: 0.6;  }}
+  100% {{ transform: translateX(0%)   translateY(0)   scaleY(1);    opacity: 0.5;  }}
+}}
+@keyframes auroraDrift3 {{
+  0%   {{ transform: translateX(0%)   translateY(0)   scaleY(1);    opacity: 0.45; }}
+  40%  {{ transform: translateX(5%)   translateY(-4%) scaleY(1.06); opacity: 0.75; }}
+  75%  {{ transform: translateX(-6%)  translateY(2%)  scaleY(0.94); opacity: 0.55; }}
+  100% {{ transform: translateX(0%)   translateY(0)   scaleY(1);    opacity: 0.45; }}
+}}
+/* Véu escuro suave sob a aurora, para ela se fundir ao céu profundo em vez
+   de flutuar "solta" — mantém a leitura do conteúdo abaixo */
+.bg-aurora-fade {{
+  position: fixed;
+  inset: 0;
+  height: 68vh;
   z-index: -6;
   pointer-events: none;
-  opacity: 0.65;
-  /* degradê: a foto desaparece suavemente em todas as direções a partir do
-     canto de ancoragem (inferior-direito), evitando qualquer borda "cortada" */
-  -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0%, #000 46%, transparent 92%);
-  mask-image: radial-gradient(circle at 100% 100%, #000 0%, #000 46%, transparent 92%);
-}}
-.bg-photo-inner {{
-  position: relative;
-  width: 100%;
-  line-height: 0;
-}}
-/* Cópia desfocada, visível apenas nas bordas externas (via máscara) */
-.bg-photo-blurred {{
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: blur(7px);
-  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, transparent 55%, #000 92%);
-  mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, transparent 55%, #000 92%);
-}}
-/* Cópia nítida, visível apenas no "núcleo" central (preserva os detalhes
-   originais da fotografia) */
-.bg-photo-sharp {{
-  display: block;
-  width: 100%;
-  height: auto;
-  position: absolute;
-  inset: 0;
-  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, #000 55%, transparent 92%);
-  mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, #000 55%, transparent 92%);
-}}
-/* Gradiente escuro por cima da foto, para integrar ao tema dark */
-.bg-photo-overlay {{
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(205deg, rgba(2,4,10,0.02) 0%, rgba(2,4,10,0.16) 55%, rgba(2,4,10,0.32) 100%);
-  pointer-events: none;
-}}
-/* Brilho azul bem sutil acompanhando a curvatura visível na fotografia */
-.bg-photo-glow {{
-  position: absolute;
-  inset: -22%;
-  background: radial-gradient(ellipse 75% 55% at 46% 30%, rgba(125,211,252,0.16) 0%, transparent 68%);
-  mix-blend-mode: screen;
-  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, transparent 40%, rgba(1,3,8,0.55) 78%, rgba(1,3,8,0.85) 100%);
 }}
 
 /* Camada final — véu de contraste, preserva a leitura do conteúdo por cima
@@ -1611,17 +1580,14 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 }}
 </style>
 
-<div class="bg-aurora"></div>
 <div class="bg-stars-far"></div>
 <div class="bg-stars-near"></div>
-<div class="bg-photo-wrap">
-  <div class="bg-photo-inner">
-    {f'<img class="bg-photo-blurred" src="data:{BG_MIME};base64,{BG_B64}" alt="" />' if BG_B64 else ''}
-    {f'<img class="bg-photo-sharp" src="data:{BG_MIME};base64,{BG_B64}" alt="" />' if BG_B64 else ''}
-    <div class="bg-photo-overlay"></div>
-    <div class="bg-photo-glow"></div>
-  </div>
+<div class="bg-aurora-wrap">
+  <div class="bg-aurora-band bg-aurora-band-1"></div>
+  <div class="bg-aurora-band bg-aurora-band-2"></div>
+  <div class="bg-aurora-band bg-aurora-band-3"></div>
 </div>
+<div class="bg-aurora-fade"></div>
 <div class="bg-scrim"></div>
 """, unsafe_allow_html=True)
 
