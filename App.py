@@ -510,6 +510,7 @@ def _gen_light_shadows(n, x_range, y_range, min_op, max_op, color):
 # superior direito da tela.
 _CITY_LIGHTS_MAIN = _gen_light_shadows(85,  (8, 52), (0, 24), 0.35, 0.85, "255,201,133")
 _CITY_LIGHTS_DIM   = _gen_light_shadows(140, (5, 56), (0, 27), 0.10, 0.28, "255,183,110")
+_CITY_LIGHTS_METRO = _gen_light_shadows(9,   (10, 48), (2, 22), 0.55, 0.85, "255,214,158")
 
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
@@ -664,15 +665,19 @@ html, body, [class*="css"], .stApp {{
   0%, 100% {{ transform: translateY(0); }}
   50%      {{ transform: translateY(-6px); }}
 }}
-/* Halo atmosférico externo — brilho azul intenso ao redor de toda a curvatura */
+/* Halo atmosférico externo — brilho azul intenso ao redor de toda a curvatura,
+   com gradação de cor (branco-azulado bem colado à borda, azul mais profundo
+   se afastando), simulando o espalhamento atmosférico real. */
 .bg-earth-atmo {{
   position: absolute;
   inset: -1.2%;
   border-radius: 50%;
   box-shadow:
-    0 0 5vw 1.2vw rgba(147,197,253,0.35),
-    0 0 11vw 3vw rgba(59,130,246,0.22),
-    0 0 20vw 6vw rgba(37,99,235,0.10);
+    0 0 1.4vw 0.3vw rgba(224,242,255,0.45),
+    0 0 4vw 1vw rgba(165,213,255,0.32),
+    0 0 8vw 2.4vw rgba(96,165,250,0.22),
+    0 0 15vw 4.5vw rgba(59,130,246,0.14),
+    0 0 26vw 8vw rgba(29,78,216,0.07);
   pointer-events: none;
 }}
 .bg-earth-globe {{
@@ -681,13 +686,17 @@ html, body, [class*="css"], .stApp {{
   border-radius: 50%;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 60% 50% at 30% 10%, rgba(20,35,60,0.9) 0%, transparent 45%),
-    linear-gradient(200deg, #0a1424 0%, #060c18 35%, #03060d 65%, #000103 100%);
-  /* brilho interno acompanhando toda a curvatura (linha do horizonte) */
+    radial-gradient(ellipse 55% 45% at 22% 6%, rgba(35,58,92,0.55) 0%, transparent 42%),
+    radial-gradient(ellipse 40% 30% at 44% 4%, rgba(18,30,52,0.55) 0%, transparent 48%),
+    radial-gradient(ellipse 65% 55% at 30% 12%, rgba(20,35,60,0.85) 0%, transparent 46%),
+    linear-gradient(200deg, #0d1830 0%, #0a1424 22%, #060c18 42%, #03060d 66%, #000103 100%);
+  /* brilho interno acompanhando toda a curvatura (linha do horizonte),
+     gradação branco-azulada → azul profundo, como espalhamento real de luz */
   box-shadow:
-    inset 0 0 2.2vw 0.5vw rgba(224,242,254,0.55),
-    inset 0 0 5vw 1.4vw rgba(147,197,253,0.40),
-    inset 0 0 11vw 3vw rgba(59,130,246,0.28),
+    inset 0 0 1vw 0.25vw rgba(255,255,255,0.55),
+    inset 0 0 2.2vw 0.5vw rgba(224,242,254,0.48),
+    inset 0 0 5vw 1.4vw rgba(147,197,253,0.36),
+    inset 0 0 11vw 3vw rgba(59,130,246,0.26),
     inset 0 0 22vw 6vw rgba(15,23,42,0.65);
 }}
 /* Realce quente perto do nascer do sol — o brilho ao longo da curvatura
@@ -703,8 +712,18 @@ html, body, [class*="css"], .stApp {{
   filter: blur(1.5vw);
   mix-blend-mode: screen;
 }}
-/* Luzes de cidades — núcleos maiores e luzes dispersas, sobre a superfície
-   noturna visível (recortadas automaticamente pelo círculo do globo). */
+/* Luzes de cidades — metrópoles com brilho difuso, núcleos maiores e luzes
+   dispersas, sobre a superfície noturna visível (recortadas automaticamente
+   pelo círculo do globo). */
+.bg-earth-lights-metro {{
+  position: absolute;
+  inset: 0;
+  width: 5px; height: 5px;
+  box-shadow: {_CITY_LIGHTS_METRO};
+  border-radius: 50%;
+  filter: blur(2.5px);
+  opacity: 0.75;
+}}
 .bg-earth-lights-main {{
   position: absolute;
   inset: 0;
@@ -721,14 +740,16 @@ html, body, [class*="css"], .stApp {{
   border-radius: 50%;
   opacity: 0.8;
 }}
-/* Nuvens finas e bem discretas sobre as luzes, para realismo fotográfico */
+/* Nuvens finas e orgânicas sobre as luzes, para realismo fotográfico */
 .bg-earth-clouds {{
   position: absolute;
   inset: 0;
   border-radius: 50%;
   background:
-    radial-gradient(ellipse 40% 16% at 30% 10%, rgba(255,255,255,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 30% 12% at 14% 18%, rgba(255,255,255,0.04) 0%, transparent 65%);
+    radial-gradient(ellipse 38% 14% at 28% 8%, rgba(255,255,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 26% 10% at 12% 16%, rgba(255,255,255,0.05) 0%, transparent 65%),
+    radial-gradient(ellipse 30% 11% at 42% 4%, rgba(255,255,255,0.045) 0%, transparent 62%),
+    radial-gradient(ellipse 20% 8% at 6% 22%, rgba(255,255,255,0.04) 0%, transparent 68%);
   mix-blend-mode: screen;
 }}
 
@@ -772,6 +793,20 @@ html, body, [class*="css"], .stApp {{
     linear-gradient(90deg, transparent 46%, rgba(255,244,214,0.10) 50%, transparent 54%),
     linear-gradient(0deg, transparent 46%, rgba(255,244,214,0.07) 50%, transparent 54%);
   opacity: 0.6;
+}}
+
+/* Camada 4 — grão fotográfico sutil sobre todo o fundo: quebra o aspecto
+   "vetorial liso" dos gradientes CSS e aproxima do aspecto de uma foto
+   espacial real (textura de sensor/filme, bem discreta). */
+.bg-grain {{
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }}
 
 /* Camada final — véu de contraste, preserva a leitura do conteúdo por cima
@@ -1674,11 +1709,13 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
   <div class="bg-earth-globe">
     <div class="bg-earth-lights-dim"></div>
     <div class="bg-earth-lights-main"></div>
+    <div class="bg-earth-lights-metro"></div>
     <div class="bg-earth-warmlimb"></div>
     <div class="bg-earth-clouds"></div>
   </div>
   <div class="bg-earth-atmo"></div>
 </div>
+<div class="bg-grain"></div>
 <div class="bg-scrim"></div>
 """, unsafe_allow_html=True)
 
