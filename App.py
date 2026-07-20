@@ -637,17 +637,17 @@ html, body, [class*="css"], .stApp {{
   position: fixed;
   right: -5vw;
   bottom: -5vw;
-  width: 40vw;
-  max-width: 620px;
-  min-width: 320px;
+  width: 42vw;
+  max-width: 660px;
+  min-width: 340px;
   z-index: -6;
   pointer-events: none;
-  opacity: 0.30;
+  opacity: 0.65;
   /* degradê: a foto desaparece suavemente em direção ao centro da tela
      (canto oposto ao de ancoragem, aqui o canto superior-esquerdo do
      próprio recorte) */
-  -webkit-mask-image: linear-gradient(to top left, #000 40%, transparent 88%);
-  mask-image: linear-gradient(to top left, #000 40%, transparent 88%);
+  -webkit-mask-image: linear-gradient(to top left, #000 58%, transparent 97%);
+  mask-image: linear-gradient(to top left, #000 58%, transparent 97%);
 }}
 .bg-photo-inner {{
   position: relative;
@@ -679,7 +679,7 @@ html, body, [class*="css"], .stApp {{
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(205deg, rgba(2,4,10,0.10) 0%, rgba(2,4,10,0.42) 55%, rgba(2,4,10,0.72) 100%);
+    linear-gradient(205deg, rgba(2,4,10,0.02) 0%, rgba(2,4,10,0.16) 55%, rgba(2,4,10,0.32) 100%);
   pointer-events: none;
 }}
 /* Brilho azul bem sutil acompanhando a curvatura visível na fotografia */
@@ -697,7 +697,7 @@ html, body, [class*="css"], .stApp {{
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(1,3,8,0.42) 0%, rgba(1,3,8,0.14) 26%, rgba(1,3,8,0.30) 100%),
+    linear-gradient(180deg, rgba(1,3,8,0.42) 0%, rgba(1,3,8,0.14) 26%, rgba(1,3,8,0.20) 100%),
     radial-gradient(ellipse 58% 40% at 46% 0%, rgba(1,3,8,0.22) 0%, transparent 60%);
   z-index: -2;
   pointer-events: none;
