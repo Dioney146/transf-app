@@ -460,12 +460,8 @@ def find_first_existing(*candidates):
 # Ajuste os caminhos abaixo para onde os arquivos realmente estão no seu repositório.
 # Procura em "assets/" e também na raiz do projeto, como fallback.
 BG_PATH = find_first_existing(
-    "assets/fundo.webp",
-    "assets/background.webp",
     "assets/fundo.png",
     "assets/background.png",
-    "fundo.webp",
-    "background.webp",
     "fundo.png",
     "background.png",
 )
@@ -476,18 +472,7 @@ LOGO_PATH = find_first_existing(
     "logo.png",
 )
 
-def _mime_for_path(path):
-    """Detecta o content-type correto para embutir a imagem como data URI."""
-    ext = Path(path).suffix.lower()
-    return {
-        ".webp": "image/webp",
-        ".png":  "image/png",
-        ".jpg":  "image/jpeg",
-        ".jpeg": "image/jpeg",
-    }.get(ext, "image/png")
-
-BG_B64  = img_to_base64(BG_PATH)
-BG_MIME = _mime_for_path(BG_PATH)
+BG_B64 = img_to_base64(BG_PATH)
 LOGO_B64 = img_to_base64(LOGO_PATH)
 
 # ─── Partículas do fundo tecnológico (geradas uma vez, posições fixas) ───────
@@ -505,8 +490,8 @@ def _gen_star_shadows(n, min_op, max_op, size_px=1):
         parts.append(f"{x}vw {y}vh 0 rgba(148,197,255,{op})")
     return ",\n    ".join(parts)
 
-_STARS_FAR   = _gen_star_shadows(90, 0.16, 0.38)
-_STARS_NEAR  = _gen_star_shadows(38, 0.24, 0.50)
+_STARS_FAR  = _gen_star_shadows(70, 0.10, 0.28)
+_STARS_NEAR = _gen_star_shadows(30, 0.20, 0.42)
 
 # ─── CSS + Imagem de Fundo + Logo ─────────────────────────────────────────────
 st.markdown(f"""
@@ -588,28 +573,40 @@ html, body, [class*="css"], .stApp {{
 }}
 
 /* ══════════════════════════════════════════════════════════════════════════
-   FUNDO — fotografia real da Terra (Amazônia/Norte do Brasil vista do
-   espaço) integrada ao layout de forma discreta, no canto inferior direito.
-   Espaço profundo minimalista ao redor, sem elementos futuristas por cima
-   da foto. Camadas fixas, sempre atrás de todo o conteúdo, baixa opacidade
-   para não competir com a interface.
+   FUNDO TECNOLÓGICO — Terra (região Amazônica), gradientes azuis,
+   iluminação sutil e partículas discretas. Camadas 100% CSS, fixas,
+   atrás de todo o conteúdo (z-index negativo) para não afetar leitura.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* Camada 0 — espaço profundo: gradiente preto → azul-marinho, com camadas
-   extras de luz azul para reforçar a sensação tecnológica. */
+/* Camada 0 — base do espaço profundo (gradiente azul-marinho) */
 .stApp::before {{
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 65% 55% at 78% 88%, rgba(30,58,95,0.18) 0%, transparent 62%),
-    radial-gradient(ellipse 50% 40% at 12% 20%, rgba(20,40,74,0.11) 0%, transparent 60%),
-    radial-gradient(ellipse 45% 35% at 88% 8%, rgba(56,130,246,0.08) 0%, transparent 58%),
-    linear-gradient(165deg, #000000 0%, #04070d 45%, #050a16 75%, #000000 100%);
-  z-index: -9;
+    radial-gradient(ellipse 90% 60% at 78% 18%, rgba(37,99,235,0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 8% 92%, rgba(124,58,237,0.08) 0%, transparent 60%),
+    linear-gradient(160deg, #050914 0%, #060B16 38%, #071021 68%, #050914 100%);
+  z-index: -6;
 }}
 
-/* Camada 1 — estrelas discretas, campo de fundo */
+/* Camada 1 — grade tecnológica sutil (perspectiva de "painel de controle") */
+.stApp::after {{
+  content: '';
+  position: fixed;
+  inset: -10%;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 40%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 40%, #000 30%, transparent 78%);
+  opacity: 0.55;
+  z-index: -5;
+  pointer-events: none;
+}}
+
+/* Campo de partículas — estrelas distantes (estáticas, bem discretas) */
 .bg-stars-far {{
   content: '';
   position: fixed;
@@ -617,174 +614,154 @@ html, body, [class*="css"], .stApp {{
   width: 1px; height: 1px;
   background: transparent;
   box-shadow: {_STARS_FAR};
-  z-index: -8;
+  z-index: -4;
   pointer-events: none;
-  opacity: 0.7;
+  animation: bgTwinkleFar 9s ease-in-out infinite alternate;
 }}
+/* Campo de partículas — mais próximas, leve brilho e cintilação */
 .bg-stars-near {{
   content: '';
   position: fixed;
   inset: 0;
-  width: 1px; height: 1px;
+  width: 2px; height: 2px;
   background: transparent;
   box-shadow: {_STARS_NEAR};
   border-radius: 50%;
-  z-index: -8;
+  z-index: -4;
   pointer-events: none;
-  opacity: 0.75;
+  animation: bgTwinkleNear 6s ease-in-out infinite alternate;
+}}
+@keyframes bgTwinkleFar {{
+  0%   {{ opacity: 0.5; }}
+  100% {{ opacity: 1; }}
+}}
+@keyframes bgTwinkleNear {{
+  0%   {{ opacity: 0.6; transform: translateY(0); }}
+  100% {{ opacity: 1; transform: translateY(-3px); }}
 }}
 
-/* Camada 2 — Aurora Boreal animada: faixas de luz longas e suaves (verde,
-   ciano, violeta) fluindo pela parte superior da tela, como o fenômeno
-   real. Blend "screen" para o brilho aditivo característico, movimento
-   lento e orgânico (cada faixa com velocidade/atraso próprios). */
-.bg-aurora-wrap {{
+/* Planeta Terra — esfera 100% CSS, com oceano azul, continente
+   (América do Sul) e um brilho verde-esmeralda sutil sobre a região
+   Amazônica, além de anel de atmosfera e halo tecnológico. */
+.bg-earth-wrap {{
   position: fixed;
-  inset: 0;
-  height: 62vh;
-  z-index: -7;
+  right: -14vw;
+  bottom: -20vw;
+  width: min(52vw, 720px);
+  height: min(52vw, 720px);
+  z-index: -3;
   pointer-events: none;
+  animation: bgEarthFloat 14s ease-in-out infinite;
+}}
+@keyframes bgEarthFloat {{
+  0%, 100% {{ transform: translateY(0); }}
+  50%      {{ transform: translateY(-14px); }}
+}}
+.bg-earth-atmo {{
+  position: absolute;
+  inset: -6%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(96,165,250,0.35), transparent 62%);
+  filter: blur(18px);
+  opacity: 0.8;
+}}
+.bg-earth-globe {{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(191,219,254,0.55) 0%, transparent 12%),
+    radial-gradient(circle at 34% 30%, #1d4ed8 0%, #1e3a8a 42%, #0b1533 78%, #050a17 100%);
+  box-shadow:
+    inset -60px -50px 110px rgba(0,0,0,0.65),
+    inset 22px 18px 60px rgba(147,197,253,0.18),
+    0 0 90px 20px rgba(59,130,246,0.20);
+}}
+/* Manchas de "continente" — silhueta estilizada da América do Sul,
+   com destaque verde-esmeralda pulsante sobre a Amazônia. */
+.bg-earth-continent {{
+  position: absolute;
+  width: 46%;
+  height: 58%;
+  left: 27%;
+  top: 18%;
+  background:
+    radial-gradient(ellipse 60% 70% at 45% 30%, rgba(34,197,94,0.55) 0%, rgba(21,128,61,0.42) 45%, transparent 72%),
+    radial-gradient(ellipse 50% 40% at 55% 62%, rgba(101,163,13,0.35) 0%, transparent 70%);
+  border-radius: 46% 54% 50% 50% / 55% 50% 55% 45%;
+  filter: blur(1.5px);
+  opacity: 0.92;
+  transform: rotate(-8deg);
+}}
+.bg-earth-amazon-glow {{
+  position: absolute;
+  width: 26%;
+  height: 20%;
+  left: 38%;
+  top: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74,222,128,0.85) 0%, rgba(34,197,94,0.35) 45%, transparent 75%);
+  filter: blur(4px);
+  mix-blend-mode: screen;
+  animation: bgAmazonPulse 4.5s ease-in-out infinite;
+}}
+@keyframes bgAmazonPulse {{
+  0%, 100% {{ opacity: 0.55; transform: scale(1); }}
+  50%      {{ opacity: 0.95; transform: scale(1.12); }}
+}}
+/* Nuvens finas / terminador (sombra do lado noturno) */
+.bg-earth-clouds {{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 70% 30% at 60% 15%, rgba(248,250,252,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 20% at 30% 70%, rgba(248,250,252,0.06) 0%, transparent 65%);
   mix-blend-mode: screen;
 }}
-.bg-aurora-band {{
+.bg-earth-terminator {{
   position: absolute;
-  left: -20%;
-  width: 140%;
-  height: 100%;
-  background-repeat: no-repeat;
-  filter: blur(28px);
-  will-change: transform, opacity;
-}}
-.bg-aurora-band-1 {{
-  top: -18%;
-  background:
-    radial-gradient(ellipse 40% 55% at 20% 30%, rgba(34,197,94,0.55) 0%, transparent 62%),
-    radial-gradient(ellipse 35% 50% at 55% 20%, rgba(52,211,153,0.45) 0%, transparent 60%),
-    radial-gradient(ellipse 45% 60% at 82% 35%, rgba(45,212,191,0.40) 0%, transparent 65%);
-  animation: auroraDrift1 19s ease-in-out infinite;
-}}
-.bg-aurora-band-2 {{
-  top: -8%;
-  background:
-    radial-gradient(ellipse 38% 50% at 35% 40%, rgba(125,211,252,0.42) 0%, transparent 60%),
-    radial-gradient(ellipse 42% 55% at 68% 25%, rgba(94,234,212,0.38) 0%, transparent 62%),
-    radial-gradient(ellipse 30% 45% at 90% 45%, rgba(167,139,250,0.32) 0%, transparent 60%);
-  animation: auroraDrift2 25s ease-in-out infinite;
-  animation-delay: -6s;
-}}
-.bg-aurora-band-3 {{
-  top: 2%;
-  background:
-    radial-gradient(ellipse 34% 46% at 12% 45%, rgba(167,139,250,0.30) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 52% at 48% 30%, rgba(74,222,128,0.36) 0%, transparent 62%),
-    radial-gradient(ellipse 36% 48% at 78% 50%, rgba(45,212,191,0.30) 0%, transparent 60%);
-  animation: auroraDrift3 31s ease-in-out infinite;
-  animation-delay: -14s;
-}}
-@keyframes auroraDrift1 {{
-  0%   {{ transform: translateX(0%)   translateY(0)    scaleY(1);    opacity: 0.55; }}
-  30%  {{ transform: translateX(6%)   translateY(-3%)  scaleY(1.08); opacity: 0.85; }}
-  60%  {{ transform: translateX(-4%)  translateY(2%)   scaleY(0.95); opacity: 0.65; }}
-  100% {{ transform: translateX(0%)   translateY(0)    scaleY(1);    opacity: 0.55; }}
-}}
-@keyframes auroraDrift2 {{
-  0%   {{ transform: translateX(0%)   translateY(0)   scaleY(1);    opacity: 0.5;  }}
-  35%  {{ transform: translateX(-7%)  translateY(3%)  scaleY(1.1);  opacity: 0.8;  }}
-  70%  {{ transform: translateX(5%)   translateY(-2%) scaleY(0.92); opacity: 0.6;  }}
-  100% {{ transform: translateX(0%)   translateY(0)   scaleY(1);    opacity: 0.5;  }}
-}}
-@keyframes auroraDrift3 {{
-  0%   {{ transform: translateX(0%)   translateY(0)   scaleY(1);    opacity: 0.45; }}
-  40%  {{ transform: translateX(5%)   translateY(-4%) scaleY(1.06); opacity: 0.75; }}
-  75%  {{ transform: translateX(-6%)  translateY(2%)  scaleY(0.94); opacity: 0.55; }}
-  100% {{ transform: translateX(0%)   translateY(0)   scaleY(1);    opacity: 0.45; }}
-}}
-/* Véu escuro suave sob a aurora, para ela se fundir ao céu profundo em vez
-   de flutuar "solta" — mantém a leitura do conteúdo abaixo */
-.bg-aurora-fade {{
-  position: fixed;
   inset: 0;
-  height: 68vh;
-  z-index: -6;
-  pointer-events: none;
-  background: linear-gradient(180deg, transparent 0%, transparent 40%, rgba(1,3,8,0.55) 78%, rgba(1,3,8,0.85) 100%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 72% 68%, transparent 30%, rgba(2,6,18,0.82) 68%);
+}}
+/* Anel tecnológico orbital, tracejado, girando lentamente */
+.bg-earth-ring {{
+  position: absolute;
+  inset: -9%;
+  border-radius: 50%;
+  border: 1px dashed rgba(96,165,250,0.28);
+  animation: bgRingSpin 60s linear infinite;
+}}
+.bg-earth-ring::before {{
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: #60a5fa;
+  box-shadow: 0 0 10px 3px rgba(96,165,250,0.8);
+}}
+@keyframes bgRingSpin {{
+  from {{ transform: rotate(0deg); }}
+  to   {{ transform: rotate(360deg); }}
 }}
 
-/* Camada 3 — fotografia real da Terra (Amazônia), canto inferior direito.
-   Sem esticar nem recortar a perspectiva original: usa a proporção nativa
-   da imagem (largura definida, altura automática). Fica na frente da
-   aurora, como o "primeiro plano" da composição. */
-.bg-photo-wrap {{
-  position: fixed;
-  right: -5vw;
-  bottom: -5vw;
-  width: 42vw;
-  max-width: 660px;
-  min-width: 340px;
-  z-index: -5;
-  pointer-events: none;
-  opacity: 0.68;
-  /* degradê: a foto desaparece suavemente em todas as direções a partir do
-     canto de ancoragem (inferior-direito), evitando qualquer borda "cortada" */
-  -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0%, #000 46%, transparent 92%);
-  mask-image: radial-gradient(circle at 100% 100%, #000 0%, #000 46%, transparent 92%);
-}}
-.bg-photo-inner {{
-  position: relative;
-  width: 100%;
-  line-height: 0;
-}}
-/* Cópia desfocada, visível apenas nas bordas externas (via máscara) */
-.bg-photo-blurred {{
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: blur(7px);
-  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, transparent 55%, #000 92%);
-  mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, transparent 55%, #000 92%);
-}}
-/* Cópia nítida, visível apenas no "núcleo" central (preserva os detalhes
-   originais da fotografia) */
-.bg-photo-sharp {{
-  display: block;
-  width: 100%;
-  height: auto;
-  position: absolute;
-  inset: 0;
-  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, #000 55%, transparent 92%);
-  mask-image: radial-gradient(ellipse 62% 62% at 58% 52%, #000 55%, transparent 92%);
-}}
-/* Gradiente escuro por cima da foto, para integrar ao tema dark */
-.bg-photo-overlay {{
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(205deg, rgba(2,4,10,0.02) 0%, rgba(2,4,10,0.16) 55%, rgba(2,4,10,0.32) 100%);
-  pointer-events: none;
-}}
-/* Brilho azul sutil acompanhando a curvatura visível na fotografia,
-   conectando visualmente a foto com a aurora e o restante do fundo. */
-.bg-photo-glow {{
-  position: absolute;
-  inset: -22%;
-  background: radial-gradient(ellipse 75% 55% at 46% 30%, rgba(125,211,252,0.18) 0%, transparent 68%);
-  mix-blend-mode: screen;
-  pointer-events: none;
-}}
-
-/* Camada final — véu de contraste, preserva a leitura do conteúdo por cima
-   do fundo (mantém cards e textos nítidos). */
+/* Camada final — véu de contraste para preservar a leitura do conteúdo
+   por cima do fundo tecnológico (mantém cards e textos nítidos). */
 .bg-scrim {{
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(1,3,8,0.42) 0%, rgba(1,3,8,0.14) 26%, rgba(1,3,8,0.20) 100%),
-    radial-gradient(ellipse 58% 40% at 46% 0%, rgba(1,3,8,0.22) 0%, transparent 60%);
+    linear-gradient(180deg, rgba(6,11,22,0.62) 0%, rgba(6,11,22,0.30) 22%, rgba(6,11,22,0.42) 100%),
+    radial-gradient(ellipse 65% 45% at 50% 0%, rgba(6,11,22,0.35) 0%, transparent 60%);
   z-index: -2;
   pointer-events: none;
 }}
-
 
 .stApp {{
   background: transparent !important;
@@ -1668,19 +1645,15 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="column"]:nth-child(5
 
 <div class="bg-stars-far"></div>
 <div class="bg-stars-near"></div>
-<div class="bg-aurora-wrap">
-  <div class="bg-aurora-band bg-aurora-band-1"></div>
-  <div class="bg-aurora-band bg-aurora-band-2"></div>
-  <div class="bg-aurora-band bg-aurora-band-3"></div>
-</div>
-<div class="bg-aurora-fade"></div>
-<div class="bg-photo-wrap">
-  <div class="bg-photo-inner">
-    {f'<img class="bg-photo-blurred" src="data:{BG_MIME};base64,{BG_B64}" alt="" />' if BG_B64 else ''}
-    {f'<img class="bg-photo-sharp" src="data:{BG_MIME};base64,{BG_B64}" alt="" />' if BG_B64 else ''}
-    <div class="bg-photo-overlay"></div>
-    <div class="bg-photo-glow"></div>
+<div class="bg-earth-wrap">
+  <div class="bg-earth-atmo"></div>
+  <div class="bg-earth-globe">
+    <div class="bg-earth-continent"></div>
+    <div class="bg-earth-amazon-glow"></div>
+    <div class="bg-earth-clouds"></div>
+    <div class="bg-earth-terminator"></div>
   </div>
+  <div class="bg-earth-ring"></div>
 </div>
 <div class="bg-scrim"></div>
 """, unsafe_allow_html=True)
