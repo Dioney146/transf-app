@@ -43,7 +43,28 @@ TCOLS = [
     "dt_liberado", "nomevend", "nomesup", "pesobrutotot", "vltotal",
     "praca", "numcarregamento", "destino", "placa_road",
     "placa_veiculo", "dt_saida", "dt_roteirizacao",
-    "status", "motivo", "observacao", "criado_em",
+    "status", "motivo", "bairro", "criado_em",
+]
+
+# Lista oficial dos bairros de Manaus (IMPLURB/Prefeitura de Manaus),
+# organizada alfabeticamente para uso no campo de busca/autocomplete.
+BAIRROS_MANAUS = [
+    "Adrianópolis", "Aleixo", "Alvorada", "Armando Mendes", "Bairro da Paz",
+    "Betânia", "Cachoeirinha", "Centro", "Chapada", "Cidade de Deus",
+    "Cidade Nova", "Colônia Antônio Aleixo", "Colônia Oliveira Machado",
+    "Colônia Santo Antônio", "Colônia Terra Nova", "Compensa", "Coroado",
+    "Crespo", "Distrito Industrial I", "Distrito Industrial II", "Dom Pedro",
+    "Educandos", "Flores", "Gilberto Mestrinho", "Glória", "Japiim",
+    "Jorge Teixeira", "Lago Azul", "Lírio do Vale", "Mauazinho",
+    "Monte das Oliveiras", "Morro da Liberdade", "Nossa Senhora das Graças",
+    "Nossa Senhora de Aparecida", "Nova Cidade", "Nova Esperança",
+    "Novo Aleixo", "Novo Israel", "Parque 10 de Novembro", "Petrópolis",
+    "Planalto", "Ponta Negra", "Praça 14 de Janeiro", "Presidente Vargas",
+    "Puraquequara", "Raiz", "Redenção", "Santa Etelvina", "Santa Luzia",
+    "Santo Agostinho", "Santo Antônio", "São Francisco", "São Geraldo",
+    "São Jorge", "São José Operário", "São Lázaro", "São Raimundo",
+    "Tancredo Neves", "Tarumã", "Tarumã-Açu", "Vila Buriti", "Vila da Prata",
+    "Zumbi dos Palmares",
 ]
 
 def ensure_header():
@@ -136,7 +157,7 @@ def append_transf(row):
     row.setdefault("placa_road", "")
     row.setdefault("dt_roteirizacao", "")
     row.setdefault("dt_saida", "")
-    row.setdefault("observacao", "")
+    row.setdefault("bairro", "")
     ws.append_row(
         [str(row.get(c, "")) for c in TCOLS],
         value_input_option="USER_ENTERED",
@@ -1850,7 +1871,7 @@ STD_DG_DEFS = [
     {"key": "data_registro",   "label": "Data Registro", "align": "left"},
     {"key": "placa_road",      "label": "Placa Antiga",  "align": "left"},
     {"key": "motivo",          "label": "Motivo",        "align": "left",  "width": "200px"},
-    {"key": "observacao",      "label": "Observação",    "align": "left",  "width": "200px"},
+    {"key": "bairro",          "label": "Bairro",        "align": "left",  "width": "180px"},
     {"key": "numnota",         "label": "Nota Fiscal",   "align": "left"},
     {"key": "numped",          "label": "Pedido",        "align": "left"},
     {"key": "codcliente",      "label": "Cód. Cliente",  "align": "left"},
@@ -1946,7 +1967,7 @@ else:
 
 # ─── Colunas padrão de exibição ───────────────────────────────────────────────
 STD_COLS = [
-    "data_registro", "placa_road", "motivo", "observacao",
+    "data_registro", "placa_road", "motivo", "bairro",
     "numnota", "numped", "codcliente", "nomecliente", "dt_liberado",
     "nomevend", "nomesup", "pesobrutotot", "vltotal",
     "praca", "numcarregamento", "destino",
@@ -1967,7 +1988,7 @@ STD_CONFIG = {
     "destino":         st.column_config.TextColumn("Destino",        width="small"),
     "placa_road":      st.column_config.TextColumn("Placa Antiga",   width="small"),
     "motivo":          st.column_config.TextColumn("Motivo",         width="medium"),
-    "observacao":      st.column_config.TextColumn("Observação",     width="medium"),
+    "bairro":          st.column_config.TextColumn("Bairro",         width="medium"),
 }
 
 st.markdown('<div class="page-body">', unsafe_allow_html=True)
@@ -2076,7 +2097,6 @@ def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
           <div style="font-size:.62rem;color:#94A3B8;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px" title="{lbl}">{short}</div>
         </div>'''
     return f'<div style="display:flex;gap:4px;align-items:flex-end;padding:.5rem .25rem 0">{cols_html}</div>'
-
 
 
 # ── Helper: gera SVG de colunas verticais 3D (glassmorphism) com linha de qtd ─
@@ -2483,17 +2503,17 @@ if pagina == "📝  Registro":
             st.markdown("""
             <div class="sec-div" style="margin:1.25rem 0 .85rem 0">
               <div class="sec-div-line"></div>
-              <div class="sec-div-txt">💬 Observação (opcional)</div>
+              <div class="sec-div-txt">📍 Bairro</div>
               <div class="sec-div-line"></div>
             </div>
             """, unsafe_allow_html=True)
-            obs_input = st.text_area(
-                "Observação",
-                placeholder="Ex: Entrega fracionada, cliente solicitou reagendamento, carga especial...",
-                key="obs_input",
-                height=80,
+            bairro_sel = st.selectbox(
+                "Bairro",
+                options=["— Selecione ou digite o bairro —"] + BAIRROS_MANAUS,
+                key="bairro_input",
                 label_visibility="collapsed",
             )
+            bairro_input = bairro_sel.strip() if bairro_sel != "— Selecione ou digite o bairro —" else ""
 
             st.markdown('<div style="height:16px"></div>', unsafe_allow_html=True)
             if st.button("🚛 Confirmar Transferência", type="primary", use_container_width=True, key="confirm_btn"):
@@ -2502,6 +2522,8 @@ if pagina == "📝  Registro":
                         st.markdown('<div class="al-e">❌ Digite o <strong>Motivo</strong> no campo acima antes de confirmar.</div>', unsafe_allow_html=True)
                     else:
                         st.markdown('<div class="al-e">❌ Selecione um <strong>Motivo</strong> antes de confirmar.</div>', unsafe_allow_html=True)
+                elif not bairro_input:
+                    st.markdown('<div class="al-e">❌ Selecione um <strong>Bairro</strong> antes de confirmar.</div>', unsafe_allow_html=True)
                 else:
                     dt_s = date.today().isoformat()  # data de registro gerada automaticamente pelo sistema
                     if check_dup(cur["numnota"], dt_s):
@@ -2524,7 +2546,7 @@ if pagina == "📝  Registro":
                                 "destino":         cur["destino"],
                                 "placa_road":      cur.get("placa_road", ""),
                                 "motivo":          motivo_input.strip(),
-                                "observacao":      obs_input.strip() if obs_input else "",
+                                "bairro":          bairro_input,
                             })
                         st.success(f"✅ Transferência registrada! Nota {cur['numnota']} aguarda roteirização.")
                         st.session_state.cur = None
@@ -2634,7 +2656,7 @@ elif pagina == "🗺️  Roteirização":
 
         # ── Tabela de exibição (DataGrid com paginação) + painel de roteirização
         PEND_COLS = [c for c in [
-            "data_registro", "placa_road", "motivo", "observacao",
+            "data_registro", "placa_road", "motivo", "bairro",
             "numnota", "numped", "codcliente", "nomecliente", "dt_liberado",
             "nomevend", "nomesup", "pesobrutotot", "vltotal",
             "praca", "numcarregamento", "destino",
@@ -2654,13 +2676,13 @@ elif pagina == "🗺️  Roteirização":
             st.markdown('<div class="sec-div" style="margin-top:.75rem"><div class="sec-div-line"></div><div class="sec-div-txt">🗺️ Roteirizar notas</div><div class="sec-div-line"></div></div>', unsafe_allow_html=True)
 
             # ── Monta tabela de seleção com checkbox ─────────────────────────
-            df_sel = df_p_sorted[["numnota", "numped", "nomecliente", "observacao", "numcarregamento", "placa_road", "pesobrutotot", "vltotal", "praca", "id"]].copy()
+            df_sel = df_p_sorted[["numnota", "numped", "nomecliente", "bairro", "numcarregamento", "placa_road", "pesobrutotot", "vltotal", "praca", "id"]].copy()
             df_sel.insert(0, "✓", False)
             df_sel = df_sel.rename(columns={
                 "numnota":        "Nota",
                 "numped":         "Pedido",
                 "nomecliente":    "Cliente",
-                "observacao":     "Observação",
+                "bairro":         "Bairro",
                 "numcarregamento":"Carregamento",
                 "placa_road":     "Placa Antiga",
                 "pesobrutotot":   "Peso (kg)",
@@ -2678,7 +2700,7 @@ elif pagina == "🗺️  Roteirização":
                     "Nota":         st.column_config.TextColumn("Nota Fiscal",        width="small"),
                     "Pedido":       st.column_config.TextColumn("Pedido",             width="small"),
                     "Cliente":      st.column_config.TextColumn("Cliente",            width="medium"),
-                    "Observação":   st.column_config.TextColumn("Observação",         width="medium"),
+                    "Bairro":       st.column_config.TextColumn("Bairro",             width="medium"),
                     "Carregamento": st.column_config.TextColumn("Carregamento",       width="small"),
                     "Placa Antiga": st.column_config.TextColumn("Placa Antiga",       width="small"),
                     "Peso (kg)":    st.column_config.NumberColumn("Peso (kg)",        format="%.0f kg", width="small"),
@@ -2686,7 +2708,7 @@ elif pagina == "🗺️  Roteirização":
                     "Praça":        st.column_config.TextColumn("Praça",              width="small"),
                     "_id":          st.column_config.TextColumn("ID",                 width="small"),
                 },
-                disabled=["Nota","Pedido","Cliente","Observação","Carregamento","Placa Antiga","Peso (kg)","Valor (R$)","Praça","_id"],
+                disabled=["Nota","Pedido","Cliente","Bairro","Carregamento","Placa Antiga","Peso (kg)","Valor (R$)","Praça","_id"],
                 key="rot_editor",
             )
 
@@ -2822,19 +2844,19 @@ elif pagina == "🗺️  Roteirização":
         for _c in ["placa_veiculo", "dt_saida"]:
             if _c not in df_r.columns:
                 df_r[_c] = ""
-        _rot_front = ["data_registro", "placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento", "dt_saida"]
-        _rot_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "motivo", "observacao"] if c not in _rot_front]
+        _rot_front = ["data_registro", "placa_road", "placa_veiculo", "motivo", "bairro", "numcarregamento", "dt_saida"]
+        _rot_rest  = [c for c in STD_COLS + ["placa_veiculo", "dt_saida", "motivo", "bairro"] if c not in _rot_front]
         ROT_COLS   = [c for c in _rot_front + _rot_rest if c in df_r.columns]
         ROT_DG_DEFS = [
             {"key": "data_registro",   "label": "Data Registro", "align": "left"},
             {"key": "placa_road",      "label": "Placa Antiga",  "align": "left"},
             {"key": "placa_veiculo",   "label": "Nova Placa",    "align": "left"},
             {"key": "motivo",          "label": "Motivo",        "align": "left",  "width": "180px"},
-            {"key": "observacao",      "label": "Observação",    "align": "left",  "width": "180px"},
+            {"key": "bairro",          "label": "Bairro",        "align": "left",  "width": "160px"},
             {"key": "numcarregamento", "label": "Carregamento",  "align": "left"},
             {"key": "dt_saida",        "label": "Dt. Saída",     "align": "left"},
         ] + [d for d in STD_DG_DEFS if d["key"] not in (
-            "placa_road", "motivo", "observacao", "numcarregamento", "data_registro"
+            "placa_road", "motivo", "bairro", "numcarregamento", "data_registro"
         )]
         df_rd = dedup_columns(df_r[ROT_COLS].copy())
         if "dt_saida" in df_rd.columns:
@@ -3179,19 +3201,19 @@ elif pagina == "📋  Histórico":
         if _col not in df_h.columns:
             df_h[_col] = ""
 
-    _hist_front = ["data_registro", "placa_road", "placa_veiculo", "motivo", "observacao", "numcarregamento"]
-    _hist_rest  = [c for c in STD_COLS + ["dt_saida", "status", "motivo", "observacao"] if c not in _hist_front]
+    _hist_front = ["data_registro", "placa_road", "placa_veiculo", "motivo", "bairro", "numcarregamento"]
+    _hist_rest  = [c for c in STD_COLS + ["dt_saida", "status", "motivo", "bairro"] if c not in _hist_front]
     HIST_COLS = [c for c in _hist_front + _hist_rest + ["status"] if c in df_h.columns]
     HIST_DG_DEFS = [
         {"key": "data_registro",   "label": "Data Registro", "align": "left"},
         {"key": "placa_road",      "label": "Placa Antiga",  "align": "left"},
         {"key": "placa_veiculo",   "label": "Nova Placa",    "align": "left"},
         {"key": "motivo",          "label": "Motivo",        "align": "left",  "width": "180px"},
-        {"key": "observacao",      "label": "Observação",    "align": "left",  "width": "180px"},
+        {"key": "bairro",          "label": "Bairro",        "align": "left",  "width": "160px"},
         {"key": "numcarregamento", "label": "Carregamento",  "align": "left"},
         {"key": "status",          "label": "Status",        "align": "center", "type": "status"},
     ] + [d for d in STD_DG_DEFS if d["key"] not in (
-        "placa_road", "motivo", "observacao", "numcarregamento", "data_registro"
+        "placa_road", "motivo", "bairro", "numcarregamento", "data_registro"
     )] + [{"key": "dt_saida", "label": "Dt. Saída", "align": "left"}]
 
     n_pend = int((df_h["status"] == "pendente").sum()) if not df_h.empty else 0
