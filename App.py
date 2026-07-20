@@ -2230,7 +2230,8 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
         val_ty = by + 15 if bh >= 20 else by - 5
         rects += (
             f'<text x="{cx:.1f}" y="{val_ty:.1f}" text-anchor="middle" font-size="11" '
-            f'font-weight="700" fill="#F8FAFC">{shown}</text>'
+            f'font-weight="800" fill="#FFFFFF" stroke="#064e2f" stroke-width="3" '
+            f'stroke-linejoin="round" paint-order="stroke fill">{shown}</text>'
         )
 
         if rotate_labels:
