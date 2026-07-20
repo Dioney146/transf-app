@@ -685,10 +685,10 @@ html, body, [class*="css"], .stApp {{
    Amazônica, além de anel de atmosfera e halo tecnológico. */
 .bg-earth-wrap {{
   position: fixed;
-  right: -14vw;
-  bottom: -20vw;
-  width: min(52vw, 720px);
-  height: min(52vw, 720px);
+  right: -4vw;
+  bottom: -6vw;
+  width: min(40vw, 560px);
+  height: min(40vw, 560px);
   z-index: -3;
   pointer-events: none;
   animation: bgEarthFloat 14s ease-in-out infinite;
@@ -699,17 +699,21 @@ html, body, [class*="css"], .stApp {{
 }}
 .bg-earth-atmo {{
   position: absolute;
-  inset: -6%;
+  inset: -3%;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, rgba(125,211,252,0.40), transparent 62%);
-  filter: blur(18px);
-  opacity: 0.85;
+  background: radial-gradient(circle at 36% 30%, rgba(147,197,253,0.30), transparent 58%);
+  filter: blur(10px);
+  opacity: 0.9;
 }}
 .bg-earth-rim {{
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  box-shadow: inset 10px 8px 26px rgba(191,219,254,0.30);
+  box-shadow:
+    inset 14px 10px 30px rgba(224,242,254,0.35),
+    0 0 0 1.5px rgba(186,230,253,0.55),
+    0 0 46px 10px rgba(59,130,246,0.55),
+    0 0 130px 34px rgba(37,99,235,0.30);
   pointer-events: none;
 }}
 .bg-earth-globe {{
@@ -718,12 +722,11 @@ html, body, [class*="css"], .stApp {{
   border-radius: 50%;
   overflow: hidden;
   background:
-    radial-gradient(circle at 30% 26%, rgba(191,219,254,0.55) 0%, transparent 12%),
-    radial-gradient(circle at 34% 30%, #2563eb 0%, #1e3a8a 40%, #0b1533 78%, #050a17 100%);
+    radial-gradient(circle at 30% 26%, rgba(224,242,254,0.65) 0%, transparent 12%),
+    radial-gradient(circle at 34% 30%, #3b82f6 0%, #1d4ed8 32%, #14276b 62%, #060b1f 92%, #030612 100%);
   box-shadow:
-    inset -60px -50px 110px rgba(0,0,0,0.65),
-    inset 22px 18px 60px rgba(147,197,253,0.20),
-    0 0 100px 22px rgba(59,130,246,0.24);
+    inset -70px -55px 120px rgba(0,0,0,0.78),
+    inset 24px 20px 54px rgba(191,219,254,0.28);
 }}
 /* Grade de latitude/longitude — leve overlay "HUD" sobre o globo, reforçando a
    sensação tecnológica sem competir com o continente. */
@@ -732,10 +735,10 @@ html, body, [class*="css"], .stApp {{
   inset: 0;
   border-radius: 50%;
   background:
-    repeating-linear-gradient(0deg, rgba(191,219,254,0.10) 0 1px, transparent 1px 13%),
-    repeating-linear-gradient(90deg, rgba(191,219,254,0.07) 0 1px, transparent 1px 16%);
+    repeating-linear-gradient(0deg, rgba(191,219,254,0.09) 0 1px, transparent 1px 13%),
+    repeating-linear-gradient(90deg, rgba(191,219,254,0.06) 0 1px, transparent 1px 16%);
   mix-blend-mode: screen;
-  opacity: 0.5;
+  opacity: 0.35;
 }}
 /* Manchas de "continente" — silhueta estilizada da América do Sul,
    com destaque verde-esmeralda pulsante sobre a Amazônia. */
@@ -746,11 +749,11 @@ html, body, [class*="css"], .stApp {{
   left: 27%;
   top: 18%;
   background:
-    radial-gradient(ellipse 60% 70% at 45% 30%, rgba(34,197,94,0.55) 0%, rgba(21,128,61,0.42) 45%, transparent 72%),
-    radial-gradient(ellipse 50% 40% at 55% 62%, rgba(101,163,13,0.35) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 70% at 45% 30%, rgba(74,222,128,0.85) 0%, rgba(21,128,61,0.62) 45%, transparent 74%),
+    radial-gradient(ellipse 50% 40% at 55% 62%, rgba(163,230,53,0.50) 0%, transparent 70%);
   border-radius: 46% 54% 50% 50% / 55% 50% 55% 45%;
-  filter: blur(1.5px);
-  opacity: 0.92;
+  filter: blur(0.5px);
+  opacity: 1;
   transform: rotate(-8deg);
 }}
 .bg-earth-amazon-glow {{
