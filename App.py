@@ -333,6 +333,70 @@ def check_dup(numnota, dt):
         ).any()
     )
 
+# ══════════════════════════════════════════════════════════════════════════
+# PRESENÇA — registra e conta usuários ativos no site (aba "presencas")
+# ══════════════════════════════════════════════════════════════════════════
+PCOLS = ["usuario", "last_seen"]
+JANELA_ATIVO_MIN = 3  # considera "ativo" quem teve atividade nos últimos N minutos
+
+def ensure_presence_header():
+    ws = get_sheet("presencas")
+    hdr = ws.row_values(1)
+    if hdr[:len(PCOLS)] != PCOLS:
+        ws.update("A1:B1", [PCOLS])
+    return ws
+
+def registrar_presenca(usuario):
+    """Atualiza (ou cria) o timestamp de última atividade do usuário logado.
+    Throttlado para no máximo 1 escrita a cada 20s por sessão, evitando
+    excesso de chamadas à API do Google Sheets a cada rerun do Streamlit."""
+    if not usuario:
+        return
+    agora = datetime.now(ZoneInfo("America/Manaus"))
+    _ultimo = st.session_state.get("_presenca_ultimo_registro")
+    if _ultimo is not None and (agora - _ultimo).total_seconds() < 20:
+        return
+    st.session_state["_presenca_ultimo_registro"] = agora
+    try:
+        ws = ensure_presence_header()
+        data = ws.get_all_values()
+        linha_alvo = None
+        for i, row in enumerate(data[1:], start=2):
+            if row and row[0].strip().lower() == usuario.strip().lower():
+                linha_alvo = i
+                break
+        ts = agora.strftime("%d/%m/%Y %H:%M:%S")
+        if linha_alvo:
+            ws.update(f"B{linha_alvo}", [[ts]], value_input_option="USER_ENTERED")
+        else:
+            ws.append_row([usuario.strip().lower(), ts], value_input_option="USER_ENTERED")
+        usuarios_ativos.clear()
+    except Exception:
+        pass  # falha silenciosa — não deve travar o app por causa da presença
+
+@st.cache_data(ttl=15, show_spinner=False)
+def usuarios_ativos(_cache_key=None):
+    """Retorna lista de usuários com atividade nos últimos JANELA_ATIVO_MIN minutos."""
+    try:
+        ws = ensure_presence_header()
+        data = ws.get_all_values()
+    except Exception:
+        return []
+    if len(data) < 2:
+        return []
+    agora = datetime.now(ZoneInfo("America/Manaus"))
+    ativos = []
+    for row in data[1:]:
+        if len(row) < 2 or not row[0].strip():
+            continue
+        try:
+            ts = datetime.strptime(row[1].strip(), "%d/%m/%Y %H:%M:%S").replace(tzinfo=ZoneInfo("America/Manaus"))
+        except Exception:
+            continue
+        if (agora - ts).total_seconds() <= JANELA_ATIVO_MIN * 60:
+            ativos.append(row[0].strip())
+    return sorted(set(ativos))
+
 @st.cache_data(ttl=60, show_spinner=False)
 def load_road():
     try:
@@ -1771,6 +1835,11 @@ def _hdr_dropdown(icon_label, state_key, help_txt, render_fn):
             with st.container():
                 render_fn()
 
+# Registra a atividade do usuário logado (throttlado internamente)
+registrar_presenca(st.session_state.get("_usuario_logado", ""))
+_lista_ativos = usuarios_ativos(_cache_key=int(datetime.now(ZoneInfo("America/Manaus")).timestamp() // 15))
+_n_ativos = len(_lista_ativos)
+
 hcol_brand, hcol_tabs, hcol_theme, hcol_notif, hcol_user = st.columns(
     [2.6, 4.2, 0.55, 0.55, 0.55], gap="small"
 )
@@ -1800,25 +1869,29 @@ with hcol_tabs:
     )
 
 with hcol_theme:
-    _tema_icon = "☀️" if st.session_state["_tema_claro"] else "🌙"
-    if st.button(_tema_icon, key="btn_tema_header", help="Alternar tema claro/escuro"):
-        st.session_state["_tema_claro"] = not st.session_state["_tema_claro"]
-        st.rerun()
-
-with hcol_notif:
-    st.markdown('<span class="hdr-badge">2</span>', unsafe_allow_html=True)
-
-    def _render_notif():
-        st.markdown('<div class="hdr-pop-title">Notificações</div>', unsafe_allow_html=True)
+    def _render_ativos():
         st.markdown(
-            '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#7C3AED"></span>'
-            'Existem notas pendentes de roteirização hoje.</div>'
-            '<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#3B82F6"></span>'
-            'Sincronização com a base ROAD concluída.</div>',
+            f'<div class="hdr-pop-title">🟢 {_n_ativos} ativo(s) agora</div>',
             unsafe_allow_html=True,
         )
+        if _lista_ativos:
+            _itens = "".join(
+                f'<div class="hdr-notif-item"><span class="hdr-notif-dot" style="background:#22C55E"></span>'
+                f'{u.title()}</div>'
+                for u in _lista_ativos
+            )
+            st.markdown(_itens, unsafe_allow_html=True)
+        else:
+            st.markdown(
+                '<div class="hdr-notif-item">Nenhum usuário ativo no momento.</div>',
+                unsafe_allow_html=True,
+            )
+        st.caption(f"Considerado ativo quem usou o site nos últimos {JANELA_ATIVO_MIN} min.")
 
-    _hdr_dropdown("🔔", "_notif_aberta", "Notificações", _render_notif)
+    _hdr_dropdown(f"🟢 {_n_ativos}", "_online_aberto", "Usuários ativos agora", _render_ativos)
+
+with hcol_notif:
+    pass
 
 with hcol_user:
 
