@@ -6,7 +6,96 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 import io
 import base64
+import hmac
+import hashlib
 from pathlib import Path
+
+# ══════════════════════════════════════════════════════════════════════════
+# LOGIN — gate de autenticação (usuário/senha via st.secrets)
+# ══════════════════════════════════════════════════════════════════════════
+def check_login():
+    """Gate de autenticação. Retorna True se o usuário já estiver logado."""
+    if st.session_state.get("_autenticado", False):
+        return True
+
+    st.set_page_config(
+        page_title="Delly's — Login",
+        page_icon="\U0001f512",
+        layout="centered",
+    )
+
+    st.markdown(
+        """
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
+        html, body, [class*="css"], .stApp { font-family: 'Sora', sans-serif !important; }
+        .stApp {
+            background: radial-gradient(ellipse 90% 60% at 78% 18%, rgba(37,99,235,0.16) 0%, transparent 55%),
+                        linear-gradient(160deg, #050914 0%, #060B16 38%, #071021 68%, #050914 100%);
+        }
+        #MainMenu, footer, header { visibility: hidden; }
+        .login-title { text-align:center; color:#F8FAFC; font-weight:800; font-size:1.6rem; margin-bottom:.25rem; }
+        .login-sub { text-align:center; color:#94A3B8; font-size:.85rem; margin-bottom:1.5rem; }
+        div[data-testid="stForm"] {
+            background: rgba(15,23,42,0.72);
+            backdrop-filter: blur(22px) saturate(170%);
+            border: 1px solid rgba(248,250,252,0.14);
+            border-radius: 20px;
+            padding: 2rem 1.75rem;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+        }
+        div[data-testid="stForm"] button {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
+            border: none !important;
+            font-weight: 700 !important;
+            box-shadow: 0 6px 22px rgba(37,99,235,0.40) !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="login-title">🔒 Delly\'s — Transferências</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-sub">Faça login para continuar</div>', unsafe_allow_html=True)
+
+    _c1, _c2, _c3 = st.columns([1, 2, 1])
+    with _c2:
+        with st.form("login_form"):
+            usuario = st.text_input("Usuário").strip().lower()
+            senha = st.text_input("Senha", type="password")
+            entrar = st.form_submit_button("Entrar", use_container_width=True)
+
+        if entrar:
+            try:
+                usuarios = st.secrets["credentials"]["usernames"]
+                hashes = st.secrets["credentials"]["password_hashes"]
+            except Exception:
+                st.error("⚠️ Credenciais não configuradas em st.secrets. Veja as instruções no final do arquivo.")
+                return False
+
+            if usuario in usuarios:
+                idx = usuarios.index(usuario)
+                hash_esperado = hashes[idx]
+                hash_digitado = hashlib.sha256(senha.encode()).hexdigest()
+
+                if hmac.compare_digest(hash_digitado, hash_esperado):
+                    st.session_state["_autenticado"] = True
+                    st.session_state["_usuario_logado"] = usuario
+                    st.rerun()
+                else:
+                    st.error("❌ Usuário ou senha incorretos.")
+            else:
+                st.error("❌ Usuário ou senha incorretos.")
+
+    return False
+
+
+if not check_login():
+    st.stop()
+
+# ══════════════════════════════════════════════════════════════════════════
+# A PARTIR DAQUI: aplicativo original (só executa depois do login)
+# ══════════════════════════════════════════════════════════════════════════
 
 st.set_page_config(
     page_title="Delly's — Transferências",
@@ -1734,14 +1823,23 @@ with hcol_notif:
 with hcol_user:
 
     def _render_user():
+        _nome_usuario = st.session_state.get("_usuario_logado", "Usuário").title()
         st.markdown(
-            '<div class="hdr-user-name">Ney</div>'
+            f'<div class="hdr-user-name">{_nome_usuario}</div>'
             '<div class="hdr-user-mail">Painel de Transferências · Delly\'s</div>',
             unsafe_allow_html=True,
         )
-        st.button("🚪 Sair", key="btn_logout_header", use_container_width=True)
+        if st.button("🚪 Sair", key="btn_logout_header", use_container_width=True):
+            st.session_state["_autenticado"] = False
+            st.session_state.pop("_usuario_logado", None)
+            st.rerun()
 
-    _hdr_dropdown("N", "_user_aberto", "Minha conta", _render_user)
+    _hdr_dropdown(
+        st.session_state.get("_usuario_logado", "N")[:1].upper(),
+        "_user_aberto",
+        "Minha conta",
+        _render_user,
+    )
 
 # ══════════════════════════════════════════════════════════════════════════
 # DATAGRID PROFISSIONAL — helpers de renderização (chips, células, paginação)
