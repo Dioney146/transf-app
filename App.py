@@ -29,120 +29,13 @@ def check_login():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
         html, body, [class*="css"], .stApp { font-family: 'Sora', sans-serif !important; }
-
-        /* ══════════════════════════════════════════════════════════════
-           FUNDO ANIMADO — gradiente vivo + partículas flutuantes
-           ══════════════════════════════════════════════════════════════ */
         .stApp {
             background: radial-gradient(ellipse 90% 60% at 78% 18%, rgba(37,99,235,0.16) 0%, transparent 55%),
                         linear-gradient(160deg, #050914 0%, #060B16 38%, #071021 68%, #050914 100%);
-            background-size: 200% 200%;
-            animation: loginBgShift 16s ease-in-out infinite;
-            overflow: hidden;
         }
-        @keyframes loginBgShift {
-            0%   { background-position: 0% 0%; }
-            50%  { background-position: 100% 100%; }
-            100% { background-position: 0% 0%; }
-        }
-
         #MainMenu, footer, header { visibility: hidden; }
-
-        /* Orbs de luz flutuantes atrás do card de login */
-        .login-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(50px);
-            pointer-events: none;
-            z-index: 0;
-        }
-        .login-orb-1 {
-            width: 320px; height: 320px;
-            top: -80px; left: -60px;
-            background: radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%);
-            animation: loginFloat1 12s ease-in-out infinite;
-        }
-        .login-orb-2 {
-            width: 260px; height: 260px;
-            bottom: -60px; right: -40px;
-            background: radial-gradient(circle, rgba(124,58,237,0.30) 0%, transparent 70%);
-            animation: loginFloat2 14s ease-in-out infinite;
-        }
-        .login-orb-3 {
-            width: 180px; height: 180px;
-            bottom: 30%; left: 6%;
-            background: radial-gradient(circle, rgba(34,197,94,0.20) 0%, transparent 70%);
-            animation: loginFloat3 10s ease-in-out infinite;
-        }
-        @keyframes loginFloat1 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50%      { transform: translate(30px, 40px) scale(1.08); }
-        }
-        @keyframes loginFloat2 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50%      { transform: translate(-25px, -30px) scale(1.1); }
-        }
-        @keyframes loginFloat3 {
-            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
-            50%      { transform: translate(18px, -22px) scale(1.15); opacity: 1; }
-        }
-
-        /* Partículas cintilantes (estrelas discretas) */
-        .login-stars {
-            position: fixed;
-            inset: 0;
-            width: 2px; height: 2px;
-            background: transparent;
-            z-index: 0;
-            pointer-events: none;
-            box-shadow:
-                12vw 18vh 0 rgba(148,197,255,0.55),
-                24vw 8vh 0 rgba(148,197,255,0.35),
-                38vw 26vh 0 rgba(148,197,255,0.45),
-                52vw 12vh 0 rgba(148,197,255,0.30),
-                68vw 20vh 0 rgba(148,197,255,0.50),
-                80vw 6vh 0 rgba(148,197,255,0.35),
-                90vw 30vh 0 rgba(148,197,255,0.45),
-                8vw 55vh 0 rgba(148,197,255,0.30),
-                22vw 68vh 0 rgba(148,197,255,0.40),
-                44vw 78vh 0 rgba(148,197,255,0.30),
-                62vw 60vh 0 rgba(148,197,255,0.45),
-                76vw 72vh 0 rgba(148,197,255,0.35),
-                92vw 82vh 0 rgba(148,197,255,0.40),
-                6vw 90vh 0 rgba(148,197,255,0.30),
-                34vw 92vh 0 rgba(148,197,255,0.35);
-            animation: loginTwinkle 4.5s ease-in-out infinite alternate;
-        }
-        @keyframes loginTwinkle {
-            0%   { opacity: 0.45; }
-            100% { opacity: 1; }
-        }
-
-        /* ══════════════════════════════════════════════════════════════
-           CARD DE LOGIN — entrada suave + brilho pulsante
-           ══════════════════════════════════════════════════════════════ */
-        .login-title {
-            text-align:center; color:#F8FAFC; font-weight:800; font-size:1.6rem;
-            margin-bottom:.25rem;
-            animation: loginFadeDown 0.7s cubic-bezier(0.4,0,0.2,1) both;
-        }
-        .login-lock {
-            display: inline-block;
-            animation: loginPulseGlow 2.4s ease-in-out infinite;
-        }
-        @keyframes loginPulseGlow {
-            0%, 100% { filter: drop-shadow(0 0 4px rgba(59,130,246,0.4)); transform: scale(1); }
-            50%      { filter: drop-shadow(0 0 14px rgba(59,130,246,0.85)); transform: scale(1.08); }
-        }
-        .login-sub {
-            text-align:center; color:#94A3B8; font-size:.85rem; margin-bottom:1.5rem;
-            animation: loginFadeDown 0.7s 0.1s cubic-bezier(0.4,0,0.2,1) both;
-        }
-        @keyframes loginFadeDown {
-            from { opacity: 0; transform: translateY(-14px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
+        .login-title { text-align:center; color:#F8FAFC; font-weight:800; font-size:1.6rem; margin-bottom:.25rem; }
+        .login-sub { text-align:center; color:#94A3B8; font-size:.85rem; margin-bottom:1.5rem; }
         div[data-testid="stForm"] {
             background: rgba(15,23,42,0.72);
             backdrop-filter: blur(22px) saturate(170%);
@@ -150,53 +43,19 @@ def check_login():
             border-radius: 20px;
             padding: 2rem 1.75rem;
             box-shadow: 0 12px 40px rgba(0,0,0,0.55);
-            position: relative;
-            z-index: 1;
-            animation: loginCardIn 0.6s 0.15s cubic-bezier(0.34,1.2,0.64,1) both,
-                       loginCardGlow 5s ease-in-out infinite;
         }
-        @keyframes loginCardIn {
-            from { opacity: 0; transform: translateY(24px) scale(0.97); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes loginCardGlow {
-            0%, 100% { box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 rgba(59,130,246,0); }
-            50%      { box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 26px rgba(59,130,246,0.18); }
-        }
-
-        div[data-testid="stForm"] input {
-            transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease !important;
-        }
-        div[data-testid="stForm"] input:focus {
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.22) !important;
-        }
-
         div[data-testid="stForm"] button {
             background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
             border: none !important;
             font-weight: 700 !important;
             box-shadow: 0 6px 22px rgba(37,99,235,0.40) !important;
-            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s ease, filter 0.25s ease !important;
-        }
-        div[data-testid="stForm"] button:hover {
-            transform: translateY(-2px) !important;
-            filter: brightness(1.08) !important;
-            box-shadow: 0 10px 28px rgba(37,99,235,0.55) !important;
-        }
-        div[data-testid="stForm"] button:active {
-            transform: translateY(0) !important;
         }
         </style>
-
-        <div class="login-orb login-orb-1"></div>
-        <div class="login-orb login-orb-2"></div>
-        <div class="login-orb login-orb-3"></div>
-        <div class="login-stars"></div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="login-title"><span class="login-lock">🔒</span> Delly\'s — Transferências</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-title">🔒 Delly\'s — Transferências</div>', unsafe_allow_html=True)
     st.markdown('<div class="login-sub">Faça login para continuar</div>', unsafe_allow_html=True)
 
     _c1, _c2, _c3 = st.columns([1, 2, 1])
@@ -237,6 +96,7 @@ if not check_login():
 # ══════════════════════════════════════════════════════════════════════════
 # A PARTIR DAQUI: aplicativo original (só executa depois do login)
 # ══════════════════════════════════════════════════════════════════════════
+
 st.set_page_config(
     page_title="Delly's — Transferências",
     page_icon="\U0001f69b",
@@ -2411,7 +2271,7 @@ def _col_chart_html(rows, label_key, value_key, color, fmt_val=None, height=90):
 
 
 # ── Helper: gera SVG de colunas verticais 3D (glassmorphism) com linha de qtd ─
-def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#3B82F6", fmt_val=None, rotate_labels=False):
+def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, line_color="#3B82F6", fmt_val=None, rotate_labels=False, line_fmt=None):
     """Retorna string SVG: barras verticais extrudadas (3D + glass) + linha com glow."""
     if not rows:
         return '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1rem">Sem dados</p>'
@@ -2557,9 +2417,9 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
             )
 
         if qtd_key:
-            qtd   = int(r[qtd_key])
+            qtd_raw = r[qtd_key]
             dot_y = by - 20
-            pts.append((cx, dot_y, qtd, delay))
+            pts.append((cx, dot_y, qtd_raw, delay))
 
     poly = ""
     dots = ""
@@ -2581,7 +2441,8 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
             f'stroke-width="2.5" stroke-linecap="round"/>'
         )
 
-        for x, y, q, delay in pts:
+        for x, y, q_raw, delay in pts:
+            q_shown = line_fmt(q_raw) if line_fmt else str(int(q_raw))
             dots += (
                 f'<circle class="{uid}pt" style="animation-delay:{delay + 0.4}s" '
                 f'cx="{x:.1f}" cy="{y}" r="9" fill="url(#{uid}dot)"/>'
@@ -2591,7 +2452,7 @@ def _svg_col_line(rows, label_key, val_key, qtd_key, bar_color_1, bar_color_2, l
             )
             dots += (
                 f'<text x="{x:.1f}" y="{y - 11}" text-anchor="middle" font-size="11" '
-                f'font-weight="700" fill="{line_color}">{q}</text>'
+                f'font-weight="700" fill="{line_color}">{q_shown}</text>'
             )
 
     return (
@@ -3337,7 +3198,7 @@ elif pagina == "📋  Histórico":
                 _veic_val2 = _df_veic2.groupby("placa_road")["vltotal"].sum().reset_index()
                 _veic_val2.columns = ["veiculo", "valor"]
                 _tv2 = _veic_qtd2.merge(_veic_val2, on="veiculo", how="left").fillna(0)
-                _tv2 = _tv2.sort_values("valor", ascending=False)
+                _tv2 = _tv2.sort_values("qtd", ascending=False)
                 _rows_vend2 = _tv2.to_dict("records")
 
         def _fmt_brl(v):
@@ -3347,10 +3208,11 @@ elif pagina == "📋  Histórico":
         st.markdown(
             _svg_col_line(
                 _rows_vend2,
-                label_key="veiculo", val_key="valor", qtd_key="qtd",
+                label_key="veiculo", val_key="qtd", qtd_key="valor",
                 bar_color_1="#86EFAC", bar_color_2="#22C55E",
                 line_color="#FACC15",
-                fmt_val=_fmt_brl,
+                fmt_val=None,
+                line_fmt=_fmt_brl,
             ),
             unsafe_allow_html=True,
         )
@@ -3358,7 +3220,7 @@ elif pagina == "📋  Histórico":
             '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
             '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
             '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
-            '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
+            '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -3388,7 +3250,7 @@ elif pagina == "📋  Histórico":
                 _mot_val = _df_mot.groupby("motivo")["vltotal"].sum().reset_index()
                 _mot_val.columns = ["motivo", "valor"]
                 _top_mot = _mot_qtd.merge(_mot_val, on="motivo", how="left").fillna(0)
-                _top_mot = _top_mot.sort_values("valor", ascending=False)
+                _top_mot = _top_mot.sort_values("qtd", ascending=False)
                 _rows_motivo = _top_mot.to_dict("records")
 
         def _fmt_brl_mot(v):
@@ -3399,10 +3261,11 @@ elif pagina == "📋  Histórico":
             st.markdown(
                 _svg_col_line(
                     _rows_motivo,
-                    label_key="motivo", val_key="valor", qtd_key="qtd",
+                    label_key="motivo", val_key="qtd", qtd_key="valor",
                     bar_color_1="#86EFAC", bar_color_2="#22C55E",
                     line_color="#FACC15",
-                    fmt_val=_fmt_brl_mot,
+                    fmt_val=None,
+                    line_fmt=_fmt_brl_mot,
                     rotate_labels=True,
                 ),
                 unsafe_allow_html=True,
@@ -3411,7 +3274,7 @@ elif pagina == "📋  Histórico":
                 '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
                 '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
                 '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
-                '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
+                '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
                 '</div>',
                 unsafe_allow_html=True,
             )
@@ -3448,7 +3311,7 @@ elif pagina == "📋  Histórico":
             _bai_val = _df_bai.groupby("bairro")["vltotal"].sum().reset_index()
             _bai_val.columns = ["bairro", "valor"]
             _top_bai = _bai_qtd.merge(_bai_val, on="bairro", how="left").fillna(0)
-            _top_bai = _top_bai.sort_values("valor", ascending=False)
+            _top_bai = _top_bai.sort_values("qtd", ascending=False)
             _rows_bairro = _top_bai.to_dict("records")
 
     def _fmt_brl_bai(v):
@@ -3459,10 +3322,11 @@ elif pagina == "📋  Histórico":
         st.markdown(
             _svg_col_line(
                 _rows_bairro,
-                label_key="bairro", val_key="valor", qtd_key="qtd",
+                label_key="bairro", val_key="qtd", qtd_key="valor",
                 bar_color_1="#86EFAC", bar_color_2="#22C55E",
                 line_color="#FACC15",
-                fmt_val=_fmt_brl_bai,
+                fmt_val=None,
+                line_fmt=_fmt_brl_bai,
                 rotate_labels=True,
             ),
             unsafe_allow_html=True,
@@ -3471,7 +3335,7 @@ elif pagina == "📋  Histórico":
             '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
             '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
             '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
-            '<span style="font-size:.68rem;color:#94A3B8">Linha = quantidade de NFs</span>'
+            '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
             '</div>',
             unsafe_allow_html=True,
         )
