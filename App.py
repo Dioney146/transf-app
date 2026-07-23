@@ -2037,6 +2037,54 @@ def render_pro_table(df, column_defs, key, page_size=10, status_key=None, empty_
             st.session_state[page_key] = total_pages - 1
             st.rerun()
 
+def render_column_filters(df, column_defs, key, cols_per_row=3):
+    """
+    Renderiza um expander com um multiselect por coluna (estilo filtro de Excel)
+    e retorna o DataFrame já filtrado pelas seleções feitas pelo usuário.
+    Ignora colunas com valor único demais (>300) para não pesar a interface.
+    """
+    if df.empty:
+        return df
+
+    filtered = df.copy()
+    _n_ativos_filtros = 0
+    for c in column_defs:
+        _fk = f"filt_{key}_{c['key']}"
+        if st.session_state.get(_fk):
+            _n_ativos_filtros += 1
+
+    _titulo = "🔍 Filtros por coluna" + (f" ({_n_ativos_filtros} ativo(s))" if _n_ativos_filtros else "")
+    with st.expander(_titulo, expanded=False):
+        col_slots = st.columns(cols_per_row)
+        idx = 0
+        for c in column_defs:
+            col_key = c["key"]
+            if col_key not in df.columns:
+                continue
+            opts = sorted({
+                str(v).strip() for v in df[col_key].dropna()
+                if str(v).strip() not in ("", "nan", "None", "NaT")
+            })
+            if not opts or len(opts) > 300:
+                continue
+            with col_slots[idx % cols_per_row]:
+                sel = st.multiselect(
+                    c.get("label", col_key), opts,
+                    key=f"filt_{key}_{col_key}",
+                )
+            if sel:
+                filtered = filtered[filtered[col_key].astype(str).str.strip().isin(sel)]
+            idx += 1
+
+        if _n_ativos_filtros and st.button("🧹 Limpar filtros", key=f"clear_{key}"):
+            for c in column_defs:
+                fk = f"filt_{key}_{c['key']}"
+                if fk in st.session_state:
+                    st.session_state[fk] = []
+            st.rerun()
+
+    return filtered
+
 # Definições de colunas reutilizadas pelas tabelas de exibição
 STD_DG_DEFS = [
     {"key": "data_registro",   "label": "Data Registro", "align": "left"},
@@ -2757,6 +2805,7 @@ if pagina == "📝  Registro":
         df_show = dedup_columns(df_hj[SHOW].copy())
         st.markdown('<div class="card-body" style="padding-top:0">', unsafe_allow_html=True)
         _lista_defs = [d for d in STD_DG_DEFS if d["key"] in df_show.columns]
+        df_show = render_column_filters(df_show, _lista_defs, key="lista_completa")
         render_pro_table(df_show, _lista_defs, key="lista_completa", page_size=10)
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('<div style="padding:.85rem 1.5rem;border-top:1px solid var(--bdr)">', unsafe_allow_html=True)
@@ -2843,6 +2892,7 @@ elif pagina == "🗺️  Roteirização":
 
             st.markdown('<div class="card-body" style="padding-top:0">', unsafe_allow_html=True)
             _pend_defs = [d for d in STD_DG_DEFS if d["key"] in df_p_display.columns]
+            df_p_display = render_column_filters(df_p_display, _pend_defs, key="pend_table")
             render_pro_table(df_p_display, _pend_defs, key="pend_table", page_size=10)
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -3044,6 +3094,7 @@ elif pagina == "🗺️  Roteirização":
 
         # ── DataGrid profissional (paginado) ─────────────────────────────────
         _rote_defs = [d for d in ROT_DG_DEFS if d["key"] in df_rd_sorted.columns]
+        df_rd_sorted = render_column_filters(df_rd_sorted, _rote_defs, key="roteirizadas_table")
         render_pro_table(df_rd_sorted, _rote_defs, key="roteirizadas_table", page_size=10)
         st.caption(f"{len(df_r)} nota(s)")
 
@@ -3117,6 +3168,7 @@ elif pagina == "🗺️  Roteirização":
             {"key": "valor",          "label": "Valor (R$)",    "align": "right", "type": "currency"},
         ]
 
+        df_placa = render_column_filters(df_placa, PLACA_DG_DEFS, key="placa_table")
         render_pro_table(df_placa, PLACA_DG_DEFS, key="placa_table", page_size=10)
 
         _tot_placas    = df_placa["placa_veiculo"].nunique()
@@ -3287,66 +3339,128 @@ elif pagina == "📋  Histórico":
 
         st.markdown("</div></div>", unsafe_allow_html=True)
 
-    # — Gráfico Bairro —
+    # — Gráfico Bairro + Nova Placa (lado a lado) —
     st.markdown('<div style="height:var(--space-4)"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="chart-head">'
-        '<span class="chart-title" style="color:#A78BFA">📍 Por Bairro</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+    _col_bairro, _col_novapl = st.columns(2, gap="large")
 
-    _rows_bairro = []
-    if not df.empty and "bairro" in df.columns:
-        _df_bai = df[
-            df["bairro"].notna() &
-            (df["bairro"].astype(str).str.strip() != "") &
-            (df["bairro"].astype(str).str.strip() != "— Selecione ou digite o bairro —")
-        ]
-        if not _df_bai.empty:
-            _bai_qtd = _df_bai.groupby("bairro")["numnota"].count().reset_index()
-            _bai_qtd.columns = ["bairro", "qtd"]
-            _bai_val = _df_bai.groupby("bairro")["vltotal"].sum().reset_index()
-            _bai_val.columns = ["bairro", "valor"]
-            _top_bai = _bai_qtd.merge(_bai_val, on="bairro", how="left").fillna(0)
-            _top_bai = _top_bai.sort_values("qtd", ascending=False)
-            _rows_bairro = _top_bai.to_dict("records")
-
-    def _fmt_brl_bai(v):
-        s = f"{int(round(v)):,}".replace(",", ".")
-        return f"R {s}"
-
-    if _rows_bairro:
+    with _col_bairro:
+        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
-            _svg_col_line(
-                _rows_bairro,
-                label_key="bairro", val_key="qtd", qtd_key="valor",
-                bar_color_1="#86EFAC", bar_color_2="#22C55E",
-                line_color="#FACC15",
-                fmt_val=None,
-                line_fmt=_fmt_brl_bai,
-                rotate_labels=True,
-            ),
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
-            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
-            '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
-            '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
+            '<div class="chart-head">'
+            '<span class="chart-title" style="color:#A78BFA">📍 Por Bairro</span>'
             '</div>',
             unsafe_allow_html=True,
         )
-    else:
+        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+
+        _rows_bairro = []
+        if not df.empty and "bairro" in df.columns:
+            _df_bai = df[
+                df["bairro"].notna() &
+                (df["bairro"].astype(str).str.strip() != "") &
+                (df["bairro"].astype(str).str.strip() != "— Selecione ou digite o bairro —")
+            ]
+            if not _df_bai.empty:
+                _bai_qtd = _df_bai.groupby("bairro")["numnota"].count().reset_index()
+                _bai_qtd.columns = ["bairro", "qtd"]
+                _bai_val = _df_bai.groupby("bairro")["vltotal"].sum().reset_index()
+                _bai_val.columns = ["bairro", "valor"]
+                _top_bai = _bai_qtd.merge(_bai_val, on="bairro", how="left").fillna(0)
+                _top_bai = _top_bai.sort_values("qtd", ascending=False)
+                _rows_bairro = _top_bai.to_dict("records")
+
+        def _fmt_brl_bai(v):
+            s = f"{int(round(v)):,}".replace(",", ".")
+            return f"R {s}"
+
+        if _rows_bairro:
+            st.markdown(
+                _svg_col_line(
+                    _rows_bairro,
+                    label_key="bairro", val_key="qtd", qtd_key="valor",
+                    bar_color_1="#86EFAC", bar_color_2="#22C55E",
+                    line_color="#FACC15",
+                    fmt_val=None,
+                    line_fmt=_fmt_brl_bai,
+                    rotate_labels=True,
+                ),
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
+                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
+                '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
+                '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
+                'Nenhum bairro registrado no período.</p>',
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("</div></div>", unsafe_allow_html=True)
+
+    with _col_novapl:
+        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
         st.markdown(
-            '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
-            'Nenhum bairro registrado no período.</p>',
+            '<div class="chart-head">'
+            '<span class="chart-title" style="color:#A78BFA">🔁 Por Nova Placa (retornos)</span>'
+            '</div>',
             unsafe_allow_html=True,
         )
+        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+        _rows_novapl = []
+        if not df.empty and "placa_veiculo" in df.columns:
+            _df_npl = df[
+                df["placa_veiculo"].notna() &
+                (df["placa_veiculo"].astype(str).str.strip() != "")
+            ]
+            if not _df_npl.empty:
+                _npl_qtd = _df_npl.groupby("placa_veiculo")["numnota"].count().reset_index()
+                _npl_qtd.columns = ["placa", "qtd"]
+                _npl_val = _df_npl.groupby("placa_veiculo")["vltotal"].sum().reset_index()
+                _npl_val.columns = ["placa", "valor"]
+                _top_npl = _npl_qtd.merge(_npl_val, on="placa", how="left").fillna(0)
+                _top_npl = _top_npl.sort_values("qtd", ascending=False)
+                _rows_novapl = _top_npl.to_dict("records")
+
+        def _fmt_brl_npl(v):
+            s = f"{int(round(v)):,}".replace(",", ".")
+            return f"R {s}"
+
+        if _rows_novapl:
+            st.markdown(
+                _svg_col_line(
+                    _rows_novapl,
+                    label_key="placa", val_key="qtd", qtd_key="valor",
+                    bar_color_1="#86EFAC", bar_color_2="#22C55E",
+                    line_color="#FACC15",
+                    fmt_val=None,
+                    line_fmt=_fmt_brl_npl,
+                    rotate_labels=True,
+                ),
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
+                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
+                '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
+                '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
+                'Nenhuma placa roteirizada no período.</p>',
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.markdown('<div style="margin-top:20px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
@@ -3473,6 +3587,7 @@ elif pagina == "📋  Histórico":
         df_hd_sorted = df_hd.sort_values("numnota", ascending=False).reset_index(drop=True)
         st.markdown('<div class="card-body" style="padding-top:0">', unsafe_allow_html=True)
         _hist_defs = [d for d in HIST_DG_DEFS if d["key"] in df_hd_sorted.columns]
+        df_hd_sorted = render_column_filters(df_hd_sorted, _hist_defs, key="historico_table")
         render_pro_table(df_hd_sorted, _hist_defs, key="historico_table", page_size=15, status_key="status")
         st.markdown('</div>', unsafe_allow_html=True)
 
