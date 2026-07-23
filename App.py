@@ -1421,6 +1421,7 @@ div[data-testid="stPopoverBody"] {{
   background: linear-gradient(180deg, rgba(248,250,252,0.035), transparent);
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }}
 .chart-title {{
   font-family: 'Sora', sans-serif;
@@ -1431,6 +1432,42 @@ div[data-testid="stPopoverBody"] {{
 }}
 .chart-body {{
   padding: var(--space-3) var(--space-4) var(--space-4);
+}}
+
+/* ── Botão de maximizar gráfico (tela cheia via Fullscreen API) ── */
+.chart-maximize-btn {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(248,250,252,0.05);
+  border: 1px solid var(--bdr2);
+  color: var(--txt2);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 300ms cubic-bezier(0.4,0,0.2,1);
+  flex-shrink: 0;
+}}
+.chart-maximize-btn:hover {{
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+}}
+.chart-fs-target:fullscreen {{
+  background: var(--bg, #060B16);
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}}
+.chart-fs-target:fullscreen svg {{
+  max-width: 96vw;
+  max-height: 90vh;
+  width: 96vw !important;
 }}
 
 /* ── Divisor de seção (sec-div) ── */
@@ -3236,10 +3273,12 @@ elif pagina == "📋  Histórico":
         st.markdown(
             '<div class="chart-head">'
             '<span class="chart-title" style="color:#A78BFA">🚛 Por Veículo</span>'
+            '<span class="chart-maximize-btn" title="Maximizar" '
+            'onclick="document.getElementById(\'cb-veiculo\').requestFullscreen()">⛶</span>'
             '</div>',
             unsafe_allow_html=True,
         )
-        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+        st.markdown('<div class="chart-body chart-fs-target" id="cb-veiculo">', unsafe_allow_html=True)
 
         _rows_vend2 = []
         if not df.empty and "placa_road" in df.columns:
@@ -3284,10 +3323,12 @@ elif pagina == "📋  Histórico":
         st.markdown(
             '<div class="chart-head">'
             '<span class="chart-title" style="color:#A78BFA">📋 Por Motivos</span>'
+            '<span class="chart-maximize-btn" title="Maximizar" '
+            'onclick="document.getElementById(\'cb-motivo\').requestFullscreen()">⛶</span>'
             '</div>',
             unsafe_allow_html=True,
         )
-        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+        st.markdown('<div class="chart-body chart-fs-target" id="cb-motivo">', unsafe_allow_html=True)
 
         _rows_motivo = []
         if not df.empty and "motivo" in df.columns:
@@ -3348,10 +3389,12 @@ elif pagina == "📋  Histórico":
         st.markdown(
             '<div class="chart-head">'
             '<span class="chart-title" style="color:#A78BFA">📍 Por Bairro</span>'
+            '<span class="chart-maximize-btn" title="Maximizar" '
+            'onclick="document.getElementById(\'cb-bairro\').requestFullscreen()">⛶</span>'
             '</div>',
             unsafe_allow_html=True,
         )
-        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+        st.markdown('<div class="chart-body chart-fs-target" id="cb-bairro">', unsafe_allow_html=True)
 
         _rows_bairro = []
         if not df.empty and "bairro" in df.columns:
@@ -3408,10 +3451,12 @@ elif pagina == "📋  Histórico":
         st.markdown(
             '<div class="chart-head">'
             '<span class="chart-title" style="color:#A78BFA">🔁 Por Nova Placa (retornos)</span>'
+            '<span class="chart-maximize-btn" title="Maximizar" '
+            'onclick="document.getElementById(\'cb-novapl\').requestFullscreen()">⛶</span>'
             '</div>',
             unsafe_allow_html=True,
         )
-        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+        st.markdown('<div class="chart-body chart-fs-target" id="cb-novapl">', unsafe_allow_html=True)
 
         _rows_novapl = []
         if not df.empty and "placa_veiculo" in df.columns:
@@ -3509,9 +3554,12 @@ elif pagina == "📋  Histórico":
             label_visibility="visible",
         )
 
-    # ── Linha 3 de filtros: nova placa ───────────────────────────────────────
-    hf7, _hf_spacer2 = st.columns([1.3, 5.3], gap="medium")
+    # ── Linha 3 de filtros: placa antiga + nova placa ────────────────────────
+    hf7, hf8, _hf_spacer2 = st.columns([1.3, 1.3, 4], gap="medium")
     with hf7:
+        _placas_antigas_opts = ["Todos"] + sorted(df["placa_road"].dropna().unique().tolist()) if not df.empty and "placa_road" in df.columns else ["Todos"]
+        filtro_placa_antiga = st.selectbox("Placa Antiga", _placas_antigas_opts, key="h_placa_antiga", label_visibility="visible")
+    with hf8:
         _placas_opts = ["Todos"] + sorted(df["placa_veiculo"].dropna().unique().tolist()) if not df.empty and "placa_veiculo" in df.columns else ["Todos"]
         filtro_nova_placa = st.selectbox("Nova Placa", _placas_opts, key="h_nova_placa", label_visibility="visible")
 
@@ -3521,6 +3569,9 @@ elif pagina == "📋  Histórico":
             df_h = df_h[df_h["status"] == fst]
         if fsup != "Todos":
             df_h = df_h[df_h["nomesup"] == fsup]
+        # Filtro por placa antiga
+        if filtro_placa_antiga != "Todos" and "placa_road" in df_h.columns:
+            df_h = df_h[df_h["placa_road"] == filtro_placa_antiga]
         # Filtro por nova placa
         if filtro_nova_placa != "Todos" and "placa_veiculo" in df_h.columns:
             df_h = df_h[df_h["placa_veiculo"] == filtro_nova_placa]
