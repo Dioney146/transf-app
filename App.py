@@ -1434,40 +1434,29 @@ div[data-testid="stPopoverBody"] {{
   padding: var(--space-3) var(--space-4) var(--space-4);
 }}
 
-/* ── Botão de maximizar gráfico (tela cheia via Fullscreen API) ── */
-.chart-maximize-btn {{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: rgba(248,250,252,0.05);
-  border: 1px solid var(--bdr2);
-  color: var(--txt2);
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 300ms cubic-bezier(0.4,0,0.2,1);
-  flex-shrink: 0;
+/* ── Botão de maximizar gráfico (Streamlit nativo — funciona sempre) ── */
+.chart-max-btn-marker + div[data-testid="stHorizontalBlock"] {{
+  align-items: center !important;
 }}
-.chart-maximize-btn:hover {{
-  background: var(--acc);
-  border-color: var(--acc);
-  color: #fff;
+.chart-max-btn-marker + div[data-testid="stHorizontalBlock"] button {{
+  height: 28px !important;
+  min-height: 28px !important;
+  width: 28px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  background: rgba(248,250,252,0.05) !important;
+  border: 1px solid var(--bdr2) !important;
+  color: var(--txt) !important;
+  font-size: 0.85rem !important;
+  box-shadow: none !important;
+  float: right;
+}}
+.chart-max-btn-marker + div[data-testid="stHorizontalBlock"] button:hover {{
+  background: var(--acc) !important;
+  border-color: var(--acc) !important;
+  color: #fff !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(59,130,246,0.35);
-}}
-.chart-fs-target:fullscreen {{
-  background: var(--bg, #060B16);
-  padding: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}}
-.chart-fs-target:fullscreen svg {{
-  max-width: 96vw;
-  max-height: 90vh;
-  width: 96vw !important;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.35) !important;
 }}
 
 /* ── Divisor de seção (sec-div) ── */
@@ -3264,102 +3253,138 @@ elif pagina == "📋  Histórico":
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Gráficos lado a lado: Vendedor | Motivo ──────────────────────────────
-    _col_vend, _col_mot = st.columns(2, gap="large")
+    # ── Preparação dos dados de todos os gráficos (antes de decidir o layout) ──
+    _rows_vend2 = []
+    if not df.empty and "placa_road" in df.columns:
+        _df_veic2 = df[df["placa_road"].notna() & (df["placa_road"].astype(str).str.strip() != "")]
+        if not _df_veic2.empty:
+            _veic_qtd2 = _df_veic2.groupby("placa_road")["numnota"].count().reset_index()
+            _veic_qtd2.columns = ["veiculo", "qtd"]
+            _veic_val2 = _df_veic2.groupby("placa_road")["vltotal"].sum().reset_index()
+            _veic_val2.columns = ["veiculo", "valor"]
+            _tv2 = _veic_qtd2.merge(_veic_val2, on="veiculo", how="left").fillna(0)
+            _tv2 = _tv2.sort_values("qtd", ascending=False)
+            _rows_vend2 = _tv2.to_dict("records")
 
-    # — Gráfico Veículo Antigo —
-    with _col_vend:
-        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="chart-head">'
-            '<span class="chart-title" style="color:#A78BFA">🚛 Por Veículo</span>'
-            '<span class="chart-maximize-btn" title="Maximizar" '
-            'onclick="document.getElementById(\'cb-veiculo\').requestFullscreen()">⛶</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown('<div class="chart-body chart-fs-target" id="cb-veiculo">', unsafe_allow_html=True)
+    _rows_motivo = []
+    if not df.empty and "motivo" in df.columns:
+        _df_mot = df[
+            df["motivo"].notna() &
+            (df["motivo"].astype(str).str.strip() != "") &
+            (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
+        ]
+        if not _df_mot.empty:
+            _mot_qtd = _df_mot.groupby("motivo")["numnota"].count().reset_index()
+            _mot_qtd.columns = ["motivo", "qtd"]
+            _mot_val = _df_mot.groupby("motivo")["vltotal"].sum().reset_index()
+            _mot_val.columns = ["motivo", "valor"]
+            _top_mot = _mot_qtd.merge(_mot_val, on="motivo", how="left").fillna(0)
+            _top_mot = _top_mot.sort_values("qtd", ascending=False)
+            _rows_motivo = _top_mot.to_dict("records")
 
-        _rows_vend2 = []
-        if not df.empty and "placa_road" in df.columns:
-            _df_veic2 = df[df["placa_road"].notna() & (df["placa_road"].astype(str).str.strip() != "")]
-            if not _df_veic2.empty:
-                _veic_qtd2 = _df_veic2.groupby("placa_road")["numnota"].count().reset_index()
-                _veic_qtd2.columns = ["veiculo", "qtd"]
-                _veic_val2 = _df_veic2.groupby("placa_road")["vltotal"].sum().reset_index()
-                _veic_val2.columns = ["veiculo", "valor"]
-                _tv2 = _veic_qtd2.merge(_veic_val2, on="veiculo", how="left").fillna(0)
-                _tv2 = _tv2.sort_values("qtd", ascending=False)
-                _rows_vend2 = _tv2.to_dict("records")
+    _rows_bairro = []
+    if not df.empty and "bairro" in df.columns:
+        _df_bai = df[
+            df["bairro"].notna() &
+            (df["bairro"].astype(str).str.strip() != "") &
+            (df["bairro"].astype(str).str.strip() != "— Selecione ou digite o bairro —")
+        ]
+        if not _df_bai.empty:
+            _bai_qtd = _df_bai.groupby("bairro")["numnota"].count().reset_index()
+            _bai_qtd.columns = ["bairro", "qtd"]
+            _bai_val = _df_bai.groupby("bairro")["vltotal"].sum().reset_index()
+            _bai_val.columns = ["bairro", "valor"]
+            _top_bai = _bai_qtd.merge(_bai_val, on="bairro", how="left").fillna(0)
+            _top_bai = _top_bai.sort_values("qtd", ascending=False)
+            _rows_bairro = _top_bai.to_dict("records")
 
-        def _fmt_brl(v):
-            s = f"{int(round(v)):,}".replace(",", ".")
-            return f"R {s}"
+    _rows_novapl = []
+    if not df.empty and "placa_veiculo" in df.columns:
+        _df_npl = df[
+            df["placa_veiculo"].notna() &
+            (df["placa_veiculo"].astype(str).str.strip() != "")
+        ]
+        if not _df_npl.empty:
+            _npl_qtd = _df_npl.groupby("placa_veiculo")["numnota"].count().reset_index()
+            _npl_qtd.columns = ["placa", "qtd"]
+            _npl_val = _df_npl.groupby("placa_veiculo")["vltotal"].sum().reset_index()
+            _npl_val.columns = ["placa", "valor"]
+            _top_npl = _npl_qtd.merge(_npl_val, on="placa", how="left").fillna(0)
+            _top_npl = _top_npl.sort_values("qtd", ascending=False)
+            _rows_novapl = _top_npl.to_dict("records")
 
-        st.markdown(
-            _svg_col_line(
-                _rows_vend2,
-                label_key="veiculo", val_key="qtd", qtd_key="valor",
-                bar_color_1="#86EFAC", bar_color_2="#22C55E",
-                line_color="#FACC15",
-                fmt_val=None,
-                line_fmt=_fmt_brl,
-            ),
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
-            '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
-            '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
-            '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown("</div></div>", unsafe_allow_html=True)
+    def _fmt_brl_generic(v):
+        s = f"{int(round(v)):,}".replace(",", ".")
+        return f"R {s}"
 
-    # — Gráfico Motivo —
-    with _col_mot:
-        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="chart-head">'
-            '<span class="chart-title" style="color:#A78BFA">📋 Por Motivos</span>'
-            '<span class="chart-maximize-btn" title="Maximizar" '
-            'onclick="document.getElementById(\'cb-motivo\').requestFullscreen()">⛶</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown('<div class="chart-body chart-fs-target" id="cb-motivo">', unsafe_allow_html=True)
+    _CHART_DEFS = {
+        "veiculo": {
+            "icon_title": "🚛 Por Veículo",
+            "label_key": "veiculo",
+            "rows": _rows_vend2,
+            "empty_msg": "Nenhum veículo registrado no período.",
+            "rotate_labels": False,
+        },
+        "motivo": {
+            "icon_title": "📋 Por Motivos",
+            "label_key": "motivo",
+            "rows": _rows_motivo,
+            "empty_msg": "Nenhum motivo registrado no período.",
+            "rotate_labels": True,
+        },
+        "bairro": {
+            "icon_title": "📍 Por Bairro",
+            "label_key": "bairro",
+            "rows": _rows_bairro,
+            "empty_msg": "Nenhum bairro registrado no período.",
+            "rotate_labels": True,
+        },
+        "novapl": {
+            "icon_title": "🔁 Por Nova Placa (retornos)",
+            "label_key": "placa",
+            "rows": _rows_novapl,
+            "empty_msg": "Nenhuma placa roteirizada no período.",
+            "rotate_labels": True,
+        },
+    }
 
-        _rows_motivo = []
-        if not df.empty and "motivo" in df.columns:
-            _df_mot = df[
-                df["motivo"].notna() &
-                (df["motivo"].astype(str).str.strip() != "") &
-                (df["motivo"].astype(str).str.strip() != "— Selecione um motivo —")
-            ]
-            if not _df_mot.empty:
-                _mot_qtd = _df_mot.groupby("motivo")["numnota"].count().reset_index()
-                _mot_qtd.columns = ["motivo", "qtd"]
-                _mot_val = _df_mot.groupby("motivo")["vltotal"].sum().reset_index()
-                _mot_val.columns = ["motivo", "valor"]
-                _top_mot = _mot_qtd.merge(_mot_val, on="motivo", how="left").fillna(0)
-                _top_mot = _top_mot.sort_values("qtd", ascending=False)
-                _rows_motivo = _top_mot.to_dict("records")
+    if "_chart_maximizado" not in st.session_state:
+        st.session_state["_chart_maximizado"] = None
 
-        def _fmt_brl_mot(v):
-            s = f"{int(round(v)):,}".replace(",", ".")
-            return f"R {s}"
+    def _render_chart_header(chart_key, icon_title):
+        """Título do gráfico + botão nativo de maximizar/minimizar (Streamlit puro,
+        garante funcionamento em qualquer navegador, diferente de onclick em HTML cru)."""
+        st.markdown('<div class="chart-max-btn-marker"></div>', unsafe_allow_html=True)
+        _hc1, _hc2 = st.columns([9, 1])
+        with _hc1:
+            st.markdown(
+                f'<div class="chart-head" style="border-bottom:none;padding-bottom:0">'
+                f'<span class="chart-title" style="color:#A78BFA">{icon_title}</span></div>',
+                unsafe_allow_html=True,
+            )
+        with _hc2:
+            _maximizado = st.session_state.get("_chart_maximizado") == chart_key
+            _label = "🗗" if _maximizado else "⛶"
+            _help = "Minimizar" if _maximizado else "Maximizar gráfico"
+            if st.button(_label, key=f"max_btn_{chart_key}", help=_help):
+                st.session_state["_chart_maximizado"] = None if _maximizado else chart_key
+                st.rerun()
+        st.markdown('<hr style="border:none;border-top:1px solid var(--bdr);margin:.4rem 0 0">', unsafe_allow_html=True)
 
-        if _rows_motivo:
+    def _render_chart_body(chart_key):
+        cfg = _CHART_DEFS[chart_key]
+        rows = cfg["rows"]
+        st.markdown('<div class="chart-body">', unsafe_allow_html=True)
+        if rows:
             st.markdown(
                 _svg_col_line(
-                    _rows_motivo,
-                    label_key="motivo", val_key="qtd", qtd_key="valor",
+                    rows,
+                    label_key=cfg["label_key"], val_key="qtd", qtd_key="valor",
                     bar_color_1="#86EFAC", bar_color_2="#22C55E",
                     line_color="#FACC15",
                     fmt_val=None,
-                    line_fmt=_fmt_brl_mot,
-                    rotate_labels=True,
+                    line_fmt=_fmt_brl_generic,
+                    rotate_labels=cfg["rotate_labels"],
                 ),
                 unsafe_allow_html=True,
             )
@@ -3373,139 +3398,37 @@ elif pagina == "📋  Histórico":
             )
         else:
             st.markdown(
-                '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
-                'Nenhum motivo registrado no período.</p>',
+                f'<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
+                f'{cfg["empty_msg"]}</p>',
                 unsafe_allow_html=True,
             )
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown("</div></div>", unsafe_allow_html=True)
-
-    # — Gráfico Bairro + Nova Placa (lado a lado) —
-    st.markdown('<div style="height:var(--space-4)"></div>', unsafe_allow_html=True)
-    _col_bairro, _col_novapl = st.columns(2, gap="large")
-
-    with _col_bairro:
+    def _render_chart_card(chart_key):
         st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="chart-head">'
-            '<span class="chart-title" style="color:#A78BFA">📍 Por Bairro</span>'
-            '<span class="chart-maximize-btn" title="Maximizar" '
-            'onclick="document.getElementById(\'cb-bairro\').requestFullscreen()">⛶</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown('<div class="chart-body chart-fs-target" id="cb-bairro">', unsafe_allow_html=True)
+        _render_chart_header(chart_key, _CHART_DEFS[chart_key]["icon_title"])
+        _render_chart_body(chart_key)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        _rows_bairro = []
-        if not df.empty and "bairro" in df.columns:
-            _df_bai = df[
-                df["bairro"].notna() &
-                (df["bairro"].astype(str).str.strip() != "") &
-                (df["bairro"].astype(str).str.strip() != "— Selecione ou digite o bairro —")
-            ]
-            if not _df_bai.empty:
-                _bai_qtd = _df_bai.groupby("bairro")["numnota"].count().reset_index()
-                _bai_qtd.columns = ["bairro", "qtd"]
-                _bai_val = _df_bai.groupby("bairro")["vltotal"].sum().reset_index()
-                _bai_val.columns = ["bairro", "valor"]
-                _top_bai = _bai_qtd.merge(_bai_val, on="bairro", how="left").fillna(0)
-                _top_bai = _top_bai.sort_values("qtd", ascending=False)
-                _rows_bairro = _top_bai.to_dict("records")
+    _maximizado_atual = st.session_state.get("_chart_maximizado")
 
-        def _fmt_brl_bai(v):
-            s = f"{int(round(v)):,}".replace(",", ".")
-            return f"R {s}"
+    if _maximizado_atual and _maximizado_atual in _CHART_DEFS:
+        # ── Modo maximizado: mostra só o gráfico selecionado, em largura total ──
+        _render_chart_card(_maximizado_atual)
+    else:
+        # ── Modo normal: grade 2x2 com todos os gráficos ─────────────────────
+        _col_vend, _col_mot = st.columns(2, gap="large")
+        with _col_vend:
+            _render_chart_card("veiculo")
+        with _col_mot:
+            _render_chart_card("motivo")
 
-        if _rows_bairro:
-            st.markdown(
-                _svg_col_line(
-                    _rows_bairro,
-                    label_key="bairro", val_key="qtd", qtd_key="valor",
-                    bar_color_1="#86EFAC", bar_color_2="#22C55E",
-                    line_color="#FACC15",
-                    fmt_val=None,
-                    line_fmt=_fmt_brl_bai,
-                    rotate_labels=True,
-                ),
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
-                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
-                '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
-                '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
-                '</div>',
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
-                'Nenhum bairro registrado no período.</p>',
-                unsafe_allow_html=True,
-            )
-
-        st.markdown("</div></div>", unsafe_allow_html=True)
-
-    with _col_novapl:
-        st.markdown('<div class="chart-wrap">', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="chart-head">'
-            '<span class="chart-title" style="color:#A78BFA">🔁 Por Nova Placa (retornos)</span>'
-            '<span class="chart-maximize-btn" title="Maximizar" '
-            'onclick="document.getElementById(\'cb-novapl\').requestFullscreen()">⛶</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown('<div class="chart-body chart-fs-target" id="cb-novapl">', unsafe_allow_html=True)
-
-        _rows_novapl = []
-        if not df.empty and "placa_veiculo" in df.columns:
-            _df_npl = df[
-                df["placa_veiculo"].notna() &
-                (df["placa_veiculo"].astype(str).str.strip() != "")
-            ]
-            if not _df_npl.empty:
-                _npl_qtd = _df_npl.groupby("placa_veiculo")["numnota"].count().reset_index()
-                _npl_qtd.columns = ["placa", "qtd"]
-                _npl_val = _df_npl.groupby("placa_veiculo")["vltotal"].sum().reset_index()
-                _npl_val.columns = ["placa", "valor"]
-                _top_npl = _npl_qtd.merge(_npl_val, on="placa", how="left").fillna(0)
-                _top_npl = _top_npl.sort_values("qtd", ascending=False)
-                _rows_novapl = _top_npl.to_dict("records")
-
-        def _fmt_brl_npl(v):
-            s = f"{int(round(v)):,}".replace(",", ".")
-            return f"R {s}"
-
-        if _rows_novapl:
-            st.markdown(
-                _svg_col_line(
-                    _rows_novapl,
-                    label_key="placa", val_key="qtd", qtd_key="valor",
-                    bar_color_1="#86EFAC", bar_color_2="#22C55E",
-                    line_color="#FACC15",
-                    fmt_val=None,
-                    line_fmt=_fmt_brl_npl,
-                    rotate_labels=True,
-                ),
-                unsafe_allow_html=True,
-            )
-            st.markdown(
-                '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 .25rem">'
-                '<svg width="22" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="14" y2="5" stroke="#FACC15" stroke-width="2"/>'
-                '<circle cx="18" cy="5" r="3.5" fill="#FACC15"/></svg>'
-                '<span style="font-size:.68rem;color:#94A3B8">Linha = valor (R$)</span>'
-                '</div>',
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                '<p style="color:#64748B;font-size:.78rem;text-align:center;padding:1.5rem 0">'
-                'Nenhuma placa roteirizada no período.</p>',
-                unsafe_allow_html=True,
-            )
-
-        st.markdown("</div></div>", unsafe_allow_html=True)
+        st.markdown('<div style="height:var(--space-4)"></div>', unsafe_allow_html=True)
+        _col_bairro, _col_novapl = st.columns(2, gap="large")
+        with _col_bairro:
+            _render_chart_card("bairro")
+        with _col_novapl:
+            _render_chart_card("novapl")
 
     st.markdown('<div style="margin-top:20px"></div>', unsafe_allow_html=True)
     # ── Tabela do histórico ───────────────────────────────────────────────────
